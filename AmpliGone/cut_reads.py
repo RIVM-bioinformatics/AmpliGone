@@ -182,19 +182,14 @@ def End_to_Mid(data, FWList, RVList, reference, preset, workers):
                         hitlimit += 1
                         start = hit2.r_st
 
-                count = 0
                 while (start in FWList) is True:
                     seq, qual, start = slice_fw_left(start, seq, qual)
-                    if count == 3:
-                        hitlimit = 0
-                        for hit2 in Aln.map(seq):
-                            if hitlimit != 0:
-                                continue
-                            hitlimit += 1
-                            start = hit2.r_st
-                        count = 0
-                        continue
-                    count += 1
+                    hitlimit = 0
+                    for hit2 in Aln.map(seq):
+                        if hitlimit != 0:
+                            continue
+                        hitlimit += 1
+                        start = hit2.r_st
 
             if reverse is True:
 
@@ -207,19 +202,14 @@ def End_to_Mid(data, FWList, RVList, reference, preset, workers):
                         hitlimit += 1
                         end = hit2.r_en
 
-                count = 0
                 while (end in RVList) is True:
                     seq, qual, end = slice_rv_right(end, seq, qual)
-                    if count == 3:
-                        hitlimit = 0
-                        for hit2 in Aln.map(seq):
-                            if hitlimit != 0:
-                                continue
-                            hitlimit += 1
-                            end = hit2.r_en
-                        count = 0
-                        continue
-                    count += 1
+                    hitlimit = 0
+                    for hit2 in Aln.map(seq):
+                        if hitlimit != 0:
+                            continue
+                        hitlimit += 1
+                        end = hit2.r_en
 
             if len(seq) < 5:
                 seq = np.nan
