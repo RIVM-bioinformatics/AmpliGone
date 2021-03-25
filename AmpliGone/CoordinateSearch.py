@@ -85,10 +85,8 @@ def MakeCoordinateLists(primerfile, ref):
     
     for index, name in RightPrimers.iterrows():
         for i in range(len(name.start)):
-            list = [*range(name.start[i], name.stop[i], 1)]
+            list = [*range(name.start[i]+1, name.stop[i], 1)]
             for iter in list:
                 RightList.append(iter)
-                
-    CombList = sorted(LeftList + RightList)
     
-    return LeftList, RightList, CombList
+    return tuple(LeftList), tuple(RightList)

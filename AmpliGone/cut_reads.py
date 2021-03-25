@@ -12,7 +12,6 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
     sequences = Frame['Sequence'].tolist()
     qualities = Frame['Qualities'].tolist()
     
-    
     Aln = mp.Aligner(reference, preset=preset, best_n=1)
     
     processed_readnames = []

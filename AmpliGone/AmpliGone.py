@@ -145,7 +145,7 @@ def main():
         TP_FindPreset = exec.submit(FindPreset, args.input, args.threads)
         
         IndexedReads = TP_indexreads.result()
-        LeftPrimers, RightPrimers, CombPrimers = TP_PrimerLists.result()
+        LeftPrimers, RightPrimers = TP_PrimerLists.result()
         preset = TP_FindPreset.result()
     
     IndexedReads.dropna(subset=['Sequence'], inplace=True)
