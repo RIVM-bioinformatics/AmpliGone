@@ -79,7 +79,7 @@ def MakeCoordinateLists(primerfile, ref):
     
     for index, name in LeftPrimers.iterrows():
         for i in range(len(name.start)):
-            list = [*range(name.start[i], name.stop[i], 1)]
+            list = [*range(name.start[i]-1, name.stop[i], 1)]
             for iter in list:
                 LeftList.append(iter)
     

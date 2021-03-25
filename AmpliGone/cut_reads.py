@@ -40,22 +40,10 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
 
             if reverse is False:
                 
-                count = 0
+
                 while ReadBeforePrimer(start, FWList) is True:
                     seq, qual, start = slice_fw_left(start, seq, qual)
-                    if count == 3:
-                        hitlimit = 0
-                        for hit2 in Aln.map(seq):
-                            if hitlimit != 0:
-                                continue
-                            hitlimit += 1
-                            start = hit2.r_st
-                        count = 0
-                        continue
-                    count += 1
-                    
-                while (start in FWList) is True:
-                    seq, qual, start = slice_fw_left(start, seq, qual)
+
                     hitlimit = 0
                     for hit2 in Aln.map(seq):
                         if hitlimit != 0:
@@ -63,19 +51,15 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
                         hitlimit += 1
                         start = hit2.r_st
 
-                count = 0
                 while ReadAfterPrimer(end, RVList) is True:
                     seq, qual, end = slice_fw_right(end, seq, qual)
-                    if count == 3:
-                        hitlimit = 0
-                        for hit2 in Aln.map(seq):
-                            if hitlimit != 0:
-                                continue
-                            hitlimit += 1
-                            end = hit2.r_en
-                        count = 0
-                        continue
-                    count += 1
+
+                    hitlimit = 0
+                    for hit2 in Aln.map(seq):
+                        if hitlimit != 0:
+                            continue
+                        hitlimit += 1
+                        end = hit2.r_en
 
                 while (end in RVList) is True:
                     seq, qual, end = slice_fw_right(end, seq, qual)
@@ -85,22 +69,37 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
                             continue
                         hitlimit += 1
                         end = hit2.r_en
-                            
+
+                        
+                while (start in FWList) is True:
+                    seq, qual, start = slice_fw_left(start, seq, qual)
+                    hitlimit = 0
+                    for hit2 in Aln.map(seq):
+                        if hitlimit != 0:
+                            continue
+                        hitlimit += 1
+                        start = hit2.r_st
+                        
             if reverse is True:
                 
-                count = 0
                 while ReadBeforePrimer(start, FWList) is True:
                     seq, qual, start = slice_rv_left(start, seq, qual)
-                    if count == 3:
-                        hitlimit = 0
-                        for hit2 in Aln.map(seq):
-                            if hitlimit != 0:
-                                continue
-                            hitlimit += 1
-                            start = hit2.r_st
-                        count = 0
-                        continue
-                    count += 1
+                    hitlimit = 0
+                    for hit2 in Aln.map(seq):
+                        if hitlimit != 0:
+                            continue
+                        hitlimit += 1
+                        start = hit2.r_st
+
+                
+                while ReadAfterPrimer(end, RVList) is True:
+                    seq, qual, end = slice_rv_right(end, seq, qual)
+                    hitlimit = 0
+                    for hit2 in Aln.map(seq):
+                        if hitlimit != 0:
+                            continue
+                        hitlimit += 1
+                        end = hit2.r_en
                 
                 while (start in FWList) is True:
                     seq, qual, start = slice_rv_left(start, seq, qual)
@@ -110,21 +109,6 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
                             continue
                         hitlimit += 1
                         start = hit2.r_st
-                
-                count = 0
-                while ReadAfterPrimer(end, RVList) is True:
-                    seq, qual, end = slice_rv_right(end, seq, qual)
-                    if count == 3:
-                        hitlimit = 0
-                        for hit2 in Aln.map(seq):
-                            if hitlimit != 0:
-                                continue
-                            hitlimit += 1
-                            end = hit2.r_en
-                        count = 0
-                        continue
-                    count += 1
-                
 
                 while (end in RVList) is True:
                     seq, qual, end = slice_rv_right(end, seq, qual)
@@ -135,7 +119,7 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
                         hitlimit += 1
                         end = hit2.r_en
 
-        
+
         if len(seq) < 5:
             seq = np.nan
         if len(qual) < 5:
