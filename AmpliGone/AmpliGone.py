@@ -8,7 +8,6 @@ import sys
 import argparse
 import pathlib
 import multiprocessing
-import time
 import parmap
 import numpy as np
 import pandas as pd
