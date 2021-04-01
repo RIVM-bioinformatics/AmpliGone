@@ -4,6 +4,9 @@ from itertools import product
 import re
 
 
+"""
+ambiguity options used from https://droog.gs.washington.edu/parc/images/iupac.html
+"""
 def FindAmbigousOptions(seq):
     ambigs = {
         "A": ["A"],
