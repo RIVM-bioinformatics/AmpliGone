@@ -14,7 +14,7 @@ def FindAmbigousOptions(seq):
         "R": ["A", "G"],
         "W": ["A", "T"],
         "S": ["C", "G"],
-        "Y": ["C", "G"],
+        "Y": ["C", "T"],
         "K": ["G", "T"],
         "V": ["A", "C", "G"],
         "H": ["A", "C", "T"],
