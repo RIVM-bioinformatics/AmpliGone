@@ -36,7 +36,7 @@ def Primer_coordinates(inputprimer, reference):
         startlocs = []
         stoplocs = []
         for option in possible_primers:
-            for match in re.finditer(str(option), str(record.seq)):
+            for match in re.finditer(str(option), str(record.seq), re.IGNORECASE):
                 start_pos = match.start()
                 end_pos = match.end()
                 startlocs.append(start_pos)
