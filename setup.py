@@ -1,11 +1,13 @@
 import sys
 
+from setuptools import find_packages, setup
+
+from AmpliGone.version import __version__
+
 if sys.version_info.major != 3 or sys.version_info.minor < 7:
     print("Error: you must execute setup.py using Python 3.7 or later")
     sys.exit(1)
 
-from setuptools import setup, find_packages
-from AmpliGone.version import __version__
 #exec(open("AmpliGone/version.py").read())
 
 with open("README.md", "rb") as readme:
