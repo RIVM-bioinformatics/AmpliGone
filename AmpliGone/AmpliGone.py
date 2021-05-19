@@ -172,6 +172,17 @@ def main():
         LeftPrimers, RightPrimers = TP_PrimerLists.result()
         preset = TP_FindPreset.result()
 
+    if len(IndexedReads.index) < 1:
+        ReadDict = IndexedReads.to_dict(orient="records")
+        WriteOutput(args.output, ReadDict)
+        print(
+            f"""
+    {color.RED}AmpliGone was given an empty input file. An empty output file has therefore been generated.
+    Please check the input file to make sure this is correct{color.END}
+    """
+        )
+        sys.exit(0)
+
     IndexedReads.dropna(subset=["Sequence"], inplace=True)
     IndexedReads = IndexedReads.sample(frac=1).reset_index(drop=True)
 
