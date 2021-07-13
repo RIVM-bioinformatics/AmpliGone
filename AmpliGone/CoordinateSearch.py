@@ -86,12 +86,48 @@ def find_orient(primerfile, ref):
                 )
     return FrameLeft, FrameRight
 
+def GetUniqs(frame):
+    uniq = {}
+    for row in frame.itertuples():
+        startingpoints = []
+        endingpoints = []
+        for i in row.start:
+            startingpoints.append(i)
+        for i in row.stop:
+            endingpoints.append(i)
+        
+        c = 0
+        for a, b in zip(startingpoints, endingpoints):
+            if row.name not in uniq:
+                prname = row.name
+            else:
+                prname = f"{row.name}_{c}"
+            uniq[prname] = {"start": a, "stop": b}
+            c += 1
+        
+    return pd.DataFrame.from_dict(uniq, orient='index')
 
-def MakeCoordinateLists(primerfile, ref):
+def WriteExports(left, right, out):
+    nleft = GetUniqs(left)
+    nright = GetUniqs(right)
+    
+    
+    nleft.index.name = 'name'
+    nright.index.name = 'name'
+    
+    combined = pd.concat([nleft,nright]).sort_index(axis=0)
+    
+    combined.to_csv(out)
+    
+def MakeCoordinateLists(primerfile, ref, primer_export):
     LeftPrimers, RightPrimers = find_orient(primerfile, ref)
 
     LeftList = []
     RightList = []
+
+    if primer_export is not None:
+        WriteExports(LeftPrimers, RightPrimers, primer_export)
+
 
     for index, name in LeftPrimers.iterrows():
         for i in range(len(name.start)):

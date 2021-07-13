@@ -109,6 +109,14 @@ def get_args(givenargs):
         help="Define the amplicon-type, either being 'end-to-end' or 'end-to-mid'.\nSee the docs for more info",
         required=True,
     )
+    
+    parser.add_argument(
+        "--export-primers",
+        metavar="File",
+        help="Output csv file with found primer coordinates",
+        required=False
+    )
+    
     parser.add_argument(
         "--threads",
         "-t",
@@ -164,10 +172,10 @@ def main():
         )
         sys.exit(1)
     args = get_args(sys.argv[1:])
-
+    
     with cf.ThreadPoolExecutor(max_workers=args.threads) as exec:
         TP_indexreads = exec.submit(IndexReads, args.input)
-        TP_PrimerLists = exec.submit(MakeCoordinateLists, args.primers, args.reference)
+        TP_PrimerLists = exec.submit(MakeCoordinateLists, args.primers, args.reference, args.export_primers)
         TP_FindPreset = exec.submit(FindPreset, args.input, args.threads)
 
         IndexedReads = TP_indexreads.result()
