@@ -9,13 +9,12 @@ import multiprocessing
 import os
 import pathlib
 import sys
-import time
 
 import numpy as np
 import pandas as pd
 import parmap
 
-from .CoordinateSearch import MakeCoordinateLists
+from .CoordinateSearch import MakeCoordinateLists, WritePrimerExports
 from .cut_reads import End_to_End, End_to_Mid
 from .func import MyHelpFormatter, color
 from .io_ops import IndexReads, WriteOutput
@@ -175,15 +174,16 @@ def main():
     
     with cf.ThreadPoolExecutor(max_workers=args.threads) as exec:
         TP_indexreads = exec.submit(IndexReads, args.input)
-        TP_PrimerLists = exec.submit(MakeCoordinateLists, args.primers, args.reference, args.export_primers)
+        TP_PrimerLists = exec.submit(MakeCoordinateLists, args.primers, args.reference)
         TP_FindPreset = exec.submit(FindPreset, args.input, args.threads)
 
         IndexedReads = TP_indexreads.result()
-        LeftPrimers, RightPrimers = TP_PrimerLists.result()
+        LeftPrimers, RightPrimers, Fleft, Fright = TP_PrimerLists.result()
         preset = TP_FindPreset.result()
 
     IndexedReads.dropna(subset=["Sequence"], inplace=True)
     IndexedReads = IndexedReads.sample(frac=1).reset_index(drop=True)
+    
 
     if args.amplicon_type == "end-to-end":
 
@@ -209,7 +209,12 @@ def main():
             preset,
         )
         ProcessedReads.reset_index(drop=True)
+    
+    if args.export_primers is not None:
+        WritePrimerExports(Fleft, Fright, ProcessedReads['Removed_coordinates'], args.export_primers)
 
+    ProcessedReads = ProcessedReads.drop(columns=["Removed_coordinates"])
+    
     ReadDict = ProcessedReads.to_dict(orient="records")
 
     WriteOutput(args.output, ReadDict)

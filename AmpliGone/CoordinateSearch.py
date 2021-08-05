@@ -107,26 +107,57 @@ def GetUniqs(frame):
         
     return pd.DataFrame.from_dict(uniq, orient='index')
 
-def WriteExports(left, right, out):
-    nleft = GetUniqs(left)
-    nright = GetUniqs(right)
+def UpdateName(primername):
+    s = re.split('[- _ | /]', primername)
+    for a, i in enumerate(s):
+        try:
+            i = int(i)
+        except:
+            i = str(i)
+        
+        if type(i) == int:
+            s[a] = f"{i:03d}"
+    return "_".join(s)
+
+def CombinePrimerLists(a, b):
+    aa = GetUniqs(a)
+    bb = GetUniqs(b)
     
+    c = pd.concat([aa, bb]).reset_index()
+    c.rename(columns={"index": "name"}, inplace=True)
+    c['name'] = c['name'].apply(lambda x: UpdateName(x))
+    csort = c.sort_values(by=['name'])
+    return csort
+
+def GetRemovedCoordinates(coordinatedata):
+    allcoordinates = []
+    for a,b in coordinatedata.iteritems():
+        for x in b:
+            allcoordinates.append(x)
+    return set(allcoordinates)
+
+
+def GetRemovedPrimers(primers, coordinates):
+    fprimers = pd.DataFrame(columns=primers.columns)
+    for a in primers.itertuples():
+        l = list(range(a.start, a.stop))
+        if any(x in coordinates for x in l) is True:
+            fprimers = fprimers.append(pd.DataFrame({'name': a.name, 'start': a.start, 'stop': a.stop}, index=[0]))
+    fprimers.reset_index(inplace=True)
+    fprimers = fprimers.drop(columns=['index'])
+    return fprimers
+
+def WritePrimerExports(left, right, processeddata, out):
+    cPrimers = CombinePrimerLists(left, right)
+    UniqueCoordinates = GetRemovedCoordinates(processeddata)
+    filteredprimers = GetRemovedPrimers(cPrimers, UniqueCoordinates)
+    filteredprimers.to_csv(out, index=False)
     
-    nleft.index.name = 'name'
-    nright.index.name = 'name'
-    
-    combined = pd.concat([nleft,nright]).sort_index(axis=0)
-    
-    combined.to_csv(out)
-    
-def MakeCoordinateLists(primerfile, ref, primer_export):
+def MakeCoordinateLists(primerfile, ref):
     LeftPrimers, RightPrimers = find_orient(primerfile, ref)
 
     LeftList = []
     RightList = []
-
-    if primer_export is not None:
-        WriteExports(LeftPrimers, RightPrimers, primer_export)
 
 
     for index, name in LeftPrimers.iterrows():
@@ -141,4 +172,4 @@ def MakeCoordinateLists(primerfile, ref, primer_export):
             for iter in list:
                 RightList.append(iter)
 
-    return tuple(LeftList), tuple(RightList)
+    return tuple(LeftList), tuple(RightList), LeftPrimers, RightPrimers
