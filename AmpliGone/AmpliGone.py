@@ -111,6 +111,7 @@ def get_args(givenargs):
     
     parser.add_argument(
         "--export-primers",
+        "-ep",
         metavar="File",
         help="Output csv file with found primer coordinates",
         required=False
