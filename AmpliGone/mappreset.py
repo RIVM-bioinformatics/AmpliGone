@@ -1,5 +1,4 @@
 
-from .io_ops import ReadsToList
 from concurrent.futures import ThreadPoolExecutor
 
 from .io_ops import ReadsToList

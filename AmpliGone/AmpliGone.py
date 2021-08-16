@@ -10,7 +10,6 @@ import os
 import pathlib
 import sys
 
-import parmap
 import numpy as np
 import pandas as pd
 import parmap
@@ -21,7 +20,6 @@ from .func import MyHelpFormatter, color
 from .io_ops import IndexReads, WriteOutput
 from .mappreset import FindPreset
 from .version import __version__
-from .cut_reads import End_to_End, End_to_Mid
 
 
 def get_args(givenargs):
