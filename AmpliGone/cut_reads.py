@@ -1,9 +1,16 @@
 import mappy as mp
-import pandas as pd
 import numpy as np
-from tqdm import tqdm
-from .cutlery import ReadBeforePrimer, ReadAfterPrimer
-from .cutlery import slice_fw_left, slice_fw_right, slice_rv_left, slice_rv_right
+import pandas as pd
+
+from .cutlery import (
+    ReadAfterPrimer,
+    ReadBeforePrimer,
+    slice_fw_left,
+    slice_fw_right,
+    slice_rv_left,
+    slice_rv_right,
+)
+
 
 
 def End_to_End(data, FWList, RVList, reference, preset, workers):
@@ -18,11 +25,14 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
     processed_readnames = []
     processed_sequences = []
     processed_qualities = []
+    removed_coords = []
 
     for i in range(len(readnames)):
         name = readnames[i]
         seq = sequences[i]
         qual = qualities[i]
+        
+        rmc = []
 
         looplimiter = 0
         for hit in Aln.map(seq):
@@ -61,6 +71,7 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
                         end = hit2.r_en
 
                 while (end in RVList) is True:
+                    rmc.append(end)
                     seq, qual, end = slice_fw_right(end, seq, qual)
                     hitlimit = 0
                     for hit2 in Aln.map(seq):
@@ -70,6 +81,7 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
                         end = hit2.r_en
 
                 while (start in FWList) is True:
+                    rmc.append(start)
                     seq, qual, start = slice_fw_left(start, seq, qual)
                     hitlimit = 0
                     for hit2 in Aln.map(seq):
@@ -99,6 +111,7 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
                         end = hit2.r_en
 
                 while (start in FWList) is True:
+                    rmc.append(start)
                     seq, qual, start = slice_rv_left(start, seq, qual)
                     hitlimit = 0
                     for hit2 in Aln.map(seq):
@@ -108,6 +121,7 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
                         start = hit2.r_st
 
                 while (end in RVList) is True:
+                    rmc.append(end)
                     seq, qual, end = slice_rv_right(end, seq, qual)
                     hitlimit = 0
                     for hit2 in Aln.map(seq):
@@ -124,12 +138,15 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
         processed_readnames.append(name)
         processed_sequences.append(seq)
         processed_qualities.append(qual)
+        removed_coords.append(rmc)
+
 
     ProcessedReads = pd.DataFrame(
         {
             "Readname": processed_readnames,
             "Sequence": processed_sequences,
             "Qualities": processed_qualities,
+            "Removed_coordinates": removed_coords,
         }
     )
 
@@ -150,12 +167,15 @@ def End_to_Mid(data, FWList, RVList, reference, preset, workers):
     processed_readnames = []
     processed_sequences = []
     processed_qualities = []
+    removed_coords = []
 
     for i in range(len(readnames)):
 
         name = readnames[i]
         seq = sequences[i]
         qual = qualities[i]
+        
+        rmc = []
 
         looplimiter = 0
         for hit in Aln.map(seq):
@@ -183,6 +203,7 @@ def End_to_Mid(data, FWList, RVList, reference, preset, workers):
                         start = hit2.r_st
 
                 while (start in FWList) is True:
+                    rmc.append(start)
                     seq, qual, start = slice_fw_left(start, seq, qual)
                     hitlimit = 0
                     for hit2 in Aln.map(seq):
@@ -203,6 +224,7 @@ def End_to_Mid(data, FWList, RVList, reference, preset, workers):
                         end = hit2.r_en
 
                 while (end in RVList) is True:
+                    rmc.append(end)
                     seq, qual, end = slice_rv_right(end, seq, qual)
                     hitlimit = 0
                     for hit2 in Aln.map(seq):
@@ -219,12 +241,15 @@ def End_to_Mid(data, FWList, RVList, reference, preset, workers):
             processed_readnames.append(name)
             processed_sequences.append(seq)
             processed_qualities.append(qual)
+            removed_coords.append(rmc)
+
 
     ProcessedReads = pd.DataFrame(
         {
             "Readname": processed_readnames,
             "Sequence": processed_sequences,
             "Qualities": processed_qualities,
+            "Removed_coordinates": removed_coords,
         }
     )
 

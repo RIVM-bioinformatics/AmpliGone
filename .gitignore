@@ -131,4 +131,5 @@ dmypy.json
 
 # IDE
 .vscode/
+test/
 notes.txt

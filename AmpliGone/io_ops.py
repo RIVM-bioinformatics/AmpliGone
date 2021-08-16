@@ -1,10 +1,11 @@
-import sys
-import pathlib
-import pandas as pd
 import gzip
-import pysam
-import numpy as np
+import pathlib
+import sys
 from io import StringIO
+
+import numpy as np
+import pandas as pd
+import pysam
 from Bio import SeqIO
 
 

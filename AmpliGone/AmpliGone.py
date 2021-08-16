@@ -3,22 +3,23 @@
 """
 
 
-import os
-import sys
 import argparse
-import pathlib
+import concurrent.futures as cf
 import multiprocessing
-import parmap
+import os
+import pathlib
+import sys
+
 import numpy as np
 import pandas as pd
-import concurrent.futures as cf
+import parmap
 
-from .version import __version__
+from .CoordinateSearch import MakeCoordinateLists, WritePrimerExports
+from .cut_reads import End_to_End, End_to_Mid
 from .func import MyHelpFormatter, color
 from .io_ops import IndexReads, WriteOutput
-from .CoordinateSearch import MakeCoordinateLists
 from .mappreset import FindPreset
-from .cut_reads import End_to_End, End_to_Mid
+from .version import __version__
 
 
 def get_args(givenargs):
@@ -107,6 +108,15 @@ def get_args(givenargs):
         help="Define the amplicon-type, either being 'end-to-end' or 'end-to-mid'.\nSee the docs for more info",
         required=True,
     )
+    
+    parser.add_argument(
+        "--export-primers",
+        "-ep",
+        metavar="File",
+        help="Output csv file with found primer coordinates",
+        required=False
+    )
+    
     parser.add_argument(
         "--threads",
         "-t",
@@ -169,7 +179,7 @@ def main():
         TP_FindPreset = exec.submit(FindPreset, args.input, args.threads)
 
         IndexedReads = TP_indexreads.result()
-        LeftPrimers, RightPrimers = TP_PrimerLists.result()
+        LeftPrimers, RightPrimers, Fleft, Fright = TP_PrimerLists.result()
         preset = TP_FindPreset.result()
 
     if len(IndexedReads.index) < 1:
@@ -210,7 +220,12 @@ def main():
             preset,
         )
         ProcessedReads.reset_index(drop=True)
+    
+    if args.export_primers is not None:
+        WritePrimerExports(Fleft, Fright, ProcessedReads['Removed_coordinates'], args.export_primers)
 
+    ProcessedReads = ProcessedReads.drop(columns=["Removed_coordinates"])
+    
     ReadDict = ProcessedReads.to_dict(orient="records")
 
     WriteOutput(args.output, ReadDict)

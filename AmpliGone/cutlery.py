@@ -1,6 +1,7 @@
 from functools import lru_cache
 
 
+
 @lru_cache(maxsize=2000000)
 def ReadBeforePrimer(pos, clist):
     if pos in clist:
@@ -11,6 +12,7 @@ def ReadBeforePrimer(pos, clist):
         return True
     else:
         return False
+
 
 
 @lru_cache(maxsize=2000000)
