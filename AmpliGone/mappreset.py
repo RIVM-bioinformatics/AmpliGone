@@ -1,3 +1,5 @@
+
+from .io_ops import ReadsToList
 from concurrent.futures import ThreadPoolExecutor
 
 from .io_ops import ReadsToList
@@ -42,6 +44,9 @@ def IsLongRead(avg_len):
 
 def FindPreset(inputfile, threads):
     ReadList, QualList = ReadsToList(inputfile)
+
+    if len(ReadList) < 1:
+        return None
 
     with ThreadPoolExecutor(max_workers=threads) as exec:
         TP_averagelength = exec.submit(Calculate_avg_seq_len, ReadList)

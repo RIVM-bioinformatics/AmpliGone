@@ -12,6 +12,7 @@ from .cutlery import (
 )
 
 
+
 def End_to_End(data, FWList, RVList, reference, preset, workers):
     Frame, threadnumber = data
 
@@ -139,6 +140,7 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
         processed_qualities.append(qual)
         removed_coords.append(rmc)
 
+
     ProcessedReads = pd.DataFrame(
         {
             "Readname": processed_readnames,
@@ -200,20 +202,15 @@ def End_to_Mid(data, FWList, RVList, reference, preset, workers):
                         hitlimit += 1
                         start = hit2.r_st
 
-                count = 0
                 while (start in FWList) is True:
                     rmc.append(start)
                     seq, qual, start = slice_fw_left(start, seq, qual)
-                    if count == 3:
-                        hitlimit = 0
-                        for hit2 in Aln.map(seq):
-                            if hitlimit != 0:
-                                continue
-                            hitlimit += 1
-                            start = hit2.r_st
-                        count = 0
-                        continue
-                    count += 1
+                    hitlimit = 0
+                    for hit2 in Aln.map(seq):
+                        if hitlimit != 0:
+                            continue
+                        hitlimit += 1
+                        start = hit2.r_st
 
             if reverse is True:
 
@@ -226,20 +223,15 @@ def End_to_Mid(data, FWList, RVList, reference, preset, workers):
                         hitlimit += 1
                         end = hit2.r_en
 
-                count = 0
                 while (end in RVList) is True:
                     rmc.append(end)
                     seq, qual, end = slice_rv_right(end, seq, qual)
-                    if count == 3:
-                        hitlimit = 0
-                        for hit2 in Aln.map(seq):
-                            if hitlimit != 0:
-                                continue
-                            hitlimit += 1
-                            end = hit2.r_en
-                        count = 0
-                        continue
-                    count += 1
+                    hitlimit = 0
+                    for hit2 in Aln.map(seq):
+                        if hitlimit != 0:
+                            continue
+                        hitlimit += 1
+                        end = hit2.r_en
 
             if len(seq) < 5:
                 seq = np.nan
@@ -250,6 +242,7 @@ def End_to_Mid(data, FWList, RVList, reference, preset, workers):
             processed_sequences.append(seq)
             processed_qualities.append(qual)
             removed_coords.append(rmc)
+
 
     ProcessedReads = pd.DataFrame(
         {

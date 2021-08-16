@@ -10,6 +10,7 @@ import os
 import pathlib
 import sys
 
+import parmap
 import numpy as np
 import pandas as pd
 import parmap
@@ -20,6 +21,7 @@ from .func import MyHelpFormatter, color
 from .io_ops import IndexReads, WriteOutput
 from .mappreset import FindPreset
 from .version import __version__
+from .cut_reads import End_to_End, End_to_Mid
 
 
 def get_args(givenargs):
@@ -172,7 +174,7 @@ def main():
         )
         sys.exit(1)
     args = get_args(sys.argv[1:])
-    
+
     with cf.ThreadPoolExecutor(max_workers=args.threads) as exec:
         TP_indexreads = exec.submit(IndexReads, args.input)
         TP_PrimerLists = exec.submit(MakeCoordinateLists, args.primers, args.reference)
@@ -182,9 +184,19 @@ def main():
         LeftPrimers, RightPrimers, Fleft, Fright = TP_PrimerLists.result()
         preset = TP_FindPreset.result()
 
+    if len(IndexedReads.index) < 1:
+        ReadDict = IndexedReads.to_dict(orient="records")
+        WriteOutput(args.output, ReadDict)
+        print(
+            f"""
+    {color.RED}AmpliGone was given an empty input file. An empty output file has therefore been generated.
+    Please check the input file to make sure this is correct{color.END}
+    """
+        )
+        sys.exit(0)
+
     IndexedReads.dropna(subset=["Sequence"], inplace=True)
     IndexedReads = IndexedReads.sample(frac=1).reset_index(drop=True)
-    
 
     if args.amplicon_type == "end-to-end":
 

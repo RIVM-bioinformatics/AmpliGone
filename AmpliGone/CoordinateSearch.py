@@ -4,7 +4,9 @@ from itertools import product
 import pandas as pd
 from Bio import SeqIO
 
-
+"""
+ambiguity options used from https://droog.gs.washington.edu/parc/images/iupac.html
+"""
 def FindAmbigousOptions(seq):
     ambigs = {
         "A": ["A"],
@@ -15,7 +17,7 @@ def FindAmbigousOptions(seq):
         "R": ["A", "G"],
         "W": ["A", "T"],
         "S": ["C", "G"],
-        "Y": ["C", "G"],
+        "Y": ["C", "T"],
         "K": ["G", "T"],
         "V": ["A", "C", "G"],
         "H": ["A", "C", "T"],
@@ -34,7 +36,7 @@ def Primer_coordinates(inputprimer, reference):
         startlocs = []
         stoplocs = []
         for option in possible_primers:
-            for match in re.finditer(str(option), str(record.seq)):
+            for match in re.finditer(str(option), str(record.seq), re.IGNORECASE):
                 start_pos = match.start()
                 end_pos = match.end()
                 startlocs.append(start_pos)
@@ -158,7 +160,6 @@ def MakeCoordinateLists(primerfile, ref):
 
     LeftList = []
     RightList = []
-
 
     for index, name in LeftPrimers.iterrows():
         for i in range(len(name.start)):
