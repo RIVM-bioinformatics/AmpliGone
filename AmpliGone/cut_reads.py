@@ -12,7 +12,6 @@ from .cutlery import (
 )
 
 
-
 def End_to_End(data, FWList, RVList, reference, preset, workers):
     Frame, threadnumber = data
 
@@ -31,7 +30,7 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
         name = readnames[i]
         seq = sequences[i]
         qual = qualities[i]
-        
+
         rmc = []
 
         looplimiter = 0
@@ -140,7 +139,6 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
         processed_qualities.append(qual)
         removed_coords.append(rmc)
 
-
     ProcessedReads = pd.DataFrame(
         {
             "Readname": processed_readnames,
@@ -174,7 +172,7 @@ def End_to_Mid(data, FWList, RVList, reference, preset, workers):
         name = readnames[i]
         seq = sequences[i]
         qual = qualities[i]
-        
+
         rmc = []
 
         looplimiter = 0
@@ -242,7 +240,6 @@ def End_to_Mid(data, FWList, RVList, reference, preset, workers):
             processed_sequences.append(seq)
             processed_qualities.append(qual)
             removed_coords.append(rmc)
-
 
     ProcessedReads = pd.DataFrame(
         {

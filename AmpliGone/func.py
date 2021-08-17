@@ -3,6 +3,7 @@ import glob
 import os
 import shutil
 
+
 class MyHelpFormatter(argparse.RawTextHelpFormatter):
     """
     This is a custom formatter class for argparse. It allows for some custom formatting,
