@@ -33,7 +33,7 @@ def FindAmbigousOptions(seq):
 def Primer_coordinates(inputprimer, reference):
     for record in SeqIO.parse(reference, "fasta"):
 
-        possible_primers = FindAmbigousOptions(inputprimer)
+        possible_primers = FindAmbigousOptions(inputprimer.upper())
 
         startlocs = []
         stoplocs = []
