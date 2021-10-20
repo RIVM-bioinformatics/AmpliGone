@@ -404,14 +404,23 @@
                 
                 <h1 id="user-guide">User Guide<a class="headerlink" href="#user-guide" title="Permanent link">&para;</a></h1>
 <h2 id="basic-usage-example">Basic usage example<a class="headerlink" href="#basic-usage-example" title="Permanent link">&para;</a></h2>
-<p>Example 1: removing primers from Nanopore "end-to-end"-amplicon reads, using 12 threads:</p>
-<div class="highlight"><pre><span></span><code>ampligone \
-    --input input.fastq \
-    --output output.fastq \
-    --reference reference.fasta \
-    --primers primers.fasta \
-    --amplicon-type end-to-end \
-    --threads 12
+<p><strong>Example 1</strong>: removing primers from Nanopore "end-to-end"-amplicon reads, using 8 threads:</p>
+<div class="highlight"><pre><span></span><code>ampligone <span class="se">\</span>
+    --input input.fastq <span class="se">\</span>
+    --output output.fastq <span class="se">\</span>
+    --reference reference.fasta <span class="se">\</span>
+    --primers primers.fasta <span class="se">\</span>
+    --amplicon-type end-to-end <span class="se">\</span>
+    --threads <span class="m">8</span>
+</code></pre></div>
+<p><strong>Example 2</strong>: removing primers from Illumina "end-to-mid"-amplicon reads, using 12 threads:</p>
+<div class="highlight"><pre><span></span><code>ampligone <span class="se">\</span>
+    --input input.fastq <span class="se">\</span>
+    --output output.fastq <span class="se">\</span>
+    --reference reference.fasta <span class="se">\</span>
+    --primers primers.fasta <span class="se">\</span>
+    --amplicon-type end-to-mid <span class="se">\</span>
+    --threads <span class="m">12</span>
 </code></pre></div>
                 
               
