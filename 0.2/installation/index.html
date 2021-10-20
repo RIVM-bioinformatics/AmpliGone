@@ -64,6 +64,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#installation-instructions" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -313,10 +318,49 @@
       <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
       
       
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Installation
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
         Installation
       </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#download-and-install-from-source" class="md-nav__link">
+    Download and install from source
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -365,9 +409,24 @@
               
                 
                 
-                  <h1>Installation</h1>
-                
-                
+                <h1 id="installation-instructions">Installation instructions<a class="headerlink" href="#installation-instructions" title="Permanent link">&para;</a></h1>
+<p>AmpliGone is only available on Linux (or Linux-based) operating systems. MacOS may also work but is not tested. AmpliGone will <em>not work</em> on Windows.</p>
+<p>AmpliGone will be made available for installation through Conda and pip. However, this is currently not yet working. We will update these docs when installation through Conda and/or pip is available.</p>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>AmpliGone requires Python 3.7 or later to be installed on your system (or in an environment).</p>
+<p>Other dependencies will be installed during the installation, you don't have to install them manually. These extra dependencies are as follows:
+* pysam&gt;=0.16
+* pandas&gt;=1.2.3
+* numpy&gt;=1.20
+* mappy&gt;=2.17
+* biopython&gt;=1.78
+* parmap&gt;=1.5.2
+* tqdm&gt;=4.59.0</p>
+<p>We strongly advise you to use a conda environment (or similar) to make sure there won't be any conflicts in package dependencies.</p>
+<h2 id="download-and-install-from-source">Download and install from source<a class="headerlink" href="#download-and-install-from-source" title="Permanent link">&para;</a></h2>
+<p>First start by cloning the repository:
+<div class="highlight"><pre><span></span><code>git clone https://github.com/RIVM-bioinformatics/AmpliGone.git<span class="p">;</span> <span class="nb">cd</span> AmpliGone<span class="p">;</span> git checkout tags/v0.2.0
+</code></pre></div></p>
                 
               
               
