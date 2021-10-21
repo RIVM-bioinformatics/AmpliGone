@@ -368,6 +368,13 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#primers" class="md-nav__link">
+    Primers
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#reference" class="md-nav__link">
     Reference
   </a>
@@ -432,6 +439,30 @@ Please see <a href="../amplicon-types/">this page</a> for more information regar
 <p>For optimal results we ask you to format your inputs to make sure you get the best results in your analysis.</p>
 <p>AmpliGone works best with reads that have already been processed by quality filtering tools such as <a href="https://github.com/OpenGene/fastp">fastp</a> or <a href="https://github.com/usadellab/Trimmomatic">Trimmomatic</a>.
 Additionally, its best that sequencing adapters/barcodes have already been removed. Though this is not a <em>requirement</em>. AmpliGone is not designed to remove adapter/barcode data, nor is it really meant for this purpose. That being said, AmpliGone removes data from a certain end of a read, which also includes adapter data if its there.</p>
+<h3 id="primers">Primers<a class="headerlink" href="#primers" title="Permanent link">&para;</a></h3>
+<p>AmpliGone determines whether a given sequence is considered to be a 'forward primer' or a 'reverse primer'. This information is taken from the name of a primer sequence in the FASTA header with specific keywords, the usable keywords are as follows:</p>
+<p><strong>Forward primers</strong></p>
+<ul>
+<li>"LEFT"</li>
+<li>"PLUS"</li>
+<li>"POSITIVE"</li>
+<li>"FORWARD"</li>
+</ul>
+<p><strong>Reverse primers</strong></p>
+<ul>
+<li>"RIGHT"</li>
+<li>"MINUS"</li>
+<li>"NEGATIVE"</li>
+<li>"REVERSE"</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code>&gt;primer_1_LEFT
+ACTGGC
+&gt;primer_2_RIGHT
+GATTCA
+</code></pre></div>
+</div>
 <h3 id="reference">Reference<a class="headerlink" href="#reference" title="Permanent link">&para;</a></h3>
 <h2 id="basic-usage-example">Basic usage example<a class="headerlink" href="#basic-usage-example" title="Permanent link">&para;</a></h2>
 <p><strong>Example 1</strong>: removing primers from Nanopore "end-to-end"-amplicon reads, using 8 threads:</p>
@@ -513,7 +544,7 @@ Additionally, its best that sequencing adapters/barcodes have already been remov
       <div class="md-footer-copyright">
         
           <div class="md-footer-copyright__highlight">
-            copyright © 2021 RIVM
+            Copyright © 2021 RIVM
           </div>
         
         
