@@ -440,6 +440,7 @@ Please see <a href="../amplicon-types/">this page</a> for more information regar
 <p>AmpliGone works best with reads that have already been processed by quality filtering tools such as <a href="https://github.com/OpenGene/fastp">fastp</a> or <a href="https://github.com/usadellab/Trimmomatic">Trimmomatic</a>.
 Additionally, its best that sequencing adapters/barcodes have already been removed. Though this is not a <em>requirement</em>. AmpliGone is not designed to remove adapter/barcode data, nor is it really meant for this purpose. That being said, AmpliGone removes data from a certain end of a read, which also includes adapter data if its there.</p>
 <h3 id="primers">Primers<a class="headerlink" href="#primers" title="Permanent link">&para;</a></h3>
+<p>AmpliGone searches for the primer coordinates based on the given reference. So if a primer sequence is given that cannot be matched to the given reference then the coordinates which have to be removed cannot be determined. It's therefore important that the primers and the reference match eachother.</p>
 <p>AmpliGone determines whether a given sequence is considered to be a 'forward primer' or a 'reverse primer'. This information is taken from the name of a primer sequence in the FASTA header with specific keywords, the usable keywords are as follows:</p>
 <p><strong>Forward primers</strong></p>
 <ul>
@@ -463,7 +464,9 @@ ACTGGC
 GATTCA
 </code></pre></div>
 </div>
+<p>The primer sequences may contain IUPAC ambiguity nucleotides.</p>
 <h3 id="reference">Reference<a class="headerlink" href="#reference" title="Permanent link">&para;</a></h3>
+<p>Unlike the primer sequences, AmpliGone currently only supports a reference that <em>do not</em> contain IUPAC ambiguity nucleotides. This may change in a future version.</p>
 <h2 id="basic-usage-example">Basic usage example<a class="headerlink" href="#basic-usage-example" title="Permanent link">&para;</a></h2>
 <p><strong>Example 1</strong>: removing primers from Nanopore "end-to-end"-amplicon reads, using 8 threads:</p>
 <div class="highlight"><pre><span></span><code>ampligone <span class="se">\</span>
