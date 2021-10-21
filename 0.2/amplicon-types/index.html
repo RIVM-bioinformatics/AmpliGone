@@ -430,7 +430,7 @@ In this case of an "End-to-Mid" amplicon type, primers need to be removed from o
 <p><img alt="" src="../img/amplicon-type_end-to-mid.png" /></p>
 <p>When given the "End-to-Mid" amplicon type, AmpliGone follows the logic that a forward-read may only start at a forward-primer. And a reverse-read may only start at at a reverse-primer.</p>
 <h2 id="why-is-a-more-common-terminology-not-used">Why is a more common terminology not used?<a class="headerlink" href="#why-is-a-more-common-terminology-not-used" title="Permanent link">&para;</a></h2>
-<p>Because we quickly found out that more common terminology doesn't <em>always</em> convey the information that AmpliGone needs in a single keyword or argument. And information such as a sequencing platform doesn't always convey this information either.</p>
+<p>Because we quickly found out that more common terminology such as paired-end/single-end, or short/long read, doesn't <em>always</em> convey the information that AmpliGone needs in a single keyword or argument. And information such as a sequencing platform doesn't always convey this information either.</p>
 <p>As an example: it's most common that primers are only present on one side of a read if the sequencing was performed with "short reads" on an Illumina platform. <strong><em>But that's not necessarily always the case</em></strong>, because depending on the actual experiment setup the primers might actually be on both ends of those short reads.</p>
 <p>With AmpliGone we wanted a way to actually get the information that is required and matches with an experiment design, without the user having to give multiple pieces of information through various command-line arguments.</p>
                 
