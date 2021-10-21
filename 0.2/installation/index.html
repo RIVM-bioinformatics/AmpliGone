@@ -119,7 +119,7 @@
         
           
           
-          <input class="md-option" data-md-color-media="None" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="cyan"  aria-label="Switch light mode"  type="radio" name="__palette" id="__palette_2">
+          <input class="md-option" data-md-color-media="None" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="orange"  aria-label="Switch light mode"  type="radio" name="__palette" id="__palette_2">
           
             <label class="md-header__button md-icon" title="Switch light mode" for="__palette_1" hidden>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3z"/></svg>
@@ -453,7 +453,7 @@ We will update these docs when installation through Conda and/or pip is availabl
 You can verify if installation was successful by typing <code>ampligone --version</code> on the command-line, this should show the installed AmpliGone version.</p>
 <h2 id="pipelineworkflow-integration">Pipeline/workflow integration<a class="headerlink" href="#pipelineworkflow-integration" title="Permanent link">&para;</a></h2>
 <p>You can easily integrate AmpliGone in your snakemake bioinformatics workflow if you use Conda environments in your workflow.</p>
-<p>To do this, simply add the following structure to your conda-environment recipe, replace <code>{VERSION}</code> with the AmpliGone version you wish to use, you can find a list of released versions <a href="https://github.com/RIVM-bioinformatics/AmpliGone/releases">here</a>:</p>
+<p>To do this, simply add the following structure to your conda-environment recipe, replace <code>{VERSION}</code> with the AmpliGone version you wish to use:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">dependencies</span><span class="p">:</span>
     <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">pip</span>
     <span class="p p-Indicator">-</span> <span class="nt">pip</span><span class="p">:</span>
