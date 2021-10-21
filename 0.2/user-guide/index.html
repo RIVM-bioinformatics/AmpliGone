@@ -400,6 +400,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#using-multiple-threads" class="md-nav__link">
+    Using multiple threads
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -540,6 +547,11 @@ Using this flag will give you a CSV-file with found primer coordinates as in the
     --threads <span class="m">12</span>
 </code></pre></div>
 </div>
+<h2 id="using-multiple-threads">Using multiple threads<a class="headerlink" href="#using-multiple-threads" title="Permanent link">&para;</a></h2>
+<p>AmpliGone is multi-threaded by design, as it splits your input data to process over the amount of threads which are available for use.<br />
+Therefore, AmpliGone scales (almost) linearly when given more threads. A computer with a lot of computing power is therefore advised.</p>
+<p>AmpliGone defaults to the amount of threads which are available in your system. (if the CPU of your computer has 24 threads, AmpliGone will use all 24 threads by default)<br />
+You can use the <code>--threads</code> or <code>-t</code> flag to set a different number of threads to use. </p>
                 
               
               
