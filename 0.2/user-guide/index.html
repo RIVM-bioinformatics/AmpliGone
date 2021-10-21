@@ -393,6 +393,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#exporting-found-primer-coordinates" class="md-nav__link">
+    Exporting found primer coordinates
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -486,6 +493,10 @@ GATTCA
     --amplicon-type end-to-mid <span class="se">\</span>
     --threads <span class="m">12</span>
 </code></pre></div>
+<h2 id="exporting-found-primer-coordinates">Exporting found primer coordinates<a class="headerlink" href="#exporting-found-primer-coordinates" title="Permanent link">&para;</a></h2>
+<p>In a downstream analysis you might want to know which primers have actually been removed from which coordinates by AmpliGone.<br />
+AmpliGone can provide you with this information with the <code>--export-primers</code>/<code>-ep</code> flag. 
+This flag, combined with a desired output file will give you a CSV file with the information as given below. </p>
 <table>
 <thead>
 <tr>
@@ -517,6 +528,18 @@ GATTCA
 </tr>
 </tbody>
 </table>
+<div class="admonition example">
+<p class="admonition-title">Example command</p>
+<div class="highlight"><pre><span></span><code>ampligone <span class="se">\</span>
+    --input input.fastq <span class="se">\</span>
+    --output output.fastq <span class="se">\</span>
+    --reference reference.fasta <span class="se">\</span>
+    --primers primers.fasta <span class="se">\</span>
+    --amplicon-type end-to-end <span class="se">\</span>
+    --export-primers removed_coordinates.csv <span class="se">\</span>
+    --threads <span class="m">12</span>
+</code></pre></div>
+</div>
                 
               
               
