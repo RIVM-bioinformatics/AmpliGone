@@ -24,7 +24,7 @@ setup(
     install_requires=[
         'pysam>=0.16',
         'pandas>=1.2.3',
-        'numpy>=1.20'
+        'numpy>=1.20',
         'mappy>=2.17',
         'biopython>=1.78',
         'parmap>=1.5.2',
