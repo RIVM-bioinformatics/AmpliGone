@@ -1,0 +1,6 @@
+# This file is only used for requirements of the documentation site
+# please do not use this requirements file for other installations
+mkdocs
+mike
+mkdocs-material
+mkdocs-material-extensions

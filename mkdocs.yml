@@ -1,0 +1,90 @@
+site_name: AmpliGone
+repo_name: RIVM-bioinformatics/AmpliGone
+repo_url: https://github.com/RIVM-bioinformatics/AmpliGone
+copyright: Copyright © 2021 RIVM
+edit_uri: ""
+
+theme:
+  name: material
+  language: en
+  icon:
+    logo: material/dna
+
+# standard config settings
+  features:
+      - navigation.tabs
+      - navigation.tabs.sticky
+      - navigation.instant
+      - toc.integrate
+      - navigation.top
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: light blue
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: red
+      accent: orange
+      toggle:
+        icon: material/toggle-switch
+        name: Switch light mode
+  font:
+      text: Roboto
+      code: Roboto Mono
+  plugins:
+      - search
+      - awesome-pages
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - User guide: user-guide.md
+  - Amplicon types: amplicon-types.md
+
+# extensions
+markdown_extensions:
+    - meta
+    - markdown.extensions.admonition
+    - markdown.extensions.attr_list
+    - markdown.extensions.codehilite:
+        guess_lang: false
+    - markdown.extensions.def_list
+    - markdown.extensions.footnotes
+    - markdown.extensions.meta
+    - markdown.extensions.toc:
+        permalink: true
+    - pymdownx.arithmatex
+    - pymdownx.betterem:
+        smart_enable: all
+    - pymdownx.caret
+    - pymdownx.critic
+    - pymdownx.details
+    - pymdownx.emoji:
+        emoji_index: !!python/name:materialx.emoji.twemoji
+        emoji_generator: !!python/name:materialx.emoji.to_svg
+    # - pymdownx.highlight:
+    #     linenums_style: pymdownx-inline
+    - pymdownx.inlinehilite
+    - pymdownx.keys
+    - pymdownx.magiclink:
+        repo_url_shorthand: true
+        social_url_shorthand: true
+        user: RIVM-bioinformatics
+        repo: AmpliGone
+    - pymdownx.mark
+    - pymdownx.smartsymbols
+    - pymdownx.snippets:
+        check_paths: true
+    - pymdownx.superfences
+    - pymdownx.tabbed
+    - pymdownx.tasklist:
+        custom_checkbox: true
+    - pymdownx.tilde
+
+extra:
+  version:
+    provider: mike
