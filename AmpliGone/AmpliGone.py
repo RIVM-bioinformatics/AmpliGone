@@ -108,15 +108,15 @@ def get_args(givenargs):
         help="Define the amplicon-type, either being 'end-to-end' or 'end-to-mid'.\nSee the docs for more info",
         required=True,
     )
-    
+
     parser.add_argument(
         "--export-primers",
         "-ep",
         metavar="File",
         help="Output csv file with found primer coordinates",
-        required=False
+        required=False,
     )
-    
+
     parser.add_argument(
         "--threads",
         "-t",
@@ -220,12 +220,14 @@ def main():
             preset,
         )
         ProcessedReads.reset_index(drop=True)
-    
+
     if args.export_primers is not None:
-        WritePrimerExports(Fleft, Fright, ProcessedReads['Removed_coordinates'], args.export_primers)
+        WritePrimerExports(
+            Fleft, Fright, ProcessedReads["Removed_coordinates"], args.export_primers
+        )
 
     ProcessedReads = ProcessedReads.drop(columns=["Removed_coordinates"])
-    
+
     ReadDict = ProcessedReads.to_dict(orient="records")
 
     WriteOutput(args.output, ReadDict)

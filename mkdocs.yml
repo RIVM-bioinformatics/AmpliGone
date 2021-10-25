@@ -44,6 +44,7 @@ nav:
   - Installation: installation.md
   - User guide: user-guide.md
   - Amplicon types: amplicon-types.md
+  - Changelog: changelog.md
 
 # extensions
 markdown_extensions:

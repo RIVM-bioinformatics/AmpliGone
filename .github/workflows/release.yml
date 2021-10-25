@@ -1,0 +1,54 @@
+name: Build and release
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  bump-version:
+    name: Release version
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: GoogleCloudPlatform/release-please-action@v2
+        id: release
+        with:
+          release-type: python
+          package-name: AmpliGone
+
+  update-docs:
+    needs: bump-version
+    name: Update docs
+    runs-on: ubuntu-latest
+    if: "contains(github.event.head_commit.message, 'chore:')"
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+
+      - name: Copy Changelog
+        uses: canastro/copy-file-action@master
+        with:
+          source: "CHANGELOG.md"
+          target: "docs/changelog.md"
+
+      - name: Setup Git
+        run: |
+          git config --global user.name "Github Actions"
+          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r docs-requirements.txt
+
+      - name: Publish docs
+        run: |
+          mike deploy --config-file mkdocs.yml --push --force --update-aliases $(git tag --sort=committerdate | tail -1 | sed 's/v//') latest

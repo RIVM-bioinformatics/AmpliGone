@@ -1,4 +1,3 @@
-
 from concurrent.futures import ThreadPoolExecutor
 
 from .io_ops import ReadsToList
@@ -60,22 +59,22 @@ def FindPreset(inputfile, threads):
 
     if SequenceStability(QualRange, LengthRange, avg_qual, avg_len) > 97:
         if IsLongRead(avg_len) is False:
-            # this is probably 'short read' illumina NextSeq data 
+            # this is probably 'short read' illumina NextSeq data
             # --> set the 'SR' preset
             preset = "sr"
         elif IsLongRead(avg_len) is True:
-            # this is probably 'long read' illumina MiSeq data 
+            # this is probably 'long read' illumina MiSeq data
             # --> the 'SR' preset still applies but we keep it split
             # in case a custom set of parameters is necessary in the future
             preset = "sr"
     else:
         if IsLongRead(avg_len) is True:
-            # this is probably oxford nanopore data 
+            # this is probably oxford nanopore data
             # --> set the preset to 'map-ont'
             preset = "map-ont"
         if IsLongRead(avg_len) is False:
-            # this might be very 'unstable' nextseq data, 
-            # or from a platform we currently dont really support officially. 
+            # this might be very 'unstable' nextseq data,
+            # or from a platform we currently dont really support officially.
             # fallback to 'sr' preset
             preset = "sr"
     return preset

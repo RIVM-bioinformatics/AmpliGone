@@ -8,8 +8,6 @@ if sys.version_info.major != 3 or sys.version_info.minor < 7:
     print("Error: you must execute setup.py using Python 3.7 or later")
     sys.exit(1)
 
-#exec(open("AmpliGone/version.py").read())
-
 with open("README.md", "rb") as readme:
     DESCR = readme.read().decode()
 
@@ -18,7 +16,7 @@ setup(
     name="AmpliGone",
     version=__version__,
     author='Florian Zwagemaker',
-    author_email='rivm-bioinformatics@rivm.nl',
+    author_email='ids-bioinformatics@rivm.nl',
     license='AGPLv3',
     packages=find_packages(),
     install_requires=[
