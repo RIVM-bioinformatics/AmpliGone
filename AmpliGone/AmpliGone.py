@@ -64,8 +64,10 @@ def get_args(givenargs):
     )
 
     standard_threads = min(multiprocessing.cpu_count(), 128)
+    
+    required_args = parser.add_argument_group("Required Arguments")
 
-    parser.add_argument(
+    required_args.add_argument(
         "--input",
         "-i",
         type=lambda s: fastq_or_bam(
@@ -76,7 +78,7 @@ def get_args(givenargs):
         required=True,
     )
 
-    parser.add_argument(
+    required_args.add_argument(
         "--output",
         "-o",
         type=lambda s: fastq_output((".fastq", ".fq"), s),
@@ -85,7 +87,7 @@ def get_args(givenargs):
         required=True,
     )
 
-    parser.add_argument(
+    required_args.add_argument(
         "--reference",
         "-ref",
         type=lambda s: fasta_input((".fasta", ".fa"), s),
@@ -93,7 +95,7 @@ def get_args(givenargs):
         help="Input Reference genome in FASTA format",
         required=True,
     )
-    parser.add_argument(
+    required_args.add_argument(
         "--primers",
         "-pr",
         type=lambda s: fasta_input((".fasta", ".fa"), s),
@@ -101,7 +103,7 @@ def get_args(givenargs):
         help="Used primer sequences in FASTA format",
         required=True,
     )
-    parser.add_argument(
+    required_args.add_argument(
         "--amplicon-type",
         "-at",
         const="end-to-end",
@@ -110,8 +112,10 @@ def get_args(givenargs):
         help="Define the amplicon-type, either being 'end-to-end' or 'end-to-mid'.\nSee the docs for more info",
         required=True,
     )
+    
+    optional_args = parser.add_argument_group("Optional Arguments")
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--export-primers",
         "-ep",
         metavar="File",
@@ -119,7 +123,7 @@ def get_args(givenargs):
         required=False,
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--threads",
         "-t",
         type=int,
@@ -128,7 +132,7 @@ def get_args(givenargs):
         help=f"Number of threads you wish to use.\nDefault is the number of available threads in your system ({standard_threads})",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--version",
         "-v",
         action="version",
@@ -136,12 +140,19 @@ def get_args(givenargs):
         help="Show the AmpliGone version and exit",
     )
 
-    parser.add_argument(
+    optional_args.add_argument(
         "--help",
         "-h",
         action="help",
         default=argparse.SUPPRESS,
         help="Show this help message and exit",
+    )
+    
+    optional_args.add_argument(
+        "-to",
+        action="store_true",
+        help="If set, AmpliGone will always create the output files even if there is nothing to output. (for example when an empty input-file is given)\nThis is useful in (automated) pipelines where you want to make sure that the output files are always created.",
+        required=False
     )
 
     flags = parser.parse_args(givenargs)
@@ -184,16 +195,31 @@ def main():
         LeftPrimers, RightPrimers, Fleft, Fright = TP_PrimerLists.result()
         preset = TP_FindPreset.result()
 
-    if len(IndexedReads.index) < 1:
+    if len(IndexedReads.index) < 1 and args.to is True:
         ReadDict = IndexedReads.to_dict(orient="records")
         WriteOutput(args.output, ReadDict)
+        if args.export_primers is not None:
+            with open(args.export_primers, "w") as f:
+                f.write("")
         print(
             f"""
-    {color.RED}AmpliGone was given an empty input file. An empty output file has therefore been generated.
-    Please check the input file to make sure this is correct{color.END}
+    {color.RED}AmpliGone was given an empty input file but the '-to' flag was given.
+    {color.YELLOW}One or multiple empty output file(s) have therefore been generated.
+    {color.RED}Please check the input file to make sure this is correct{color.END}
     """
         )
         sys.exit(0)
+    elif len(IndexedReads.index) < 1:
+        print(
+            f"""
+    {color.RED}AmpliGone was given an empty input file. Exiting...
+    Please check the input file to make sure this is correct{color.END}
+    
+    {color.YELLOW}Use the -to flag to force AmpliGone to create an output file even if there is nothing to output.{color.END}
+    """
+        )
+        sys.exit(0)
+
 
     IndexedReads.dropna(subset=["Sequence"], inplace=True)
     IndexedReads = IndexedReads.sample(frac=1).reset_index(drop=True)
