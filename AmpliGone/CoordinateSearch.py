@@ -53,8 +53,8 @@ def Primer_coordinates(inputprimer, reference):
 
 
 def find_orient(primerfile, ref):
-    left = ["LEFT", "PLUS", "POSITIVE"]
-    right = ["RIGHT", "MINUS", "NEGATIVE"]
+    left = ["LEFT", "PLUS", "POSITIVE", "FORWARD"]
+    right = ["RIGHT", "MINUS", "NEGATIVE", "REVERSE"]
 
     FrameLeft = pd.DataFrame([])
     FrameRight = pd.DataFrame([])

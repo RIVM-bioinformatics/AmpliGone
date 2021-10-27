@@ -107,3 +107,15 @@ Therefore, AmpliGone scales (almost) linearly when given more threads. A compute
 
 AmpliGone defaults to the amount of threads which are available in your system. (if the CPU of your computer has 24 threads, AmpliGone will use all 24 threads by default)  
 You can use the `--threads` or `-t` flag to set a different number of threads to use. 
+
+
+## Using AmpliGone in a pipeline/workflow
+
+In pipelines it's often required to that output-files are always created, even if they are empty.
+AmpliGone has the `-to` flag for this. Which stands for 'touch-outputs'.
+
+When this flag is given, AmpliGone will *always* create the output-files. Even if AmpliGone would normally fail because of (for example) an empty input file or when primer-sequences couldn't be found on the reference.
+
+!!! warning "Please use with caution"
+    Using the `-to` flag will ensure that output-files are always created.  
+    But because of this, common errors may go unnoticed more easily. Please test your experiment setup manually before integrating it in a pipeline
