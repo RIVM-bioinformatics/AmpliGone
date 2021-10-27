@@ -1,5 +1,7 @@
 """
->> insert copyright notices here
+Copyright © 2021 RIVM
+
+https://github.com/RIVM-bioinformatics/AmpliGone
 """
 
 
