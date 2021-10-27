@@ -208,7 +208,7 @@ def main():
     {color.RED}Please check the input file to make sure this is correct{color.END}
     """
         )
-        sys.exit(0)
+        sys.exit(1)
     elif len(IndexedReads.index) < 1:
         print(
             f"""
@@ -218,7 +218,17 @@ def main():
     {color.YELLOW}Use the -to flag to force AmpliGone to create an output file even if there is nothing to output.{color.END}
     """
         )
-        sys.exit(0)
+        sys.exit(1)
+        
+    if len(LeftPrimers) < 1 and len(RightPrimers) < 1:
+        print(
+            f"""
+    {color.RED}AmpliGone was unable to match any primers to the reference. AmpliGone is therefore unable to remove primers from the reads.
+    {color.RED}Please check the primers and reference to make sure this is correct
+    {color.RED}Exiting...{color.END}
+    """
+        )
+        sys.exit(1)
 
 
     IndexedReads.dropna(subset=["Sequence"], inplace=True)
