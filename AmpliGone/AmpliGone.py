@@ -64,7 +64,7 @@ def get_args(givenargs):
     )
 
     standard_threads = min(multiprocessing.cpu_count(), 128)
-    
+
     required_args = parser.add_argument_group("Required Arguments")
 
     required_args.add_argument(
@@ -112,7 +112,7 @@ def get_args(givenargs):
         help="Define the amplicon-type, either being 'end-to-end' or 'end-to-mid'.\nSee the docs for more info",
         required=True,
     )
-    
+
     optional_args = parser.add_argument_group("Optional Arguments")
 
     optional_args.add_argument(
@@ -147,12 +147,12 @@ def get_args(givenargs):
         default=argparse.SUPPRESS,
         help="Show this help message and exit",
     )
-    
+
     optional_args.add_argument(
         "-to",
         action="store_true",
         help="If set, AmpliGone will always create the output files even if there is nothing to output. (for example when an empty input-file is given)\nThis is useful in (automated) pipelines where you want to make sure that the output files are always created.",
-        required=False
+        required=False,
     )
 
     flags = parser.parse_args(givenargs)
@@ -219,7 +219,7 @@ def main():
     """
         )
         sys.exit(1)
-        
+
     if len(LeftPrimers) < 1 and len(RightPrimers) < 1:
         print(
             f"""
@@ -229,7 +229,6 @@ def main():
     """
         )
         sys.exit(1)
-
 
     IndexedReads.dropna(subset=["Sequence"], inplace=True)
     IndexedReads = IndexedReads.sample(frac=1).reset_index(drop=True)
