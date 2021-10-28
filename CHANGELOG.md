@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.2.3](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v0.2.2...v0.2.3) (2021-10-28)
+
+
+### Bug Fixes
+
+* set correct exit code when `-to` flag is given ([5a93ff0](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/5a93ff00ac3c4d19f635a8564efd21a5e9166e01))
+
 ### [0.2.2](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v0.2.1...v0.2.2) (2021-10-27)
 
 
