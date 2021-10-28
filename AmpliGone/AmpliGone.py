@@ -208,7 +208,7 @@ def main():
     {color.RED}Please check the input file to make sure this is correct{color.END}
     """
         )
-        sys.exit(1)
+        sys.exit(0)
     elif len(IndexedReads.index) < 1:
         print(
             f"""
