@@ -16,8 +16,7 @@ from .cutlery import (
 
 
 def End_to_End(data, FWList, RVList, reference, preset, workers):
-    Frame, threadnumber = data
-    FWSet, RVSet = set(FWList), set(RVList)
+    Frame, _threadnumber = data
 
     readnames = Frame["Readname"].tolist()
     sequences = Frame["Sequence"].tolist()
@@ -29,8 +28,6 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
     processed_sequences = []
     processed_qualities = []
     removed_coords = []
-
-    new_method = 0
 
     for i in range(len(readnames)):
         name = readnames[i]
@@ -46,121 +43,49 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
             looplimiter += 1
 
             if hit.strand == 1:
-                reverse = False
+                forward = True
             if hit.strand == -1:
-                reverse = True
+                forward = False
 
             start = hit.r_st
             end = hit.r_en
 
-            if reverse is False:
-                if ReadInOrAfterPrimer(end, RVList):
-                    seq_pos_to_cut = len(seq)
-                    ref_pos_to_cut = end
-                    for hit2 in Aln.map(seq):
-                        for cigar_len, cigar_type in reversed(hit2.cigar):
-                            if not ReadInOrAfterPrimer(ref_pos_to_cut, RVList):
-                                break
-                            while cigar_len > 0 and ReadInOrAfterPrimer(ref_pos_to_cut, RVList):
-                                cigar_len -= 1
-                                if cigar_type == 0 or cigar_type == 3: # MATCH or MISMATCH
-                                    seq_pos_to_cut -= 1
-                                    ref_pos_to_cut -= 1
-                                elif cigar_type == 1: # Insertion in seq
-                                    seq_pos_to_cut -= 1
-                                elif cigar_type == 2: # Deletion in seq
-                                    ref_pos_to_cut -= 1
-                                else:
-                                    raise ValueError(f'Error in finding position to cut read:\nCigar type {cigar_type} does not exist')
-                        seq = seq[:seq_pos_to_cut]
-                        qual = qual[:seq_pos_to_cut]
-                        new_method += 1
+            if forward:
+                forward_modifier = 1
+            else:
+                forward_modifier = -1
 
-                if ReadInOrBeforePrimer(start, FWList):
+            for FindFunction, PrimerList, ref_pos_to_cut, cut_front_modifier in (
+                    [ReadInOrAfterPrimer, RVList, end, -1], # It is important that the end is cut first, as otherwise the end coordinate changes
+                    [ReadInOrBeforePrimer, FWList, start, 1],
+                    ):
+
+                if forward_modifier*cut_front_modifier == 1:
                     seq_pos_to_cut = 0
-                    ref_pos_to_cut = start
-                    for cigar_len, cigar_type in hit.cigar:
-                        if not ReadInOrBeforePrimer(ref_pos_to_cut, FWList):
-                            break
-                        while cigar_len > 0 and ReadInOrBeforePrimer(ref_pos_to_cut, FWList):
-                            cigar_len -= 1
-                            if cigar_type == 0 or cigar_type == 3: # MATCH or MISMATCH
-                                seq_pos_to_cut += 1
-                                ref_pos_to_cut += 1
-                            elif cigar_type == 1: # Insertion in seq
-                                seq_pos_to_cut += 1
-                            elif cigar_type == 2: # Deletion in seq
-                                ref_pos_to_cut += 1
-                            else:
-                                raise ValueError(f'Error in finding position to cut read:\nCigar type {cigar_type} does not exist')
+                else:
+                    seq_pos_to_cut = len(seq)
+
+                cigar = hit.cigar
+                if cut_front_modifier == -1:
+                    cigar = reversed(cigar)
+
+                for cigar_len, cigar_type in cigar:
+                    if not FindFunction(ref_pos_to_cut, PrimerList):
+                        break
+                    while cigar_len > 0 and FindFunction(ref_pos_to_cut, PrimerList):
+                        cigar_len -= 1
+
+                        if cigar_type in (0,1,4):
+                            seq_pos_to_cut += forward_modifier*cut_front_modifier
+                        if cigar_type in (0,2,3):
+                            ref_pos_to_cut += cut_front_modifier
+
+                if forward_modifier*cut_front_modifier == 1:
                     seq = seq[seq_pos_to_cut:]
                     qual = qual[seq_pos_to_cut:]
-                    new_method += 1
-
-            if reverse is True:
-
-                if ReadInOrBeforePrimer(start, FWList):
-                    seq_pos_to_cut = len(seq)
-                    ref_pos_to_cut = start
-                    for hit2 in Aln.map(seq):
-                        for cigar_len, cigar_type in hit2.cigar:
-                            if not ReadInOrBeforePrimer(ref_pos_to_cut, FWList):
-                                break
-                            while cigar_len > 0 and ReadInOrBeforePrimer(ref_pos_to_cut, FWList):
-                                cigar_len -= 1
-                                if cigar_type == 0 or cigar_type == 3: # MATCH or MISMATCH
-                                    seq_pos_to_cut -= 1
-                                    ref_pos_to_cut += 1
-                                elif cigar_type == 1: # Insertion in seq
-                                    seq_pos_to_cut -= 1
-                                elif cigar_type == 2: # Deletion in seq
-                                    ref_pos_to_cut += 1
-                                else:
-                                    raise ValueError(f'Error in finding position to cut read:\nCigar type {cigar_type} does not exist')
-                        seq = seq[:seq_pos_to_cut]
-                        qual = qual[:seq_pos_to_cut]
-                        new_method += 1
-
-                if ReadInOrAfterPrimer(end, RVList):
-                    seq_pos_to_cut = 0
-                    ref_pos_to_cut = end
-                    for hit2 in Aln.map(seq):
-                        for cigar_len, cigar_type in hit2.cigar:
-                            if not ReadInOrAfterPrimer(ref_pos_to_cut, RVList):
-                                break
-                            while cigar_len > 0 and ReadInOrAfterPrimer(ref_pos_to_cut, RVList):
-                                cigar_len -= 1
-                                if cigar_type == 0 or cigar_type == 3: # MATCH or MISMATCH
-                                    seq_pos_to_cut += 1
-                                    ref_pos_to_cut -= 1
-                                elif cigar_type == 1: # Insertion in seq
-                                    seq_pos_to_cut += 1
-                                elif cigar_type == 2: # Deletion in seq
-                                    ref_pos_to_cut -= 1
-                                else:
-                                    raise ValueError(f'Error in finding position to cut read:\nCigar type {cigar_type} does not exist')
-                        seq = seq[seq_pos_to_cut:]
-                        qual = qual[seq_pos_to_cut:]
-                        new_method += 1
-
-                # while ReadAfterPrimer(end, RVList) is True:
-                #     seq, qual, end = slice_rv_right(end, seq, qual)
-                #     hitlimit = 0
-                #     for hit2 in Aln.map(seq):
-                #         if hitlimit != 0:
-                #             continue
-                #         hitlimit += 1
-                #         end = hit2.r_en
-
-                # while (end in RVSet) is True:
-                #     rmc.append(end)
-                #     seq, qual, end = slice_rv_right(end, seq, qual)
-                #     hitlimit = 0
-                #     for hit2 in Aln.map(seq):
-                #         if hitlimit != 0:
-                #             continue
-                #         hitlimit += 1
-                #         end = hit2.r_en
+                else:
+                    seq = seq[:seq_pos_to_cut]
+                    qual = qual[:seq_pos_to_cut]
 
         if len(seq) < 5:
             seq = np.nan
@@ -172,7 +97,6 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
         processed_qualities.append(qual)
         removed_coords.append(rmc)
 
-    print(f"Removed with new_method: {new_method}")
     ProcessedReads = pd.DataFrame(
         {
             "Readname": processed_readnames,
