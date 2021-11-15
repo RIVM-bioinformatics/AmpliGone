@@ -7,25 +7,16 @@ import pysam
 
 
 def is_zipped(filename):
-    if ".gz" in pathlib.Path(filename).suffixes:
-        return True
-    else:
-        return False
+    return bool(".gz" in pathlib.Path(filename).suffixes)
 
 
 def is_fastq(filename):
-    fqextenstions = [".fastq", ".fq"]
-    if any(item in fqextenstions for item in pathlib.Path(filename).suffixes) is True:
-        return True
-    else:
-        return False
+    ext = [".fastq", ".fq"]
+    return bool(any(item in ext for item in pathlib.Path(filename).suffixes))
 
 
 def is_bam(filename):
-    if ".bam" in pathlib.Path(filename).suffixes:
-        return True
-    else:
-        return False
+    return bool(".bam" in pathlib.Path(filename).suffixes)
 
 
 def read_gzip(filename):
@@ -97,10 +88,9 @@ def LoadData(inputfile):
 
 
 def IndexReads(inputfile):
-    ReadIndex = pd.DataFrame.from_records(
+    return pd.DataFrame.from_records(
         LoadData(inputfile), columns=["Readname", "Sequence", "Qualities"]
     )
-    return ReadIndex
 
 
 def WriteOutput(output, ReadDict):
@@ -113,4 +103,3 @@ def WriteOutput(output, ReadDict):
                     fileout.write(str(ReadDict[index][key]) + "\n" + "+" + "\n")
                 if key == "Qualities":
                     fileout.write(str(ReadDict[index][key]) + "\n")
-    pass

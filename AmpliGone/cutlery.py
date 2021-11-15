@@ -9,8 +9,7 @@ def ReadBeforePrimer(pos, clist):
     near = min(clist, key=d)
     if pos <= near:
         return True
-    else:
-        return False
+    return False
 
 
 @lru_cache(maxsize=2000000)
@@ -21,8 +20,7 @@ def ReadAfterPrimer(pos, clist):
     near = min(clist, key=d)
     if pos >= near:
         return True
-    else:
-        return False
+    return False
 
 
 @lru_cache(maxsize=600000)

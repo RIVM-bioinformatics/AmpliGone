@@ -35,9 +35,8 @@ def get_args(givenargs):
             if ext not in choices:
                 parser.error("Input file doesn't end with one of {}".format(choices))
             return fname
-        else:
-            print(f'"{fname}" is not a file. Exiting...')
-            sys.exit(-1)
+        print(f'"{fname}" is not a file. Exiting...')
+        sys.exit(-1)
 
     def fastq_output(choices, fname):
         ext = "".join(pathlib.Path(fname).suffixes)
@@ -51,9 +50,8 @@ def get_args(givenargs):
             if ext not in choices:
                 parser.error("Input file doesn't end with one of {}".format(choices))
             return fname
-        else:
-            print(f'"{fname}" is not a file. Exiting...')
-            sys.exit(-1)
+        print(f'"{fname}" is not a file. Exiting...')
+        sys.exit(-1)
 
     parser = argparse.ArgumentParser(
         prog="AmpliGone",
@@ -186,9 +184,9 @@ def main():
         sys.exit(1)
     args = get_args(sys.argv[1:])
 
-    with cf.ThreadPoolExecutor(max_workers=args.threads) as exec:
-        TP_indexreads = exec.submit(IndexReads, args.input)
-        TP_PrimerLists = exec.submit(MakeCoordinateLists, args.primers, args.reference)
+    with cf.ThreadPoolExecutor(max_workers=args.threads) as ex:
+        TP_indexreads = ex.submit(IndexReads, args.input)
+        TP_PrimerLists = ex.submit(MakeCoordinateLists, args.primers, args.reference)
 
         IndexedReads = TP_indexreads.result()
         LeftPrimers, RightPrimers, Fleft, Fright = TP_PrimerLists.result()
