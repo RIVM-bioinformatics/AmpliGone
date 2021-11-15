@@ -35,13 +35,16 @@ def read_gzip(filename):
 def read_fastq(filename):
     return open(filename, "rt")
 
+
 def fastq_opener(inputfile):
     if is_zipped(inputfile) is True:
         return read_gzip(inputfile)
     return read_fastq(inputfile)
 
+
 def LoadBam(inputfile):
     return pysam.AlignmentFile(inputfile, "rb")
+
 
 def FlipStrand(seq, qual):
     complement = {"A": "T", "C": "G", "G": "C", "T": "A", "N": "N"}
@@ -64,27 +67,27 @@ def LoadData(inputfile):
                 seq = next(fq).strip()
                 next(fq)
                 qual = next(fq).strip()
-                
+
                 Reads.append((name, seq, qual))
         return Reads
     elif is_bam(inputfile) is True:
         for read in LoadBam(inputfile):
             if read.is_unmapped is True:
                 continue
-            
+
             name = read.query_name
             seq = read.query_sequence
             qual = "".join(map(lambda x: chr(x + 33), read.query_qualities))
-            
+
             if read.is_reverse is True:
                 seq, qual = FlipStrand(seq, qual)
-            
+
             if len(seq) != len(qual):
                 continue
-        
+
             if len(seq) == 0:
                 continue
-            
+
             Reads.append((name, seq, qual))
         return Reads
     print(
@@ -94,7 +97,9 @@ def LoadData(inputfile):
 
 
 def IndexReads(inputfile):
-    ReadIndex = pd.DataFrame.from_records(LoadData(inputfile), columns=["Readname", "Sequence", "Qualities"])
+    ReadIndex = pd.DataFrame.from_records(
+        LoadData(inputfile), columns=["Readname", "Sequence", "Qualities"]
+    )
     return ReadIndex
 
 

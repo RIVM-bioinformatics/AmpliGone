@@ -234,8 +234,10 @@ def main():
         )
         sys.exit(1)
 
-    #Todo: split this over two threads if possible
-    preset = FindPreset(args.threads, IndexedReads.sample(frac=0.3)) #Todo: Make this more efficient
+    # Todo: split this over two threads if possible
+    preset = FindPreset(
+        args.threads, IndexedReads.sample(frac=0.3)
+    )  # Todo: Make this more efficient
     IndexedReads = IndexedReads.sample(frac=1).reset_index(drop=True)
 
     if args.amplicon_type == "end-to-end":

@@ -37,11 +37,17 @@ def IsLongRead(avg_len):
     elif avg_len < 300:
         return False
 
+
 def FindPreset(threads, data):
-    
-    ReadList = data['Sequence'].tolist()
-    QualList = [ord(character) - 33 for character in [x for y in [list(item) for item in data['Qualities'].tolist()] for x in y]]
-    
+
+    ReadList = data["Sequence"].tolist()
+    QualList = [
+        ord(character) - 33
+        for character in [
+            x for y in [list(item) for item in data["Qualities"].tolist()] for x in y
+        ]
+    ]
+
     if len(ReadList) < 1:
         return None
 
