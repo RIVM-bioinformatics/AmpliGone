@@ -189,11 +189,9 @@ def main():
     with cf.ThreadPoolExecutor(max_workers=args.threads) as exec:
         TP_indexreads = exec.submit(IndexReads, args.input)
         TP_PrimerLists = exec.submit(MakeCoordinateLists, args.primers, args.reference)
-        TP_FindPreset = exec.submit(FindPreset, args.input, args.threads)
 
         IndexedReads = TP_indexreads.result()
         LeftPrimers, RightPrimers, Fleft, Fright = TP_PrimerLists.result()
-        preset = TP_FindPreset.result()
 
     if len(IndexedReads.index) < 1 and args.to is True:
         ReadDict = IndexedReads.to_dict(orient="records")
@@ -219,6 +217,12 @@ def main():
     """
         )
         sys.exit(1)
+    else:
+        print(
+            f"""
+    Succesfully loaded {color.BOLD + color.GREEN}{len(IndexedReads.index)}{color.END} reads.
+            """
+        )
 
     if len(LeftPrimers) < 1 and len(RightPrimers) < 1:
         print(
@@ -230,7 +234,8 @@ def main():
         )
         sys.exit(1)
 
-    IndexedReads.dropna(subset=["Sequence"], inplace=True)
+    #Todo: split this over two threads if possible
+    preset = FindPreset(args.threads, IndexedReads.sample(frac=0.3)) #Todo: Make this more efficient
     IndexedReads = IndexedReads.sample(frac=1).reset_index(drop=True)
 
     if args.amplicon_type == "end-to-end":

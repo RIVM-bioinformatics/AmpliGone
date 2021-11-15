@@ -1,7 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
 
-from .io_ops import ReadsToList
-
 
 def Calculate_avg_seq_len(Slist):
     return sum(map(len, Slist)) / float(len(Slist))
@@ -39,10 +37,11 @@ def IsLongRead(avg_len):
     elif avg_len < 300:
         return False
 
-
-def FindPreset(inputfile, threads):
-    ReadList, QualList = ReadsToList(inputfile)
-
+def FindPreset(threads, data):
+    
+    ReadList = data['Sequence'].tolist()
+    QualList = [ord(character) - 33 for character in [x for y in [list(item) for item in data['Qualities'].tolist()] for x in y]]
+    
     if len(ReadList) < 1:
         return None
 
@@ -56,7 +55,6 @@ def FindPreset(inputfile, threads):
         avg_qual = TP_averagequal.result()
         QualRange = TP_qualityrange.result()
         LengthRange = TP_lengthrange.result()
-
     if SequenceStability(QualRange, LengthRange, avg_qual, avg_len) > 97:
         if IsLongRead(avg_len) is False:
             # this is probably 'short read' illumina NextSeq data
