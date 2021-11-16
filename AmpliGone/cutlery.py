@@ -1,7 +1,7 @@
 from functools import lru_cache
 
 @lru_cache(maxsize=2000000)
-def ReadInOrBeforePrimer(pos, clist):
+def PositionInOrBeforePrimer(pos, clist):
     d = lambda x: abs(x - pos)
     near = min(clist, key=d)
     if pos <= near:
@@ -10,7 +10,7 @@ def ReadInOrBeforePrimer(pos, clist):
         return False
 
 @lru_cache(maxsize=2000000)
-def ReadInOrAfterPrimer(pos, clist):
+def PositionInOrAfterPrimer(pos, clist):
     d = lambda x: abs(x - pos)
     near = min(clist, key=d)
     if pos >= near:

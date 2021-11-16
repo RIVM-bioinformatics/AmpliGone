@@ -1,19 +1,48 @@
 import mappy as mp
 import numpy as np
 import pandas as pd
-import itertools
 
 from .cutlery import (
     ReadAfterPrimer,
     ReadBeforePrimer,
-    ReadInOrBeforePrimer,
-    ReadInOrAfterPrimer,
+    PositionInOrBeforePrimer,
+    PositionInOrAfterPrimer,
     slice_fw_left,
-    slice_fw_right,
-    slice_rv_left,
     slice_rv_right,
 )
 
+def cut_read(seq, qual, PositionNeedsCutting, primer_list, position_on_reference, cut_direction, read_direction, cigar):
+    removed_coords = []
+
+    # Whether to start at the end or at the start of the read sequence
+    if read_direction == cut_direction:
+        position_on_sequence = 0
+    else:
+        position_on_sequence = len(seq)
+
+    for cigar_len, cigar_type in cigar:
+        if not PositionNeedsCutting(position_on_reference, primer_list):
+            break
+
+        while cigar_len > 0 and PositionNeedsCutting(position_on_reference, primer_list):
+            cigar_len -= 1
+            removed_coords.append(position_on_reference)
+
+            # Increment position on sequence if match/insert(in seq)/mismatch
+            if cigar_type in (0,1,4):
+                position_on_sequence += read_direction*cut_direction
+
+            # Increment position on reference if match/insert(in seq)/mismatch
+            if cigar_type in (0,2,3):
+                position_on_reference += cut_direction
+
+    if read_direction == cut_direction:
+        seq = seq[position_on_sequence:]
+        qual = qual[position_on_sequence:]
+    else:
+        seq = seq[:position_on_sequence]
+        qual = qual[:position_on_sequence]
+    return seq,qual,removed_coords
 
 def End_to_End(data, FWList, RVList, reference, preset, workers):
     Frame, _threadnumber = data
@@ -27,86 +56,47 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
     processed_readnames = []
     processed_sequences = []
     processed_qualities = []
-    removed_coords = []
+    removed_coords_per_read = [] # A list of lists
 
-    for i in range(len(readnames)):
-        name = readnames[i]
-        seq = sequences[i]
-        qual = qualities[i]
+    for name, seq, qual in zip(readnames, sequences, qualities):
 
-        rmc = []
+        for hit in Aln.map(seq): # Yields only one hit, as the aligner object was initiated with best_n=1
 
-        looplimiter = 0
-        for hit in Aln.map(seq):
-            if looplimiter != 0:
-                continue
-            looplimiter += 1
+            seq, qual, removed_coords_start = cut_read(
+                seq, qual,
+                PositionNeedsCutting=PositionInOrBeforePrimer,
+                primer_list=FWList,
+                position_on_reference=hit.r_st,
+                cut_direction=1,
+                read_direction=hit.strand,
+                cigar=hit.cigar,
+                )
 
-            if hit.strand == 1:
-                forward = True
-            if hit.strand == -1:
-                forward = False
+            seq, qual, removed_coords_end = cut_read(
+                seq, qual,
+                PositionNeedsCutting=PositionInOrAfterPrimer,
+                primer_list=RVList,
+                position_on_reference=hit.r_en,
+                cut_direction=-1,
+                read_direction=hit.strand,
+                cigar=list(reversed(hit.cigar)),
+                )
 
-            start = hit.r_st
-            end = hit.r_en
 
-            if forward:
-                forward_modifier = 1
-            else:
-                forward_modifier = -1
-
-            for FindFunction, PrimerList, ref_pos_to_cut, cut_front_modifier in (
-                    [ReadInOrAfterPrimer, RVList, end, -1], # It is important that the end is cut first, as otherwise the end coordinate changes
-                    [ReadInOrBeforePrimer, FWList, start, 1],
-                    ):
-
-                if forward_modifier*cut_front_modifier == 1:
-                    seq_pos_to_cut = 0
-                else:
-                    seq_pos_to_cut = len(seq)
-
-                cigar = hit.cigar
-                if cut_front_modifier == -1:
-                    cigar = reversed(cigar)
-
-                for cigar_len, cigar_type in cigar:
-                    if not FindFunction(ref_pos_to_cut, PrimerList):
-                        break
-                    while cigar_len > 0 and FindFunction(ref_pos_to_cut, PrimerList):
-                        cigar_len -= 1
-
-                        if cigar_type in (0,1,4):
-                            seq_pos_to_cut += forward_modifier*cut_front_modifier
-                        if cigar_type in (0,2,3):
-                            ref_pos_to_cut += cut_front_modifier
-
-                if forward_modifier*cut_front_modifier == 1:
-                    seq = seq[seq_pos_to_cut:]
-                    qual = qual[seq_pos_to_cut:]
-                else:
-                    seq = seq[:seq_pos_to_cut]
-                    qual = qual[:seq_pos_to_cut]
-
-        if len(seq) < 5:
-            seq = np.nan
-        if len(qual) < 5:
-            qual = np.nan
-
-        processed_readnames.append(name)
-        processed_sequences.append(seq)
-        processed_qualities.append(qual)
-        removed_coords.append(rmc)
+        if len(seq) >= 5 and len(qual) >= 5:
+            processed_readnames.append(name)
+            processed_sequences.append(seq)
+            processed_qualities.append(qual)
+            removed_coords_per_read.append(removed_coords_start + removed_coords_end)
 
     ProcessedReads = pd.DataFrame(
         {
             "Readname": processed_readnames,
             "Sequence": processed_sequences,
             "Qualities": processed_qualities,
-            "Removed_coordinates": removed_coords,
+            "Removed_coordinates": removed_coords_per_read,
         }
     )
-
-    ProcessedReads.dropna(subset=["Sequence", "Qualities"], inplace=True)
 
     return ProcessedReads
 
