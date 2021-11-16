@@ -64,7 +64,7 @@ def CutReads(data, FWList, RVList, reference, preset, workers, amplicon_type):
 
             removed_coords_fw = removed_coords_rv = []
 
-            if amplicon_type == 'end-to-end' or (amplicon_type == 'end_to_mid' and hit.strand == 1):
+            if amplicon_type == 'end-to-end' or (amplicon_type == 'end-to-mid' and hit.strand == 1):
                 seq, qual, removed_coords_fw = cut_read(
                     seq, qual,
                     PositionNeedsCutting=PositionInOrBeforePrimer,
@@ -75,7 +75,7 @@ def CutReads(data, FWList, RVList, reference, preset, workers, amplicon_type):
                     cigar=hit.cigar,
                     )
 
-            if amplicon_type == 'end-to-end' or (amplicon_type == 'end_to_mid' and hit.strand == -1):
+            if amplicon_type == 'end-to-end' or (amplicon_type == 'end-to-mid' and hit.strand == -1):
                 seq, qual, removed_coords_rv = cut_read(
                     seq, qual,
                     PositionNeedsCutting=PositionInOrAfterPrimer,
