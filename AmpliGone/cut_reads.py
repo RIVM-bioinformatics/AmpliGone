@@ -28,11 +28,11 @@ def cut_read(seq, qual, PositionNeedsCutting, primer_list, position_on_reference
             cigar_len -= 1
             removed_coords.append(position_on_reference)
 
-            # Increment position on sequence if match/insert(in seq)/mismatch
+            # Increment position on sequence if match/insert (in seq)/mismatch
             if cigar_type in (0,1,4):
                 position_on_sequence += read_direction*cut_direction
 
-            # Increment position on reference if match/insert(in seq)/mismatch
+            # Increment position on reference if match/deletion (in seq)/mismatch
             if cigar_type in (0,2,3):
                 position_on_reference += cut_direction
 
