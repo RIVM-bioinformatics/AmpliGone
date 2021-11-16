@@ -44,7 +44,7 @@ def cut_read(seq, qual, PositionNeedsCutting, primer_list, position_on_reference
         qual = qual[:position_on_sequence]
     return seq,qual,removed_coords
 
-def End_to_End(data, FWList, RVList, reference, preset, workers):
+def CutReads(data, FWList, RVList, reference, preset, workers, amplicon_type):
     Frame, _threadnumber = data
 
     readnames = Frame["Readname"].tolist()
@@ -62,32 +62,36 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
 
         for hit in Aln.map(seq): # Yields only one hit, as the aligner object was initiated with best_n=1
 
-            seq, qual, removed_coords_start = cut_read(
-                seq, qual,
-                PositionNeedsCutting=PositionInOrBeforePrimer,
-                primer_list=FWList,
-                position_on_reference=hit.r_st,
-                cut_direction=1,
-                read_direction=hit.strand,
-                cigar=hit.cigar,
-                )
+            removed_coords_fw = removed_coords_rv = []
 
-            seq, qual, removed_coords_end = cut_read(
-                seq, qual,
-                PositionNeedsCutting=PositionInOrAfterPrimer,
-                primer_list=RVList,
-                position_on_reference=hit.r_en,
-                cut_direction=-1,
-                read_direction=hit.strand,
-                cigar=list(reversed(hit.cigar)),
-                )
+            if amplicon_type == 'end-to-end' or (amplicon_type == 'end_to_mid' and hit.strand == 1):
+                seq, qual, removed_coords_fw = cut_read(
+                    seq, qual,
+                    PositionNeedsCutting=PositionInOrBeforePrimer,
+                    primer_list=FWList,
+                    position_on_reference=hit.r_st,
+                    cut_direction=1,
+                    read_direction=hit.strand,
+                    cigar=hit.cigar,
+                    )
+
+            if amplicon_type == 'end-to-end' or (amplicon_type == 'end_to_mid' and hit.strand == -1):
+                seq, qual, removed_coords_rv = cut_read(
+                    seq, qual,
+                    PositionNeedsCutting=PositionInOrAfterPrimer,
+                    primer_list=RVList,
+                    position_on_reference=hit.r_en,
+                    cut_direction=-1,
+                    read_direction=hit.strand,
+                    cigar=list(reversed(hit.cigar)),
+                    )
 
 
         if len(seq) >= 5 and len(qual) >= 5:
             processed_readnames.append(name)
             processed_sequences.append(seq)
             processed_qualities.append(qual)
-            removed_coords_per_read.append(removed_coords_start + removed_coords_end)
+            removed_coords_per_read.append(removed_coords_fw + removed_coords_rv)
 
     ProcessedReads = pd.DataFrame(
         {
@@ -97,107 +101,5 @@ def End_to_End(data, FWList, RVList, reference, preset, workers):
             "Removed_coordinates": removed_coords_per_read,
         }
     )
-
-    return ProcessedReads
-
-
-def End_to_Mid(data, FWList, RVList, reference, preset, workers):
-    Frame, threadnumber = data
-
-    readnames = Frame["Readname"].tolist()
-    sequences = Frame["Sequence"].tolist()
-    qualities = Frame["Qualities"].tolist()
-
-    Aln = mp.Aligner(reference, preset=preset, best_n=1)
-
-    processed_readnames = []
-    processed_sequences = []
-    processed_qualities = []
-    removed_coords = []
-
-    for i in range(len(readnames)):
-
-        name = readnames[i]
-        seq = sequences[i]
-        qual = qualities[i]
-
-        rmc = []
-
-        looplimiter = 0
-        for hit in Aln.map(seq):
-            if looplimiter != 0:
-                continue
-            looplimiter += 1
-
-            if hit.strand == 1:
-                reverse = False
-            if hit.strand == -1:
-                reverse = True
-
-            start = hit.r_st
-            end = hit.r_en
-
-            if reverse is False:
-
-                while ReadBeforePrimer(start, FWList) is True:
-                    seq, qual, start = slice_fw_left(start, seq, qual)
-                    hitlimit = 0
-                    for hit2 in Aln.map(seq):
-                        if hitlimit != 0:
-                            continue
-                        hitlimit += 1
-                        start = hit2.r_st
-
-                while (start in FWList) is True:
-                    rmc.append(start)
-                    seq, qual, start = slice_fw_left(start, seq, qual)
-                    hitlimit = 0
-                    for hit2 in Aln.map(seq):
-                        if hitlimit != 0:
-                            continue
-                        hitlimit += 1
-                        start = hit2.r_st
-
-            if reverse is True:
-
-                while ReadAfterPrimer(end, RVList) is True:
-                    seq, qual, end = slice_rv_right(end, seq, qual)
-                    hitlimit = 0
-                    for hit2 in Aln.map(seq):
-                        if hitlimit != 0:
-                            continue
-                        hitlimit += 1
-                        end = hit2.r_en
-
-                while (end in RVList) is True:
-                    rmc.append(end)
-                    seq, qual, end = slice_rv_right(end, seq, qual)
-                    hitlimit = 0
-                    for hit2 in Aln.map(seq):
-                        if hitlimit != 0:
-                            continue
-                        hitlimit += 1
-                        end = hit2.r_en
-
-            if len(seq) < 5:
-                seq = np.nan
-            if len(qual) < 5:
-                qual = np.nan
-
-            processed_readnames.append(name)
-            processed_sequences.append(seq)
-            processed_qualities.append(qual)
-            removed_coords.append(rmc)
-
-    ProcessedReads = pd.DataFrame(
-        {
-            "Readname": processed_readnames,
-            "Sequence": processed_sequences,
-            "Qualities": processed_qualities,
-            "Removed_coordinates": removed_coords,
-        }
-    )
-
-    ProcessedReads.dropna(subset=["Sequence", "Qualities"], inplace=True)
 
     return ProcessedReads
