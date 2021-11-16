@@ -87,11 +87,11 @@ def CutReads(data, FWList, RVList, reference, preset, workers, amplicon_type):
                     )
 
 
-        if len(seq) >= 5 and len(qual) >= 5:
-            processed_readnames.append(name)
-            processed_sequences.append(seq)
-            processed_qualities.append(qual)
-            removed_coords_per_read.append(removed_coords_fw + removed_coords_rv)
+            if len(seq) >= 5 and len(qual) >= 5:
+                processed_readnames.append(name)
+                processed_sequences.append(seq)
+                processed_qualities.append(qual)
+                removed_coords_per_read.append(removed_coords_fw + removed_coords_rv)
 
     ProcessedReads = pd.DataFrame(
         {
