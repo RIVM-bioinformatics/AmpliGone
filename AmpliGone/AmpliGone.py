@@ -17,7 +17,7 @@ import pandas as pd
 import parmap
 
 from .CoordinateSearch import MakeCoordinateLists, WritePrimerExports
-from .cut_reads import End_to_End, End_to_Mid
+from .cut_reads import CutReads
 from .func import MyHelpFormatter, color
 from .io_ops import IndexReads, WriteOutput
 from .mappreset import FindPreset
@@ -158,7 +158,7 @@ def get_args(givenargs):
     return flags
 
 
-def parallel(frame, function, workers, LeftPrimers, RightPrimers, reference, preset):
+def parallel(frame, function, workers, LeftPrimers, RightPrimers, reference, preset, amplicon_type):
     frame_split = np.array_split(frame, workers)
     tr = [*range(workers)]
     readframe = pd.concat(
@@ -170,6 +170,7 @@ def parallel(frame, function, workers, LeftPrimers, RightPrimers, reference, pre
             reference,
             preset,
             workers,
+            amplicon_type,
             pm_processes=workers,
         )
     )
@@ -210,7 +211,7 @@ def main():
             f"""
     {color.RED}AmpliGone was given an empty input file. Exiting...
     Please check the input file to make sure this is correct{color.END}
-    
+
     {color.YELLOW}Use the -to flag to force AmpliGone to create an output file even if there is nothing to output.{color.END}
     """
         )
@@ -242,24 +243,26 @@ def main():
 
         ProcessedReads = parallel(
             IndexedReads,
-            End_to_End,
+            CutReads,
             args.threads,
             LeftPrimers,
             RightPrimers,
             args.reference,
             preset,
+            amplicon_type=args.amplicon_type,
         )
         ProcessedReads.reset_index(drop=True)
 
     if args.amplicon_type == "end-to-mid":
         ProcessedReads = parallel(
             IndexedReads,
-            End_to_Mid,
+            CutReads,
             args.threads,
             LeftPrimers,
             RightPrimers,
             args.reference,
             preset,
+            amplicon_type=args.amplicon_type,
         )
         ProcessedReads.reset_index(drop=True)
 
