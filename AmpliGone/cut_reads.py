@@ -1,5 +1,4 @@
 import mappy as mp
-import numpy as np
 import pandas as pd
 
 from .cutlery import (

@@ -1,4 +1,3 @@
-import enum
 import re
 from itertools import product
 
