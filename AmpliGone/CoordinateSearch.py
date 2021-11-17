@@ -4,9 +4,9 @@ from itertools import product
 import pandas as pd
 from Bio import SeqIO
 
-"""
-ambiguity options used from https://droog.gs.washington.edu/parc/images/iupac.html
-"""
+###
+# ambiguity options used from https://droog.gs.washington.edu/parc/images/iupac.html
+###
 
 
 def FindAmbigousOptions(seq):
@@ -48,8 +48,7 @@ def Primer_coordinates(inputprimer, reference):
             startlocs = "None"
             stoplocs = "None"
             return startlocs, stoplocs
-        else:
-            return startlocs, stoplocs
+        return startlocs, stoplocs
 
 
 def find_orient(primerfile, ref):
@@ -118,7 +117,7 @@ def UpdateName(primername):
     for a, i in enumerate(s):
         try:
             i = int(i)
-        except:
+        except ValueError:
             i = str(i)
 
         if type(i) == int:
@@ -132,7 +131,7 @@ def CombinePrimerLists(a, b):
 
     c = pd.concat([aa, bb]).reset_index()
     c.rename(columns={"index": "name"}, inplace=True)
-    c["name"] = c["name"].apply(lambda x: UpdateName(x))
+    c["name"] = c["name"].apply(UpdateName)
     csort = c.sort_values(by=["name"])
     return csort
 
@@ -174,15 +173,15 @@ def MakeCoordinateLists(primerfile, ref):
     RightList = []
 
     for index, name in LeftPrimers.iterrows():
-        for i in range(len(name.start)):
-            list = [*range(name.start[i] - 1, name.stop[i], 1)]
-            for iter in list:
-                LeftList.append(iter)
+        for i, v in enumerate(name.start):
+            l = [*range(name.start[i] - 1, name.stop[i], 1)]
+            for item in l:
+                LeftList.append(item)
 
     for index, name in RightPrimers.iterrows():
-        for i in range(len(name.start)):
-            list = [*range(name.start[i] + 1, name.stop[i], 1)]
-            for iter in list:
-                RightList.append(iter)
+        for i, v in enumerate(name.start):
+            l = [*range(name.start[i] + 1, name.stop[i], 1)]
+            for item in l:
+                RightList.append(item)
 
     return tuple(LeftList), tuple(RightList), LeftPrimers, RightPrimers

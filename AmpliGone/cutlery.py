@@ -2,6 +2,20 @@ from functools import lru_cache
 
 
 @lru_cache(maxsize=2000000)
+def PositionInOrBeforePrimer(pos, clist):
+    d = lambda x: abs(x - pos)
+    near = min(clist, key=d)
+    return pos <= near
+
+
+@lru_cache(maxsize=2000000)
+def PositionInOrAfterPrimer(pos, clist):
+    d = lambda x: abs(x - pos)
+    near = min(clist, key=d)
+    return pos >= near
+
+
+@lru_cache(maxsize=2000000)
 def ReadBeforePrimer(pos, clist):
     if pos in clist:
         return False
@@ -9,8 +23,7 @@ def ReadBeforePrimer(pos, clist):
     near = min(clist, key=d)
     if pos <= near:
         return True
-    else:
-        return False
+    return False
 
 
 @lru_cache(maxsize=2000000)
@@ -21,8 +34,7 @@ def ReadAfterPrimer(pos, clist):
     near = min(clist, key=d)
     if pos >= near:
         return True
-    else:
-        return False
+    return False
 
 
 @lru_cache(maxsize=600000)

@@ -12,8 +12,11 @@ Please see [this page](amplicon-types.md) for more information regarding support
 
 For optimal results we ask you to format your inputs to make sure you get the best results in your analysis.
 
-AmpliGone works best with reads that have already been processed by quality filtering tools such as [fastp](https://github.com/OpenGene/fastp) or [Trimmomatic](https://github.com/usadellab/Trimmomatic).
-Additionally, its best that sequencing adapters/barcodes have already been removed. Though this is not a *requirement*. AmpliGone is not designed to remove adapter/barcode data, nor is it really meant for this purpose. That being said, AmpliGone removes data from a certain end of a read, which also includes adapter data if its there.
+It is required that adapters/barcodes have been removed from your sequencing reads *before* they are processed by AmpliGone.  
+Processing read-data with adapters/barcodes still attached to your reads will result in inaccurate output data.
+
+Additionally, AmpliGone works best with reads that have already been processed by quality filtering tools such as [fastp](https://github.com/OpenGene/fastp) or [Trimmomatic](https://github.com/usadellab/Trimmomatic).
+
 
 ### Primers
 

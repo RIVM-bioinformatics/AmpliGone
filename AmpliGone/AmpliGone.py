@@ -17,7 +17,7 @@ import pandas as pd
 import parmap
 
 from .CoordinateSearch import MakeCoordinateLists, WritePrimerExports
-from .cut_reads import End_to_End, End_to_Mid
+from .cut_reads import CutReads
 from .func import MyHelpFormatter, color
 from .io_ops import IndexReads, WriteOutput
 from .mappreset import FindPreset
@@ -35,9 +35,8 @@ def get_args(givenargs):
             if ext not in choices:
                 parser.error("Input file doesn't end with one of {}".format(choices))
             return fname
-        else:
-            print(f'"{fname}" is not a file. Exiting...')
-            sys.exit(-1)
+        print(f'"{fname}" is not a file. Exiting...')
+        sys.exit(-1)
 
     def fastq_output(choices, fname):
         ext = "".join(pathlib.Path(fname).suffixes)
@@ -51,9 +50,8 @@ def get_args(givenargs):
             if ext not in choices:
                 parser.error("Input file doesn't end with one of {}".format(choices))
             return fname
-        else:
-            print(f'"{fname}" is not a file. Exiting...')
-            sys.exit(-1)
+        print(f'"{fname}" is not a file. Exiting...')
+        sys.exit(-1)
 
     parser = argparse.ArgumentParser(
         prog="AmpliGone",
@@ -160,7 +158,16 @@ def get_args(givenargs):
     return flags
 
 
-def parallel(frame, function, workers, LeftPrimers, RightPrimers, reference, preset):
+def parallel(
+    frame,
+    function,
+    workers,
+    LeftPrimers,
+    RightPrimers,
+    reference,
+    preset,
+    amplicon_type,
+):
     frame_split = np.array_split(frame, workers)
     tr = [*range(workers)]
     readframe = pd.concat(
@@ -172,6 +179,7 @@ def parallel(frame, function, workers, LeftPrimers, RightPrimers, reference, pre
             reference,
             preset,
             workers,
+            amplicon_type,
             pm_processes=workers,
         )
     )
@@ -186,14 +194,12 @@ def main():
         sys.exit(1)
     args = get_args(sys.argv[1:])
 
-    with cf.ThreadPoolExecutor(max_workers=args.threads) as exec:
-        TP_indexreads = exec.submit(IndexReads, args.input)
-        TP_PrimerLists = exec.submit(MakeCoordinateLists, args.primers, args.reference)
-        TP_FindPreset = exec.submit(FindPreset, args.input, args.threads)
+    with cf.ThreadPoolExecutor(max_workers=args.threads) as ex:
+        TP_indexreads = ex.submit(IndexReads, args.input)
+        TP_PrimerLists = ex.submit(MakeCoordinateLists, args.primers, args.reference)
 
         IndexedReads = TP_indexreads.result()
         LeftPrimers, RightPrimers, Fleft, Fright = TP_PrimerLists.result()
-        preset = TP_FindPreset.result()
 
     if len(IndexedReads.index) < 1 and args.to is True:
         ReadDict = IndexedReads.to_dict(orient="records")
@@ -214,11 +220,17 @@ def main():
             f"""
     {color.RED}AmpliGone was given an empty input file. Exiting...
     Please check the input file to make sure this is correct{color.END}
-    
+
     {color.YELLOW}Use the -to flag to force AmpliGone to create an output file even if there is nothing to output.{color.END}
     """
         )
         sys.exit(1)
+    else:
+        print(
+            f"""
+    Succesfully loaded {color.BOLD + color.GREEN}{len(IndexedReads.index)}{color.END} reads.
+            """
+        )
 
     if len(LeftPrimers) < 1 and len(RightPrimers) < 1:
         print(
@@ -230,31 +242,36 @@ def main():
         )
         sys.exit(1)
 
-    IndexedReads.dropna(subset=["Sequence"], inplace=True)
+    # Todo: split this over two threads if possible
+    preset = FindPreset(
+        args.threads, IndexedReads.sample(frac=0.3)
+    )  # Todo: Make this more efficient
     IndexedReads = IndexedReads.sample(frac=1).reset_index(drop=True)
 
     if args.amplicon_type == "end-to-end":
 
         ProcessedReads = parallel(
             IndexedReads,
-            End_to_End,
+            CutReads,
             args.threads,
             LeftPrimers,
             RightPrimers,
             args.reference,
             preset,
+            amplicon_type=args.amplicon_type,
         )
         ProcessedReads.reset_index(drop=True)
 
     if args.amplicon_type == "end-to-mid":
         ProcessedReads = parallel(
             IndexedReads,
-            End_to_Mid,
+            CutReads,
             args.threads,
             LeftPrimers,
             RightPrimers,
             args.reference,
             preset,
+            amplicon_type=args.amplicon_type,
         )
         ProcessedReads.reset_index(drop=True)
 
