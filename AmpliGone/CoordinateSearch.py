@@ -173,13 +173,13 @@ def MakeCoordinateLists(primerfile, ref):
     RightList = []
 
     for index, name in LeftPrimers.iterrows():
-        for i,v in enumerate(name.start):
+        for i, v in enumerate(name.start):
             l = [*range(name.start[i] - 1, name.stop[i], 1)]
             for item in l:
                 LeftList.append(item)
 
     for index, name in RightPrimers.iterrows():
-        for i,v in enumerate(name.start):
+        for i, v in enumerate(name.start):
             l = [*range(name.start[i] + 1, name.stop[i], 1)]
             for item in l:
                 RightList.append(item)

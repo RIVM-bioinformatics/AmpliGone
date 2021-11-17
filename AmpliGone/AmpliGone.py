@@ -158,7 +158,16 @@ def get_args(givenargs):
     return flags
 
 
-def parallel(frame, function, workers, LeftPrimers, RightPrimers, reference, preset, amplicon_type):
+def parallel(
+    frame,
+    function,
+    workers,
+    LeftPrimers,
+    RightPrimers,
+    reference,
+    preset,
+    amplicon_type,
+):
     frame_split = np.array_split(frame, workers)
     tr = [*range(workers)]
     readframe = pd.concat(
