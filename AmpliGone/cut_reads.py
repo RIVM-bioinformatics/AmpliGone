@@ -56,14 +56,19 @@ def cut_read(
     return seq, qual, removed_coords
 
 
-def CutReads(data, FWList, RVList, reference, preset, workers, amplicon_type):
+def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, workers):
     Frame, _threadnumber = data
 
     readnames = Frame["Readname"].tolist()
     sequences = Frame["Sequence"].tolist()
     qualities = Frame["Qualities"].tolist()
 
-    Aln = mp.Aligner(reference, preset=preset, best_n=1)
+    Aln = mp.Aligner(
+        reference,
+        preset=preset,
+        best_n=1,
+        scoring=scoring,
+    )
 
     processed_readnames = []
     processed_sequences = []
