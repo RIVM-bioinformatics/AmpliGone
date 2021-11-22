@@ -4,10 +4,6 @@ import pandas as pd
 from .cutlery import (
     PositionInOrAfterPrimer,
     PositionInOrBeforePrimer,
-    ReadAfterPrimer,
-    ReadBeforePrimer,
-    slice_fw_left,
-    slice_rv_right,
 )
 
 
