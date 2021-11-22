@@ -20,31 +20,38 @@ def cut_read(
     cut_direction,
     read_direction,
     cigar,
+    query_start,
+    query_end,
 ):
     removed_coords = []
 
     # Whether to start at the end or at the start of the read sequence
     if read_direction == cut_direction:
-        position_on_sequence = 0
+        # Start at the position that first matches the reference (skip soft clipped regions)
+        position_on_sequence = query_start
     else:
-        position_on_sequence = len(seq)
+        # End at the position that last matches the reference (skip soft clipped regions)
+        position_on_sequence = query_end
 
     for cigar_len, cigar_type in cigar:
-        if not PositionNeedsCutting(position_on_reference, primer_list):
+        if not PositionNeedsCutting(
+            position_on_reference, primer_list
+        ) and cigar_type in (0, 7):
             break
 
-        while cigar_len > 0 and PositionNeedsCutting(
-            position_on_reference, primer_list
+        while cigar_len > 0 and (
+            PositionNeedsCutting(position_on_reference, primer_list)
+            or cigar_type not in (0, 7)  # always end with a match
         ):
             cigar_len -= 1
             removed_coords.append(position_on_reference)
 
-            # Increment position on sequence if match/insert (in seq)/mismatch
-            if cigar_type in (0, 1, 4):
+            # Increment position on sequence if match/insert (in seq)/match(seq)/mismatch(seq)
+            if cigar_type in (0, 1, 7, 8):
                 position_on_sequence += read_direction * cut_direction
 
-            # Increment position on reference if match/deletion (in seq)/mismatch
-            if cigar_type in (0, 2, 3):
+            # Increment position on reference if match/deletion (in seq)/match(seq)/mismatch(seq)
+            if cigar_type in (0, 2, 7, 8):
                 position_on_reference += cut_direction
 
     if read_direction == cut_direction:
@@ -68,6 +75,7 @@ def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, wo
         preset=preset,
         best_n=1,
         scoring=scoring,
+        extra_flags=0x4000000,  # Distinguish between match and mismatch: MM_F_EQX flag in minimap2
     )
 
     processed_readnames = []
@@ -77,45 +85,53 @@ def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, wo
 
     for name, seq, qual in zip(readnames, sequences, qualities):
 
-        for hit in Aln.map(
-            seq
-        ):  # Yields only one hit, as the aligner object was initiated with best_n=1
+        max_iter = 2  # iterate twice
+        for i in range(max_iter):
+            for hit in Aln.map(
+                seq
+            ):  # Yields only one (or no) hit, as the aligner object was initiated with best_n=1
 
-            removed_coords_fw = removed_coords_rv = []
+                removed_coords_fw = removed_coords_rv = []
 
-            if amplicon_type == "end-to-end" or (
-                amplicon_type == "end-to-mid" and hit.strand == 1
-            ):
-                seq, qual, removed_coords_fw = cut_read(
-                    seq,
-                    qual,
-                    PositionNeedsCutting=PositionInOrBeforePrimer,
-                    primer_list=FWList,
-                    position_on_reference=hit.r_st,
-                    cut_direction=1,
-                    read_direction=hit.strand,
-                    cigar=hit.cigar,
-                )
+                if amplicon_type == "end-to-end" or (
+                    amplicon_type == "end-to-mid" and hit.strand == 1
+                ):
+                    seq, qual, removed_coords_fw = cut_read(
+                        seq,
+                        qual,
+                        PositionNeedsCutting=PositionInOrBeforePrimer,
+                        primer_list=FWList,
+                        position_on_reference=hit.r_st,
+                        cut_direction=1,
+                        read_direction=hit.strand,
+                        cigar=hit.cigar,
+                        query_start=hit.q_st,
+                        query_end=hit.q_en,
+                    )
 
-            if amplicon_type == "end-to-end" or (
-                amplicon_type == "end-to-mid" and hit.strand == -1
-            ):
-                seq, qual, removed_coords_rv = cut_read(
-                    seq,
-                    qual,
-                    PositionNeedsCutting=PositionInOrAfterPrimer,
-                    primer_list=RVList,
-                    position_on_reference=hit.r_en,
-                    cut_direction=-1,
-                    read_direction=hit.strand,
-                    cigar=list(reversed(hit.cigar)),
-                )
+                if amplicon_type == "end-to-end" or (
+                    amplicon_type == "end-to-mid" and hit.strand == -1
+                ):
+                    seq, qual, removed_coords_rv = cut_read(
+                        seq,
+                        qual,
+                        PositionNeedsCutting=PositionInOrAfterPrimer,
+                        primer_list=RVList,
+                        position_on_reference=hit.r_en,
+                        cut_direction=-1,
+                        read_direction=hit.strand,
+                        cigar=list(reversed(hit.cigar)),
+                        query_start=hit.q_st,
+                        query_end=hit.q_en,
+                    )
 
-            if len(seq) >= 5 and len(qual) >= 5:
-                processed_readnames.append(name)
-                processed_sequences.append(seq)
-                processed_qualities.append(qual)
-                removed_coords_per_read.append(removed_coords_fw + removed_coords_rv)
+                if len(seq) >= 5 and len(qual) >= 5 and i >= max_iter - 1:
+                    processed_readnames.append(name)
+                    processed_sequences.append(seq)
+                    processed_qualities.append(qual)
+                    removed_coords_per_read.append(
+                        removed_coords_fw + removed_coords_rv
+                    )
 
     ProcessedReads = pd.DataFrame(
         {
