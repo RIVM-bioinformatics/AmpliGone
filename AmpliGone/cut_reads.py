@@ -66,10 +66,6 @@ def cut_read(
 def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, workers):
     Frame, _threadnumber = data
 
-    readnames = Frame["Readname"].tolist()
-    sequences = Frame["Sequence"].tolist()
-    qualities = Frame["Qualities"].tolist()
-
     Aln = mp.Aligner(
         reference,
         preset=preset,
@@ -83,7 +79,9 @@ def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, wo
     processed_qualities = []
     removed_coords_per_read = []  # A list of lists
 
-    for name, seq, qual in zip(readnames, sequences, qualities):
+    for _index, name, seq, qual in Frame[
+        ["Readname", "Sequence", "Qualities"]
+    ].itertuples():
 
         max_iter = 2  # iterate twice
         for i in range(max_iter):
