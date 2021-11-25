@@ -1,5 +1,17 @@
 # Changelog
 
+### [0.3.1](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v0.3.0...v0.3.1) (2021-11-25)
+
+
+### Bug Fixes
+
+* Distinguish (mis)match and cut soft clips ([d4132c1](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/d4132c1d648b9a2cd5c4331dfc6998c2a99da376))
+
+
+### Performance Improvements
+
+* Add minimap scoring to presets ([11158e5](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/11158e5184ea3761f15bf7bcb3594237a5f4049d))
+
 ## [0.3.0](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v0.2.3...v0.3.0) (2021-11-17)
 
 
