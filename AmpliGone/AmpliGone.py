@@ -166,6 +166,7 @@ def parallel(
     RightPrimers,
     reference,
     preset,
+    scoring,
     amplicon_type,
 ):
     frame_split = np.array_split(frame, workers)
@@ -178,8 +179,9 @@ def parallel(
             RightPrimers,
             reference,
             preset,
-            workers,
+            scoring,
             amplicon_type,
+            workers,
             pm_processes=workers,
         )
     )
@@ -243,37 +245,23 @@ def main():
         sys.exit(1)
 
     # Todo: split this over two threads if possible
-    preset = FindPreset(
+    preset, scoring = FindPreset(
         args.threads, IndexedReads.sample(frac=0.3)
     )  # Todo: Make this more efficient
     IndexedReads = IndexedReads.sample(frac=1).reset_index(drop=True)
 
-    if args.amplicon_type == "end-to-end":
-
-        ProcessedReads = parallel(
-            IndexedReads,
-            CutReads,
-            args.threads,
-            LeftPrimers,
-            RightPrimers,
-            args.reference,
-            preset,
-            amplicon_type=args.amplicon_type,
-        )
-        ProcessedReads.reset_index(drop=True)
-
-    if args.amplicon_type == "end-to-mid":
-        ProcessedReads = parallel(
-            IndexedReads,
-            CutReads,
-            args.threads,
-            LeftPrimers,
-            RightPrimers,
-            args.reference,
-            preset,
-            amplicon_type=args.amplicon_type,
-        )
-        ProcessedReads.reset_index(drop=True)
+    ProcessedReads = parallel(
+        IndexedReads,
+        CutReads,
+        args.threads,
+        LeftPrimers,
+        RightPrimers,
+        args.reference,
+        preset,
+        scoring,
+        amplicon_type=args.amplicon_type,
+    )
+    ProcessedReads.reset_index(drop=True)
 
     if args.export_primers is not None:
         WritePrimerExports(
