@@ -79,18 +79,17 @@ def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, wo
         ["Readname", "Sequence", "Qualities"]
     ].itertuples():
 
+        removed_coords_fw = removed_coords_rv = []
         max_iter = 2  # iterate twice
         for i in range(max_iter):
             for hit in Aln.map(
                 seq
             ):  # Yields only one (or no) hit, as the aligner object was initiated with best_n=1
 
-                removed_coords_fw = removed_coords_rv = []
-
                 if amplicon_type == "end-to-end" or (
                     amplicon_type == "end-to-mid" and hit.strand == 1
                 ):
-                    seq, qual, removed_coords_fw = cut_read(
+                    seq, qual, removed_fw = cut_read(
                         seq,
                         qual,
                         PositionNeedsCutting=PositionInOrBeforePrimer,
@@ -106,7 +105,7 @@ def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, wo
                 if amplicon_type == "end-to-end" or (
                     amplicon_type == "end-to-mid" and hit.strand == -1
                 ):
-                    seq, qual, removed_coords_rv = cut_read(
+                    seq, qual, removed_rv = cut_read(
                         seq,
                         qual,
                         PositionNeedsCutting=PositionInOrAfterPrimer,
@@ -118,6 +117,9 @@ def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, wo
                         query_start=hit.q_st,
                         query_end=hit.q_en,
                     )
+
+                removed_coords_fw.extend(removed_fw)
+                removed_coords_rv.extend(removed_rv)
 
                 if len(seq) >= 5 and len(qual) >= 5 and i >= max_iter - 1:
                     processed_readnames.append(name)
