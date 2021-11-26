@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.3.2](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v0.3.1...v0.3.2) (2021-11-26)
+
+
+### Bug Fixes
+
+* report removed coordinates from all iterations ([f726e9a](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/f726e9a9e740f9591496c8722aba2ed10aba8b80))
+
 ### [0.3.1](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v0.3.0...v0.3.1) (2021-11-25)
 
 
