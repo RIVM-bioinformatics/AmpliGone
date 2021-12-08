@@ -101,6 +101,7 @@ def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, wo
                         query_start=hit.q_st,
                         query_end=hit.q_en,
                     )
+                    removed_coords_fw.extend(removed_fw)
 
                 if amplicon_type == "end-to-end" or (
                     amplicon_type == "end-to-mid" and hit.strand == -1
@@ -117,9 +118,7 @@ def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, wo
                         query_start=hit.q_st,
                         query_end=hit.q_en,
                     )
-
-                removed_coords_fw.extend(removed_fw)
-                removed_coords_rv.extend(removed_rv)
+                    removed_coords_fw.extend(removed_rv)
 
                 if len(seq) >= 5 and len(qual) >= 5 and i >= max_iter - 1:
                     processed_readnames.append(name)
