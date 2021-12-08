@@ -1,5 +1,13 @@
 # Changelog
 
+### [0.3.3](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v0.3.2...v0.3.3) (2021-12-08)
+
+
+### Bug Fixes
+
+* solve preset-sampling crash when less than 3 input reads are provided ([29d5624](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/29d5624e0b2871663a7c8e6cee9f3553c4d1debb))
+* solve reference before assignment error in end-to-mid mode ([14c9d24](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/14c9d241fc9fd806fd018049ff67118c7b59517b))
+
 ### [0.3.2](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v0.3.1...v0.3.2) (2021-11-26)
 
 
