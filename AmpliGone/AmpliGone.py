@@ -245,9 +245,13 @@ def main():
         sys.exit(1)
 
     # Todo: split this over two threads if possible
-    preset, scoring = FindPreset(
-        args.threads, IndexedReads.sample(frac=0.3)
-    )  # Todo: Make this more efficient
+    if len(IndexedReads.index) > 20000:
+        preset, scoring = FindPreset(
+            args.threads, IndexedReads.sample(frac=0.3)
+        )  # Todo: Make this more efficient
+    else:
+        preset, scoring = FindPreset(args.threads, IndexedReads)
+
     IndexedReads = IndexedReads.sample(frac=1).reset_index(drop=True)
 
     ProcessedReads = parallel(
