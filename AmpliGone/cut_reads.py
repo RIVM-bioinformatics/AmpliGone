@@ -53,10 +53,11 @@ def cut_read(
     if read_direction == cut_direction:
         seq = seq[position_on_sequence:]
         qual = qual[position_on_sequence:]
-    else:
-        seq = seq[:position_on_sequence]
-        qual = qual[:position_on_sequence]
-    return seq, qual, removed_coords
+        query_end -= position_on_sequence
+        return seq, qual, removed_coords, query_start, query_end
+    seq = seq[:position_on_sequence]
+    qual = qual[:position_on_sequence]
+    return seq, qual, removed_coords, query_start, query_end
 
 
 def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, workers):
@@ -86,10 +87,13 @@ def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, wo
                 seq
             ):  # Yields only one (or no) hit, as the aligner object was initiated with best_n=1
 
+                qstart = hit.q_st
+                qend = hit.q_en
+
                 if amplicon_type == "end-to-end" or (
                     amplicon_type == "end-to-mid" and hit.strand == 1
                 ):
-                    seq, qual, removed_fw = cut_read(
+                    seq, qual, removed_fw, qstart, qend = cut_read(
                         seq,
                         qual,
                         PositionNeedsCutting=PositionInOrBeforePrimer,
@@ -98,15 +102,15 @@ def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, wo
                         cut_direction=1,
                         read_direction=hit.strand,
                         cigar=hit.cigar,
-                        query_start=hit.q_st,
-                        query_end=hit.q_en,
+                        query_start=qstart,
+                        query_end=qend,
                     )
                     removed_coords_fw.extend(removed_fw)
 
                 if amplicon_type == "end-to-end" or (
                     amplicon_type == "end-to-mid" and hit.strand == -1
                 ):
-                    seq, qual, removed_rv = cut_read(
+                    seq, qual, removed_rv, qstart, qend = cut_read(
                         seq,
                         qual,
                         PositionNeedsCutting=PositionInOrAfterPrimer,
@@ -115,8 +119,8 @@ def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, wo
                         cut_direction=-1,
                         read_direction=hit.strand,
                         cigar=list(reversed(hit.cigar)),
-                        query_start=hit.q_st,
-                        query_end=hit.q_en,
+                        query_start=qstart,
+                        query_end=qend,
                     )
                     removed_coords_fw.extend(removed_rv)
 
