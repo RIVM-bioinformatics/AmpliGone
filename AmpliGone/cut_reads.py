@@ -1,10 +1,7 @@
 import mappy as mp
 import pandas as pd
 
-from .cutlery import (
-    PositionInOrAfterPrimer,
-    PositionInOrBeforePrimer,
-)
+from .cutlery import PositionInOrAfterPrimer, PositionInOrBeforePrimer
 
 
 def cut_read(
