@@ -26,6 +26,7 @@ setup(
         "mappy>=2.17",
         "biopython>=1.78",
         "parmap>=1.5.2",
+        "regex>=2021.11.10",
         "tqdm>=4.59.0",
     ],
     entry_points={
