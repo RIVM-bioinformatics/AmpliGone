@@ -27,11 +27,6 @@ def cut_read(
         position_on_sequence = query_end
 
     for cigar_len, cigar_type in cigar:
-        if not PositionNeedsCutting(
-            position_on_reference, primer_list
-        ) and cigar_type in (0, 7):
-            break
-
         while cigar_len > 0 and (
             PositionNeedsCutting(position_on_reference, primer_list)
             or cigar_type not in (0, 7)  # always end with a match
@@ -46,6 +41,10 @@ def cut_read(
             # Increment position on reference if match/deletion (in seq)/match(seq)/mismatch(seq)
             if cigar_type in (0, 2, 7, 8):
                 position_on_reference += cut_direction
+        if not PositionNeedsCutting(
+            position_on_reference, primer_list
+        ) and cigar_type in (0, 7):
+            break
 
     if read_direction == cut_direction:
         seq = seq[position_on_sequence:]
