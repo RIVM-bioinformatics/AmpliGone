@@ -77,11 +77,32 @@ def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, wo
     ].itertuples():
 
         removed_coords_fw = removed_coords_rv = []
-        max_iter = 2  # iterate twice
+        max_iter = 10  # If more iterations are needed, the sequence is discarded (not recorded)
+        previous_seq = "impossible"
+        cutting_is_done = False
+
         for i in range(max_iter):
+            if cutting_is_done:
+                break
+
             for hit in Aln.map(
                 seq
             ):  # Yields only one (or no) hit, as the aligner object was initiated with best_n=1
+                if len(seq) < 5 and len(qual) < 5:
+                    cutting_is_done = True
+                    break
+
+                if seq == previous_seq:
+                    processed_readnames.append(name)
+                    processed_sequences.append(seq)
+                    processed_qualities.append(qual)
+                    removed_coords_per_read.append(
+                        removed_coords_fw + removed_coords_rv
+                    )
+                    cutting_is_done = True
+                    break
+
+                previous_seq = seq
 
                 qstart = hit.q_st
                 qend = hit.q_en
@@ -119,14 +140,6 @@ def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, wo
                         query_end=qend,
                     )
                     removed_coords_fw.extend(removed_rv)
-
-                if len(seq) >= 5 and len(qual) >= 5 and i >= max_iter - 1:
-                    processed_readnames.append(name)
-                    processed_sequences.append(seq)
-                    processed_qualities.append(qual)
-                    removed_coords_per_read.append(
-                        removed_coords_fw + removed_coords_rv
-                    )
 
     ProcessedReads = pd.DataFrame(
         {
