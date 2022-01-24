@@ -1,10 +1,7 @@
 import mappy as mp
 import pandas as pd
 
-from .cutlery import (
-    PositionInOrAfterPrimer,
-    PositionInOrBeforePrimer,
-)
+from .cutlery import PositionInOrAfterPrimer, PositionInOrBeforePrimer
 
 
 def cut_read(
@@ -30,11 +27,6 @@ def cut_read(
         position_on_sequence = query_end
 
     for cigar_len, cigar_type in cigar:
-        if not PositionNeedsCutting(
-            position_on_reference, primer_list
-        ) and cigar_type in (0, 7):
-            break
-
         while cigar_len > 0 and (
             PositionNeedsCutting(position_on_reference, primer_list)
             or cigar_type not in (0, 7)  # always end with a match
@@ -49,14 +41,19 @@ def cut_read(
             # Increment position on reference if match/deletion (in seq)/match(seq)/mismatch(seq)
             if cigar_type in (0, 2, 7, 8):
                 position_on_reference += cut_direction
+        if not PositionNeedsCutting(
+            position_on_reference, primer_list
+        ) and cigar_type in (0, 7):
+            break
 
     if read_direction == cut_direction:
         seq = seq[position_on_sequence:]
         qual = qual[position_on_sequence:]
-    else:
-        seq = seq[:position_on_sequence]
-        qual = qual[:position_on_sequence]
-    return seq, qual, removed_coords
+        query_end -= position_on_sequence
+        return seq, qual, removed_coords, query_start, query_end
+    seq = seq[:position_on_sequence]
+    qual = qual[:position_on_sequence]
+    return seq, qual, removed_coords, query_start, query_end
 
 
 def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, workers):
@@ -80,16 +77,40 @@ def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, wo
     ].itertuples():
 
         removed_coords_fw = removed_coords_rv = []
-        max_iter = 2  # iterate twice
+        max_iter = 10  # If more iterations are needed, the sequence is discarded (not recorded)
+        previous_seq = "impossible"
+        cutting_is_done = False
+
         for i in range(max_iter):
+            if cutting_is_done:
+                break
+
             for hit in Aln.map(
                 seq
             ):  # Yields only one (or no) hit, as the aligner object was initiated with best_n=1
+                if len(seq) < 5 and len(qual) < 5:
+                    cutting_is_done = True
+                    break
+
+                if seq == previous_seq:
+                    processed_readnames.append(name)
+                    processed_sequences.append(seq)
+                    processed_qualities.append(qual)
+                    removed_coords_per_read.append(
+                        removed_coords_fw + removed_coords_rv
+                    )
+                    cutting_is_done = True
+                    break
+
+                previous_seq = seq
+
+                qstart = hit.q_st
+                qend = hit.q_en
 
                 if amplicon_type == "end-to-end" or (
                     amplicon_type == "end-to-mid" and hit.strand == 1
                 ):
-                    seq, qual, removed_fw = cut_read(
+                    seq, qual, removed_fw, qstart, qend = cut_read(
                         seq,
                         qual,
                         PositionNeedsCutting=PositionInOrBeforePrimer,
@@ -98,15 +119,15 @@ def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, wo
                         cut_direction=1,
                         read_direction=hit.strand,
                         cigar=hit.cigar,
-                        query_start=hit.q_st,
-                        query_end=hit.q_en,
+                        query_start=qstart,
+                        query_end=qend,
                     )
                     removed_coords_fw.extend(removed_fw)
 
                 if amplicon_type == "end-to-end" or (
                     amplicon_type == "end-to-mid" and hit.strand == -1
                 ):
-                    seq, qual, removed_rv = cut_read(
+                    seq, qual, removed_rv, qstart, qend = cut_read(
                         seq,
                         qual,
                         PositionNeedsCutting=PositionInOrAfterPrimer,
@@ -115,18 +136,10 @@ def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, wo
                         cut_direction=-1,
                         read_direction=hit.strand,
                         cigar=list(reversed(hit.cigar)),
-                        query_start=hit.q_st,
-                        query_end=hit.q_en,
+                        query_start=qstart,
+                        query_end=qend,
                     )
                     removed_coords_fw.extend(removed_rv)
-
-                if len(seq) >= 5 and len(qual) >= 5 and i >= max_iter - 1:
-                    processed_readnames.append(name)
-                    processed_sequences.append(seq)
-                    processed_qualities.append(qual)
-                    removed_coords_per_read.append(
-                        removed_coords_fw + removed_coords_rv
-                    )
 
     ProcessedReads = pd.DataFrame(
         {
