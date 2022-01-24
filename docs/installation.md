@@ -23,9 +23,9 @@ We strongly advise you to use a conda environment (or similar) to make sure ther
 
 ## Download and install from source
 
-First start by cloning the repository and making sure you're on version `0.2.0` as per this documentation:
+First start by cloning the repository and make sure you're on the latest released version of AmpliGone:
 ```bash
-git clone https://github.com/RIVM-bioinformatics/AmpliGone.git; cd AmpliGone; git checkout tags/v0.2.0
+git clone https://github.com/RIVM-bioinformatics/AmpliGone.git; cd AmpliGone; git checkout tags/$(git tag --sort=committerdate | tail -1) >> /dev/null
 ```
 
 You're now in the newly created "AmpliGone" directory.
