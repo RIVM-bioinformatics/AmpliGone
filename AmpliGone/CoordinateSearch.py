@@ -1,7 +1,7 @@
-import re
 from itertools import product
 
 import pandas as pd
+import regex as re
 from Bio import SeqIO
 
 ###
@@ -38,7 +38,12 @@ def Primer_coordinates(inputprimer, reference):
         startlocs = []
         stoplocs = []
         for option in possible_primers:
-            for match in re.finditer(str(option), str(record.seq), re.IGNORECASE):
+            for match in re.finditer(
+                f"(?:{str(option)}){{s<=3}}",
+                str(record.seq),
+                re.IGNORECASE,
+                concurrent=True,
+            ):
                 start_pos = match.start()
                 end_pos = match.end()
                 startlocs.append(start_pos)
