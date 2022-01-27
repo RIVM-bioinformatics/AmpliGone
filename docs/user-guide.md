@@ -20,7 +20,8 @@ Additionally, AmpliGone works best with reads that have already been processed b
 
 ### Primers
 
-AmpliGone searches for the primer coordinates based on the given reference. So if a primer sequence is given that cannot be matched to the given reference then the coordinates which have to be removed cannot be determined. It's therefore important that the primers and the reference match eachother.
+AmpliGone searches for the primer coordinates based on the given reference. It does so by matching a given primer to the reference, up to 3 differences (substitutions) between primer and reference are tolerated before the coordinates can no longer be found.  
+It's therefore important that the given primers adequately match the given reference, otherwise the primer-coordinates cannot be determined.
 
 AmpliGone determines whether a given sequence is considered to be a 'forward primer' or a 'reverse primer'. This information is taken from the name of a primer sequence in the FASTA header with specific keywords, the usable keywords are as follows:
 
