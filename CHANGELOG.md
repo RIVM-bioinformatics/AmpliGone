@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.4.0](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v0.3.3...v0.4.0) (2022-01-27)
+
+
+### Features
+
+* find coordinates of primers with mismatches to reference ([d6bf925](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/d6bf925087a904daa2568bedda01e9b3a1504011))
+
+
+### Bug Fixes
+
+* consistently remove reverse primers in end-to-end mode ([0c4f621](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/0c4f621022f3d58820aa125da97a18b345d5e649))
+* Fix cutting too many bases ([78bd9ea](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/78bd9eac8bb4b37d03c043fde35164f0d3507fc5))
+* Make number of iterations variable ([62ac2d7](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/62ac2d792b36a7b1206ba069b05f7d045f0c35ec))
+
+
+### Documentation
+
+* update installation instructions and include primer-search changes ([5fdc6fa](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/5fdc6fa4a6371a9ea86c2771129182d7a98af9e2))
+
 ### [0.3.3](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v0.3.2...v0.3.3) (2021-12-08)
 
 
