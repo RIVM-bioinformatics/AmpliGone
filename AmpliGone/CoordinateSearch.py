@@ -50,10 +50,10 @@ def Primer_coordinates(inputprimer, reference):
                 stoplocs.append(end_pos)
 
         if not startlocs and not stoplocs:
-            startlocs = "None"
-            stoplocs = "None"
+            startlocs = None
+            stoplocs = None
             return startlocs, stoplocs
-        return startlocs, stoplocs
+        return list(set(startlocs)), list(set(stoplocs))
 
 
 def find_orient(primerfile, ref):
@@ -66,11 +66,11 @@ def find_orient(primerfile, ref):
     for record in SeqIO.parse(primerfile, "fasta"):
         if any(orient in record.id for orient in left) is True:
             startlist, stoplist = Primer_coordinates(record.seq, ref)
-            if startlist == "None" or stoplist == "None":
+            if startlist is None or stoplist is None:
                 startlist, stoplist = Primer_coordinates(
                     record.seq.reverse_complement(), ref
                 )
-            if startlist != "None" or stoplist != "None":
+            if startlist is not None or stoplist is not None:
                 FrameLeft = FrameLeft.append(
                     pd.DataFrame(
                         {"start": [startlist], "stop": [stoplist], "name": record.id},
@@ -80,11 +80,11 @@ def find_orient(primerfile, ref):
                 )
         if any(orient in record.id for orient in right) is True:
             startlist, stoplist = Primer_coordinates(record.seq, ref)
-            if startlist == "None" or stoplist == "None":
+            if startlist is None or stoplist is None:
                 startlist, stoplist = Primer_coordinates(
                     record.seq.reverse_complement(), ref
                 )
-            if startlist != "None" or stoplist != "None":
+            if startlist is not None or stoplist is not None:
                 FrameRight = FrameRight.append(
                     pd.DataFrame(
                         {"start": [startlist], "stop": [stoplist], "name": record.id},
