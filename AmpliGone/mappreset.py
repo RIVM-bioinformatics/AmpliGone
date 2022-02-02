@@ -70,18 +70,16 @@ def FindPreset(threads, data):
         # --> the 'SR' preset still applies but we keep it split
         # in case a custom set of parameters is necessary in the future
         return "sr", []
-    else:
-        if IsLongRead(avg_len) is True:
-            # this is probably oxford nanopore data
-            # --> set the preset to 'map-ont'
-            O1, O2 = 8, 24
-            E1, E2 = 2, 0
-            A, B = 4, 4
-            scoring = [A, B, O1, E1, O2, E2]
-
-            return "map-ont", scoring
-        ##! previous if-statement is not True.
-        # this might be very 'unstable' nextseq data,
-        # or from a platform we currently dont really support officially.
-        # fallback to 'sr' preset
-        return "sr", []
+    if IsLongRead(avg_len) is True:
+        # this is probably oxford nanopore data
+        # --> set the preset to 'map-ont'
+        O1, O2 = 8, 24
+        E1, E2 = 2, 0
+        A, B = 4, 4
+        scoring = [A, B, O1, E1, O2, E2]
+        return "map-ont", scoring
+    ##! previous if-statement is not True.
+    # this might be very 'unstable' nextseq data,
+    # or from a platform we currently dont really support officially.
+    # fallback to 'sr' preset
+    return "sr", []
