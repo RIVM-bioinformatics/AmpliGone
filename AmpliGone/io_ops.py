@@ -61,7 +61,7 @@ def LoadData(inputfile):
 
                 Reads.append((name, seq, qual))
         return Reads
-    elif is_bam(inputfile) is True:
+    if is_bam(inputfile) is True:
         for read in LoadBam(inputfile):
             if read.is_unmapped is True:
                 continue
@@ -95,7 +95,7 @@ def IndexReads(inputfile):
 
 def WriteOutput(output, ReadDict):
     with open(output, "w") as fileout:
-        for index in range(len(ReadDict)):
+        for index, k in enumerate(ReadDict):
             for key in ReadDict[index]:
                 if key == "Readname":
                     fileout.write("@" + ReadDict[index][key] + "\n")
