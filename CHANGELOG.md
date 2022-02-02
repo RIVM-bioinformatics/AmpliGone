@@ -1,5 +1,13 @@
 # Changelog
 
+### [0.4.1](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v0.4.0...v0.4.1) (2022-02-02)
+
+
+### Bug Fixes
+
+* don't report duplicate coordinates of same primer when ambiguity-primers are given ([f5449e2](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/f5449e2a5d5c9e502192ace4f836c90a45060afa))
+* use Nonetypes instead of string "None" ([f5449e2](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/f5449e2a5d5c9e502192ace4f836c90a45060afa))
+
 ## [0.4.0](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v0.3.3...v0.4.0) (2022-01-27)
 
 
