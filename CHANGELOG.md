@@ -1,5 +1,17 @@
 # Changelog
 
+### [0.4.3](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v0.4.2...v0.4.3) (2022-02-03)
+
+
+### Bug Fixes
+
+* remove unnecessary print statement ([c7bd712](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/c7bd71241f036791517d1d884f2458a45698e1a6))
+
+
+### Documentation
+
+* add `--error-rate` flag to user guide documentation ([9db3848](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/9db3848c6fcb817bd730273ec82eec5eeab7e835))
+
 ### [0.4.2](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v0.4.1...v0.4.2) (2022-02-03)
 
 
