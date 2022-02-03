@@ -153,6 +153,16 @@ def get_args(givenargs):
         required=False,
     )
 
+    optional_args.add_argument(
+        "--error-rate",
+        "-er",
+        type=int,
+        default=3,
+        metavar="N",
+        help="The maximum allowed error rate for the primer search. Use 0 for exact primer matches.\nDefault is 3. ",
+        required=False,
+    )
+
     flags = parser.parse_args(givenargs)
 
     return flags
@@ -198,7 +208,9 @@ def main():
 
     with cf.ThreadPoolExecutor(max_workers=args.threads) as ex:
         TP_indexreads = ex.submit(IndexReads, args.input)
-        TP_PrimerLists = ex.submit(MakeCoordinateLists, args.primers, args.reference)
+        TP_PrimerLists = ex.submit(
+            MakeCoordinateLists, args.primers, args.reference, args.error_rate
+        )
 
         IndexedReads = TP_indexreads.result()
         LeftPrimers, RightPrimers, Fleft, Fright = TP_PrimerLists.result()

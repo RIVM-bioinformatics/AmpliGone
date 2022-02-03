@@ -30,7 +30,7 @@ def FindAmbigousOptions(seq):
     return list(map("".join, product(*map(ambigs.get, seq))))
 
 
-def Primer_coordinates(inputprimer, reference):
+def Primer_coordinates(inputprimer, reference, err_rate=3):
     for record in SeqIO.parse(reference, "fasta"):
 
         possible_primers = FindAmbigousOptions(inputprimer.upper())
@@ -39,7 +39,7 @@ def Primer_coordinates(inputprimer, reference):
         stoplocs = []
         for option in possible_primers:
             for match in re.finditer(
-                f"(?:{str(option)}){{s<=3}}",
+                f"(?:{str(option)}){{s<={err_rate}}}",
                 str(record.seq),
                 re.IGNORECASE,
                 concurrent=True,
@@ -53,10 +53,11 @@ def Primer_coordinates(inputprimer, reference):
             startlocs = None
             stoplocs = None
             return startlocs, stoplocs
+        print(startlocs, stoplocs)
         return list(set(startlocs)), list(set(stoplocs))
 
 
-def find_orient(primerfile, ref):
+def find_orient(primerfile, ref, err_rate):
     left = ["LEFT", "PLUS", "POSITIVE", "FORWARD"]
     right = ["RIGHT", "MINUS", "NEGATIVE", "REVERSE"]
 
@@ -65,10 +66,10 @@ def find_orient(primerfile, ref):
 
     for record in SeqIO.parse(primerfile, "fasta"):
         if any(orient in record.id for orient in left) is True:
-            startlist, stoplist = Primer_coordinates(record.seq, ref)
+            startlist, stoplist = Primer_coordinates(record.seq, ref, err_rate)
             if startlist is None or stoplist is None:
                 startlist, stoplist = Primer_coordinates(
-                    record.seq.reverse_complement(), ref
+                    record.seq.reverse_complement(), ref, err_rate
                 )
             if startlist is not None or stoplist is not None:
                 FrameLeft = FrameLeft.append(
@@ -79,10 +80,10 @@ def find_orient(primerfile, ref):
                     ignore_index=True,
                 )
         if any(orient in record.id for orient in right) is True:
-            startlist, stoplist = Primer_coordinates(record.seq, ref)
+            startlist, stoplist = Primer_coordinates(record.seq, ref, err_rate)
             if startlist is None or stoplist is None:
                 startlist, stoplist = Primer_coordinates(
-                    record.seq.reverse_complement(), ref
+                    record.seq.reverse_complement(), ref, err_rate
                 )
             if startlist is not None or stoplist is not None:
                 FrameRight = FrameRight.append(
@@ -171,8 +172,8 @@ def WritePrimerExports(left, right, processeddata, out):
     filteredprimers.to_csv(out, index=False)
 
 
-def MakeCoordinateLists(primerfile, ref):
-    LeftPrimers, RightPrimers = find_orient(primerfile, ref)
+def MakeCoordinateLists(primerfile, ref, err_rate):
+    LeftPrimers, RightPrimers = find_orient(primerfile, ref, err_rate)
 
     LeftList = []
     RightList = []
