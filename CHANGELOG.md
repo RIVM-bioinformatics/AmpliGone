@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.4.2](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v0.4.1...v0.4.2) (2022-02-03)
+
+
+### Features
+
+* allow the primer-search error rate to be set by the user ([fddd94a](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/fddd94a555b57a35d3bb064c1d53b03777c72f24))
+
 ### [0.4.1](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v0.4.0...v0.4.1) (2022-02-02)
 
 
