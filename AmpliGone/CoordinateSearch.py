@@ -53,7 +53,6 @@ def Primer_coordinates(inputprimer, reference, err_rate=3):
             startlocs = None
             stoplocs = None
             return startlocs, stoplocs
-        print(startlocs, stoplocs)
         return list(set(startlocs)), list(set(stoplocs))
 
 
