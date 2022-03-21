@@ -16,12 +16,14 @@ import numpy as np
 import pandas as pd
 import parmap
 
-from .CoordinateSearch import MakeCoordinateLists, WritePrimerExports
+from .fasta2bed import MakeCoordinateLists, CoordinateListsToBed
 from .cut_reads import CutReads
 from .func import MyHelpFormatter, color
 from .io_ops import IndexReads, WriteOutput
 from .mappreset import FindPreset
 from .version import __version__
+
+from itertools import chain
 
 
 def get_args(givenargs):
@@ -44,14 +46,13 @@ def get_args(givenargs):
             parser.error("Input file doesn't end with one of {}".format(choices))
         return fname
 
-    def fasta_input(choices, fname):
-        if os.path.isfile(fname):
-            ext = "".join(pathlib.Path(fname).suffixes)
-            if ext not in choices:
-                parser.error("Input file doesn't end with one of {}".format(choices))
-            return fname
-        print(f'"{fname}" is not a file. Exiting...')
-        sys.exit(-1)
+    def check_extensions(choices, fname):
+        ext = "".join(pathlib.Path(fname).suffixes)
+        if ext not in choices:
+            parser.error(
+                f"Input file doesn't end with {choices[0] if len(choices) == 1 else f'one of {choices}'}"
+            )
+        return fname
 
     parser = argparse.ArgumentParser(
         prog="AmpliGone",
@@ -88,7 +89,7 @@ def get_args(givenargs):
     required_args.add_argument(
         "--reference",
         "-ref",
-        type=lambda s: fasta_input((".fasta", ".fa"), s),
+        type=lambda s: check_extensions((".fasta", ".fa"), s),
         metavar="File",
         help="Input Reference genome in FASTA format",
         required=True,
@@ -96,9 +97,9 @@ def get_args(givenargs):
     required_args.add_argument(
         "--primers",
         "-pr",
-        type=lambda s: fasta_input((".fasta", ".fa"), s),
+        type=lambda s: check_extensions((".fasta", ".fa", ".bed"), s),
         metavar="File",
-        help="Used primer sequences in FASTA format",
+        help="Used primer sequences in FASTA format or primer coordinates in BED format.\nNote that using bed-files overrides error-rate and ambiguity functionality",
         required=True,
     )
     required_args.add_argument(
@@ -116,8 +117,9 @@ def get_args(givenargs):
     optional_args.add_argument(
         "--export-primers",
         "-ep",
+        type=lambda s: check_extensions((".bed",), s),
         metavar="File",
-        help="Output csv file with found primer coordinates",
+        help="Output BED file with found primer coordinates if they are actually cut from the reads",
         required=False,
     )
 
@@ -156,10 +158,10 @@ def get_args(givenargs):
     optional_args.add_argument(
         "--error-rate",
         "-er",
-        type=int,
-        default=3,
+        type=float,
+        default=0.1,
         metavar="N",
-        help="The maximum allowed error rate for the primer search. Use 0 for exact primer matches.\nDefault is 3. ",
+        help="The maximum allowed error rate for the primer search. Use 0 for exact primer matches.\nDefault is '0.1'. ",
         required=False,
     )
 
@@ -172,8 +174,7 @@ def parallel(
     frame,
     function,
     workers,
-    LeftPrimers,
-    RightPrimers,
+    primer_df,
     reference,
     preset,
     scoring,
@@ -185,8 +186,7 @@ def parallel(
         parmap.map(
             function,
             zip(frame_split, tr),
-            LeftPrimers,
-            RightPrimers,
+            primer_df,
             reference,
             preset,
             scoring,
@@ -213,7 +213,7 @@ def main():
         )
 
         IndexedReads = TP_indexreads.result()
-        LeftPrimers, RightPrimers, Fleft, Fright = TP_PrimerLists.result()
+        primer_df = TP_PrimerLists.result()
 
     if len(IndexedReads.index) < 1 and args.to is True:
         ReadDict = IndexedReads.to_dict(orient="records")
@@ -246,7 +246,7 @@ def main():
             """
         )
 
-    if len(LeftPrimers) < 1 and len(RightPrimers) < 1:
+    if len(primer_df) < 1:
         print(
             f"""
     {color.RED}AmpliGone was unable to match any primers to the reference. AmpliGone is therefore unable to remove primers from the reads.
@@ -270,8 +270,7 @@ def main():
         IndexedReads,
         CutReads,
         args.threads,
-        LeftPrimers,
-        RightPrimers,
+        primer_df,
         args.reference,
         preset,
         scoring,
@@ -280,9 +279,14 @@ def main():
     ProcessedReads.reset_index(drop=True)
 
     if args.export_primers is not None:
-        WritePrimerExports(
-            Fleft, Fright, ProcessedReads["Removed_coordinates"], args.export_primers
-        )
+        removed_coods = set(chain(*ProcessedReads["Removed_coordinates"]))
+        filtered_primer_df = primer_df[
+            primer_df[["start", "stop"]].apply(
+                lambda r: any(cood in removed_coods for cood in range(*r)),
+                axis=1,
+            )
+        ]
+        CoordinateListsToBed(filtered_primer_df, args.export_primers)
 
     ProcessedReads = ProcessedReads.drop(columns=["Removed_coordinates"])
 

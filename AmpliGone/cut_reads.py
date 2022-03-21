@@ -1,5 +1,6 @@
 import mappy as mp
 import pandas as pd
+from itertools import chain
 
 from .cutlery import PositionInOrAfterPrimer, PositionInOrBeforePrimer
 
@@ -56,8 +57,17 @@ def cut_read(
     return seq, qual, removed_coords, query_start, query_end
 
 
-def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, workers):
+def CutReads(data, primer_df, reference, preset, scoring, amplicon_type, workers):
     Frame, _threadnumber = data
+    RVSet = FWSet = set()
+    for _, start, stop, strand in primer_df[["start", "stop", "strand"]].itertuples():
+        for cood in range(start, stop):
+            if strand == "+":
+                FWSet.add(cood)
+            if strand == "-":
+                RVSet.add(cood)
+    FWList = tuple(FWSet)
+    RVList = tuple(RVSet)
 
     Aln = mp.Aligner(
         reference,

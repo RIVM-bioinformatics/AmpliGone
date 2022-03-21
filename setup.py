@@ -21,7 +21,7 @@ setup(
     description="Ampligone is a tool which accurately removes primer sequences from FastQ NGS reads in an amplicon sequencing experiment",
     long_description=DESCR,
     long_description_content_type="text/markdown",
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     license="AGPLv3",
     packages=find_packages(),
     install_requires=[
@@ -29,7 +29,7 @@ setup(
         "pandas>=1.2.3",
         "numpy>=1.20",
         "mappy>=2.17",
-        "biopython>=1.78",
+        "biopython>=1.79",
         "parmap>=1.5.2",
         "regex>=2021.11.10",
         "tqdm>=4.59.0",
