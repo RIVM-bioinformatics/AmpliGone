@@ -64,7 +64,7 @@ def CoodListGen(primerfile, referencefile, err_rate=0.1):
             print(
                 f"Primer {primer.id} found on multiple locations on reverse strand: {coods}.\nCheck to see if this is intended."
             )
-        for start, stop in coods.union(rev_coods):
+        for start, end in coods.union(rev_coods):
             if any(o in primer.id for o in keyl):
                 strand = "+"
             elif any(o in primer.id for o in keyr):
@@ -77,7 +77,7 @@ def CoodListGen(primerfile, referencefile, err_rate=0.1):
             yield dict(
                 ref=ref_file.name,
                 start=start,
-                stop=stop,
+                end=end,
                 name=primer.id,
                 score=".",
                 strand=strand,
@@ -87,7 +87,7 @@ def CoodListGen(primerfile, referencefile, err_rate=0.1):
 
 
 def CoordinateListsToBed(df, outfile):
-    return df[["ref", "start", "stop", "name", "score", "strand"]].to_csv(
+    return df[["ref", "start", "end", "name", "score", "strand"]].to_csv(
         outfile, sep="\t", na_rep=".", header=False, index=False
     )
 

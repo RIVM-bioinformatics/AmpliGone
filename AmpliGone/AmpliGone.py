@@ -10,6 +10,7 @@ import concurrent.futures as cf
 import multiprocessing
 import os
 import pathlib
+from re import L
 import sys
 
 import numpy as np
@@ -208,12 +209,38 @@ def main():
 
     with cf.ThreadPoolExecutor(max_workers=args.threads) as ex:
         TP_indexreads = ex.submit(IndexReads, args.input)
-        TP_PrimerLists = ex.submit(
-            MakeCoordinateLists, args.primers, args.reference, args.error_rate
-        )
 
+        if not args.primers.endswith(".bed"):
+            TP_PrimerLists = ex.submit(
+                MakeCoordinateLists, args.primers, args.reference, args.error_rate
+            )
+            primer_df = TP_PrimerLists.result()
+        else:
+            primer_df = pd.read_csv(
+                args.primers,
+                sep="\t",
+                comment="#",
+                usecols=range(6),
+                header=None,
+                names=["ref", "start", "end", "name", "score", "strand"],
+                dtype=dict(
+                    ref=str,
+                    start="Int64",
+                    end="Int64",
+                    name=str,
+                    score="Int64",
+                    strand=str,
+                ),
+            )
+            primer_df = primer_df[
+                ~(
+                    primer_df.ref.str.startswith("browser ")
+                    | primer_df.ref.str.startswith("track ")
+                )
+            ]
+        # print(primer_df)
+        # exit(0)
         IndexedReads = TP_indexreads.result()
-        primer_df = TP_PrimerLists.result()
 
     if len(IndexedReads.index) < 1 and args.to is True:
         ReadDict = IndexedReads.to_dict(orient="records")
@@ -281,7 +308,7 @@ def main():
     if args.export_primers is not None:
         removed_coods = set(chain(*ProcessedReads["Removed_coordinates"]))
         filtered_primer_df = primer_df[
-            primer_df[["start", "stop"]].apply(
+            primer_df[["start", "end"]].apply(
                 lambda r: any(cood in removed_coods for cood in range(*r)),
                 axis=1,
             )

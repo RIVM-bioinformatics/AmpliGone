@@ -60,13 +60,13 @@ def cut_read(
 def CutReads(data, primer_df, reference, preset, scoring, amplicon_type, workers):
     Frame, _threadnumber = data
     RVSet = FWSet = set()
-    for _, start, stop, strand in primer_df[["start", "stop", "strand"]].itertuples():
-        for cood in range(start, stop):
+    for _, start, end, strand in primer_df[["start", "end", "strand"]].itertuples():
+        for cood in range(start, end):
             if strand == "+":
                 FWSet.add(cood)
-            if strand == "-":
+            elif strand == "-":
                 RVSet.add(cood)
-    FWList = tuple(FWSet)
+    FWList = tuple(FWSet)  # Since tuples are hashable
     RVList = tuple(RVSet)
 
     Aln = mp.Aligner(
