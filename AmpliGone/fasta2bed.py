@@ -130,8 +130,6 @@ if __name__ == "__main__":
 
     flags = args.parse_args()
 
-    df = MakeCoordinateLists(
-        flags.primers, flags.reference, flags["primer-mismatch-rate"]
-    )
+    df = MakeCoordinateLists(flags.primers, flags.reference, flags.primer_mismatch_rate)
 
     CoordinateListsToBed(df, flags.output)
