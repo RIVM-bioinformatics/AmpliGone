@@ -51,7 +51,7 @@ def get_args(givenargs):
         ext = "".join(pathlib.Path(fname).suffixes)
         if ext not in choices:
             parser.error(
-                f"Input file doesn't end with {choices[0] if len(choices) == 1 else f'one of {choices}'}"
+                f"File doesn't end with {choices[0] if len(choices) == 1 else f'one of {choices}'}"
             )
         return fname
 
