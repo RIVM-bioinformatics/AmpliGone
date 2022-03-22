@@ -20,7 +20,7 @@ import parmap
 from .fasta2bed import MakeCoordinateLists, CoordinateListsToBed
 from .cut_reads import CutReads
 from .func import MyHelpFormatter, color
-from .io_ops import IndexReads, WriteOutput
+from .io_ops import IndexReads, WriteOutput, read_bed
 from .mappreset import FindPreset
 from .version import __version__
 
@@ -216,28 +216,7 @@ def main():
             )
             primer_df = TP_PrimerLists.result()
         else:
-            primer_df = pd.read_csv(
-                args.primers,
-                sep="\t",
-                comment="#",
-                usecols=range(6),
-                header=None,
-                names=["ref", "start", "end", "name", "score", "strand"],
-                dtype=dict(
-                    ref=str,
-                    start="Int64",
-                    end="Int64",
-                    name=str,
-                    score="Int64",
-                    strand=str,
-                ),
-            )
-            primer_df = primer_df[
-                ~(
-                    primer_df.ref.str.startswith("browser ")
-                    | primer_df.ref.str.startswith("track ")
-                )
-            ]
+            primer_df = read_bed(args.primers)
         # print(primer_df)
         # exit(0)
         IndexedReads = TP_indexreads.result()

@@ -33,6 +33,33 @@ def fastq_opener(inputfile):
     return read_fastq(inputfile)
 
 
+def read_bed(filename):
+    primer_df = pd.read_csv(
+        filename,
+        sep="\t",
+        comment="#",
+        usecols=range(6),
+        header=None,
+        names=["ref", "start", "end", "name", "score", "strand"],
+        dtype=dict(
+            ref=str,
+            start="Int64",
+            end="Int64",
+            name=str,
+            score="Int64",
+            strand=str,
+        ),
+    )
+    primer_df = primer_df[
+        ~(
+            primer_df.ref.str.startswith("browser ")
+            | primer_df.ref.str.startswith("track ")
+        )
+    ]
+
+    return primer_df
+
+
 def LoadBam(inputfile):
     return pysam.AlignmentFile(inputfile, "rb")
 
