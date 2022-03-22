@@ -123,7 +123,7 @@ if __name__ == "__main__":
     args.add_argument(
         "--primer-mismatch-rate",
         metavar="File",
-        type=str,
+        type=float,
         help="The fraction of mismatches a primer can have with respect to the reference.",
         default=0.1,
     )
