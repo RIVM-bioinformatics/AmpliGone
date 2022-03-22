@@ -46,7 +46,7 @@ def read_bed(filename):
             start="Int64",
             end="Int64",
             name=str,
-            score="Int64",
+            score=str,
             strand=str,
         ),
     )
