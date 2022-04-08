@@ -29,7 +29,10 @@ def get_coords(seq, ref_seq, err_rate=0.1):
 
 
 def MakeCoordinateLists(*args, **kwargs):
-    return pd.DataFrame(CoodListGen(*args, **kwargs))
+    return pd.DataFrame(
+        CoodListGen(*args, **kwargs),
+        columns=["ref", "start", "end", "name", "score", "strand"],
+    )
 
 
 def CoodListGen(primerfile, referencefile, err_rate=0.1):
