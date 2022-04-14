@@ -14,9 +14,7 @@ def GetQualRange(Qlist):
 
 
 def GetLenRange(SList):
-    AllLengths = []
-    for i in SList:
-        AllLengths.append(len(i))
+    AllLengths = [len(i) for i in SList]
     return len(list(set(AllLengths)))
 
 
