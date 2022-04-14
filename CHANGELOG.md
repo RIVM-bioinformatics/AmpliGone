@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.0.1](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v1.0.0...v1.0.1) (2022-04-14)
+
+
+### Continuous Integration
+
+* update github actions workflow, split package upload to separate workflow ([77c13a1](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/77c13a1a84323070541ef65bad57922cf29a0b77))
+
 ## [1.0.0](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v0.4.3...v1.0.0) (2022-04-14)
 
 
