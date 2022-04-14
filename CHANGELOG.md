@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.0.0](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v0.4.3...v1.0.0) (2022-04-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* Export BED file of cut primers
+
+### Features
+
+* Add support for BED file input ([eaa60a0](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/eaa60a048e0361e8b1ed8ba0f55ec995ab8314e8))
+* Export BED file of cut primers ([f51d222](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/f51d222f9bc6f0e6ca0e55267b128cf7a45722eb))
+
+
+### Bug Fixes
+
+* Add seq and revseq to coordinatelist ([eb27331](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/eb27331ec3110b8924eee0c6dc1bc4f8201516bf))
+* Fix parsing error rate from cli ([28976f2](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/28976f2260385481e67d4232dbfbf7f643e054b6))
+* Fix parsing of "." in score column ([cc6913b](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/cc6913b515d549394b2c900356930ef4be79d7b8))
+* Fix running fasta2bed script ([f8545a4](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/f8545a432097ea27c39d0941177b34988ca52845))
+* Output empty bed if no primers are found ([ca67b0b](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/ca67b0bfa79d3fcd6d759f91abf4809505f72fbf))
+
+
+### Dependencies
+
+* update all python versions mentions to 3.8 ([89ced9c](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/89ced9cb1d0070b051300e987c7edc5cfe62ea23))
+
+
+### Documentation
+
+* add docstrings to `AmpliGone.mappreset` ([6d9c32c](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/6d9c32c3d25f84299cf0432c8d3aeb2c64dd5c13))
+* add docstrings to functions in `AmpliGone.AmpliGone` ([54a0a01](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/54a0a01531953cc1e38b2e6a7eecb5d8fd21357c))
+* add docstrings to functions in AmpliGone.fasta2bed ([ea2d5c6](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/ea2d5c6b09bf976b052e3c4d716a0ca216c785e8))
+* add docstrings to functions in AmpliGone.io_ops ([d9c60ae](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/d9c60aeaf10f51245b89593c4f4f1a08c3980b92))
+* Update installation instructions ([fbb7e0e](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/fbb7e0ec47008301f2a303044abe20790f0864d4))
+* Update user guide ([071e71f](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/071e71fecf972731ccb8db83715a032c7fdc4406))
+
 ### [0.4.3](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v0.4.2...v0.4.3) (2022-02-03)
 
 
