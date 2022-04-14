@@ -4,8 +4,8 @@ from setuptools import find_packages, setup
 
 from AmpliGone.version import __version__
 
-if sys.version_info.major != 3 or sys.version_info.minor < 7:
-    print("Error: you must execute setup.py using Python 3.7 or later")
+if sys.version_info.major != 3 or sys.version_info.minor < 8:
+    print("Error: you must execute setup.py using Python 3.8 or later")
     sys.exit(1)
 
 with open("README.md", "r", encoding="utf-8") as readme:
@@ -44,7 +44,7 @@ setup(
     zip_safe=False,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
-        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "License :: OSI Approved :: GNU Affero General Public License v3",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
         "Intended Audience :: Science/Research",
