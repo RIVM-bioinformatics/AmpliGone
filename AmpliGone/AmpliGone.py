@@ -11,19 +11,18 @@ import multiprocessing
 import os
 import pathlib
 import sys
+from itertools import chain
 
 import numpy as np
 import pandas as pd
 import parmap
 
-from .fasta2bed import MakeCoordinateLists, CoordinateListsToBed
 from .cut_reads import CutReads
+from .fasta2bed import CoordinateListsToBed, MakeCoordinateLists
 from .func import MyHelpFormatter, color
 from .io_ops import IndexReads, WriteOutput, read_bed
 from .mappreset import FindPreset
 from .version import __version__
-
-from itertools import chain
 
 
 def get_args(givenargs):
@@ -171,14 +170,7 @@ def get_args(givenargs):
 
 
 def parallel(
-    frame,
-    function,
-    workers,
-    primer_df,
-    reference,
-    preset,
-    scoring,
-    amplicon_type,
+    frame, function, workers, primer_df, reference, preset, scoring, amplicon_type,
 ):
     frame_split = np.array_split(frame, workers)
     tr = [*range(workers)]
@@ -287,8 +279,7 @@ def main():
         removed_coods = set(chain(*ProcessedReads["Removed_coordinates"]))
         filtered_primer_df = primer_df[
             primer_df[["start", "end"]].apply(
-                lambda r: any(cood in removed_coods for cood in range(*r)),
-                axis=1,
+                lambda r: any(cood in removed_coods for cood in range(*r)), axis=1,
             )
         ]
         CoordinateListsToBed(filtered_primer_df, args.export_primers)

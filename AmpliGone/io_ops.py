@@ -42,12 +42,7 @@ def read_bed(filename):
         header=None,
         names=["ref", "start", "end", "name", "score", "strand"],
         dtype=dict(
-            ref=str,
-            start="Int64",
-            end="Int64",
-            name=str,
-            score=str,
-            strand=str,
+            ref=str, start="Int64", end="Int64", name=str, score=str, strand=str,
         ),
     )
     primer_df = primer_df[

@@ -1,11 +1,9 @@
 import argparse
-import regex as re
-
 from itertools import product
 
 import pandas as pd
-from Bio import SeqIO
-from Bio import Seq
+import regex as re
+from Bio import Seq, SeqIO
 
 
 def FindAmbigousOptions(seq):
