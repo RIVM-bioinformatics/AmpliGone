@@ -3,6 +3,21 @@ from functools import lru_cache
 
 @lru_cache(maxsize=2000000)
 def PositionInOrBeforePrimer(pos, clist):
+    """Given a position and a list of positions, return True if the position is in the list or is before
+    the nearest position in the list
+
+    Parameters
+    ----------
+    pos
+        the position on a sequence query
+    clist
+        a tuple of integers, the positions of the primers
+
+    Returns
+    -------
+        Boolean value
+
+    """
     d = lambda x: abs(x - pos)
     near = min(clist, key=d)
     return pos <= near
@@ -10,6 +25,21 @@ def PositionInOrBeforePrimer(pos, clist):
 
 @lru_cache(maxsize=2000000)
 def PositionInOrAfterPrimer(pos, clist):
+    """Given a position and a list of positions, return True if the position is in the list or after the
+    closest position in the list
+
+    Parameters
+    ----------
+    pos
+        the position on a sequence query
+    clist
+        a tuple of integers, the positions of the primers
+
+    Returns
+    -------
+        Boolean value
+
+    """
     d = lambda x: abs(x - pos)
     near = min(clist, key=d)
     return pos >= near

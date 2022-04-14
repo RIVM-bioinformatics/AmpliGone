@@ -11,47 +11,100 @@ import multiprocessing
 import os
 import pathlib
 import sys
+from itertools import chain
 
 import numpy as np
 import pandas as pd
 import parmap
 
-from .CoordinateSearch import MakeCoordinateLists, WritePrimerExports
 from .cut_reads import CutReads
+from .fasta2bed import CoordinateListsToBed, MakeCoordinateLists
 from .func import MyHelpFormatter, color
-from .io_ops import IndexReads, WriteOutput
+from .io_ops import IndexReads, WriteOutput, read_bed
 from .mappreset import FindPreset
 from .version import __version__
 
 
 def get_args(givenargs):
-    """
-    Parse the cmd args
+    """It takes the arguments given to the script and parses them into the argparse namespace
+
+    Parameters
+    ----------
+    givenargs
+        the arguments given to the script
+
+    Returns
+    -------
+        The arguments that are given to the program.
+
     """
 
     def fastq_or_bam(choices, fname):
+        """If the input file exists, check that it ends with one of the extensions in the list of choices. If
+        it does, return the file name. If it doesn't, print an error message and exit
+
+        Parameters
+        ----------
+        choices
+            a list of file extensions that are allowed
+        fname
+            the name of the file to be processed
+
+        Returns
+        -------
+            the file name if it is a file and if it ends with one of the choices.
+
+        """
         if os.path.isfile(fname):
             ext = "".join(pathlib.Path(fname).suffixes)
             if ext not in choices:
-                parser.error("Input file doesn't end with one of {}".format(choices))
+                parser.error(f"Input file doesn't end with one of {choices}")
             return fname
         print(f'"{fname}" is not a file. Exiting...')
         sys.exit(-1)
 
     def fastq_output(choices, fname):
+        """If the file extension of the input file is not one of the choices, then raise an error
+
+        Parameters
+        ----------
+        choices
+            a list of file extensions that are allowed
+        fname
+            The name of the file to be read.
+
+        Returns
+        -------
+            The file name.
+
+        """
         ext = "".join(pathlib.Path(fname).suffixes)
         if ext not in choices:
-            parser.error("Input file doesn't end with one of {}".format(choices))
+            parser.error(f"Input file doesn't end with one of {choices}")
         return fname
 
-    def fasta_input(choices, fname):
-        if os.path.isfile(fname):
-            ext = "".join(pathlib.Path(fname).suffixes)
-            if ext not in choices:
-                parser.error("Input file doesn't end with one of {}".format(choices))
-            return fname
-        print(f'"{fname}" is not a file. Exiting...')
-        sys.exit(-1)
+    def check_extensions(choices, fname):
+        """It checks that the file extension of the file name passed to it is one of the extensions in the list
+        passed to it
+
+        Parameters
+        ----------
+        choices
+            a list of strings that are valid extensions
+        fname
+            The name of the file to be read.
+
+        Returns
+        -------
+            The file name.
+
+        """
+        ext = "".join(pathlib.Path(fname).suffixes)
+        if ext not in choices:
+            parser.error(
+                f"File doesn't end with {choices[0] if len(choices) == 1 else f'one of {choices}'}"
+            )
+        return fname
 
     parser = argparse.ArgumentParser(
         prog="AmpliGone",
@@ -88,7 +141,7 @@ def get_args(givenargs):
     required_args.add_argument(
         "--reference",
         "-ref",
-        type=lambda s: fasta_input((".fasta", ".fa"), s),
+        type=lambda s: check_extensions((".fasta", ".fa"), s),
         metavar="File",
         help="Input Reference genome in FASTA format",
         required=True,
@@ -96,9 +149,9 @@ def get_args(givenargs):
     required_args.add_argument(
         "--primers",
         "-pr",
-        type=lambda s: fasta_input((".fasta", ".fa"), s),
+        type=lambda s: check_extensions((".fasta", ".fa", ".bed"), s),
         metavar="File",
-        help="Used primer sequences in FASTA format",
+        help="Used primer sequences in FASTA format or primer coordinates in BED format.\nNote that using bed-files overrides error-rate and ambiguity functionality",
         required=True,
     )
     required_args.add_argument(
@@ -116,8 +169,9 @@ def get_args(givenargs):
     optional_args.add_argument(
         "--export-primers",
         "-ep",
+        type=lambda s: check_extensions((".bed",), s),
         metavar="File",
-        help="Output csv file with found primer coordinates",
+        help="Output BED file with found primer coordinates if they are actually cut from the reads",
         required=False,
     )
 
@@ -156,10 +210,10 @@ def get_args(givenargs):
     optional_args.add_argument(
         "--error-rate",
         "-er",
-        type=int,
-        default=3,
+        type=float,
+        default=0.1,
         metavar="N",
-        help="The maximum allowed error rate for the primer search. Use 0 for exact primer matches.\nDefault is 3. ",
+        help="The maximum allowed error rate for the primer search. Use 0 for exact primer matches.\nDefault is '0.1'. ",
         required=False,
     )
 
@@ -172,8 +226,7 @@ def parallel(
     frame,
     function,
     workers,
-    LeftPrimers,
-    RightPrimers,
+    primer_df,
     reference,
     preset,
     scoring,
@@ -185,8 +238,7 @@ def parallel(
         parmap.map(
             function,
             zip(frame_split, tr),
-            LeftPrimers,
-            RightPrimers,
+            primer_df,
             reference,
             preset,
             scoring,
@@ -208,12 +260,17 @@ def main():
 
     with cf.ThreadPoolExecutor(max_workers=args.threads) as ex:
         TP_indexreads = ex.submit(IndexReads, args.input)
-        TP_PrimerLists = ex.submit(
-            MakeCoordinateLists, args.primers, args.reference, args.error_rate
-        )
 
+        if not args.primers.endswith(".bed"):
+            TP_PrimerLists = ex.submit(
+                MakeCoordinateLists, args.primers, args.reference, args.error_rate
+            )
+            primer_df = TP_PrimerLists.result()
+        else:
+            primer_df = read_bed(args.primers)
+        # print(primer_df)
+        # exit(0)
         IndexedReads = TP_indexreads.result()
-        LeftPrimers, RightPrimers, Fleft, Fright = TP_PrimerLists.result()
 
     if len(IndexedReads.index) < 1 and args.to is True:
         ReadDict = IndexedReads.to_dict(orient="records")
@@ -246,7 +303,7 @@ def main():
             """
         )
 
-    if len(LeftPrimers) < 1 and len(RightPrimers) < 1:
+    if len(primer_df) < 1:
         print(
             f"""
     {color.RED}AmpliGone was unable to match any primers to the reference. AmpliGone is therefore unable to remove primers from the reads.
@@ -270,8 +327,7 @@ def main():
         IndexedReads,
         CutReads,
         args.threads,
-        LeftPrimers,
-        RightPrimers,
+        primer_df,
         args.reference,
         preset,
         scoring,
@@ -280,9 +336,14 @@ def main():
     ProcessedReads.reset_index(drop=True)
 
     if args.export_primers is not None:
-        WritePrimerExports(
-            Fleft, Fright, ProcessedReads["Removed_coordinates"], args.export_primers
-        )
+        removed_coords = set(chain(*ProcessedReads["Removed_coordinates"]))
+        filtered_primer_df = primer_df[
+            primer_df[["start", "end"]].apply(
+                lambda r: any(coord in removed_coords for coord in range(*r)),
+                axis=1,
+            )
+        ]
+        CoordinateListsToBed(filtered_primer_df, args.export_primers)
 
     ProcessedReads = ProcessedReads.drop(columns=["Removed_coordinates"])
 

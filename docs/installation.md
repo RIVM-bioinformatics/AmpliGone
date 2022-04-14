@@ -2,22 +2,29 @@
 
 AmpliGone is only available on Linux (or Linux-based) operating systems. MacOS may also work but is not tested. AmpliGone will *not work* on Windows.
 
-AmpliGone will be made available for installation through Conda and pip. However, this is currently not yet working.  
-We will update these docs when installation through Conda and/or pip is available.
+AmpliGone is available via [PyPI](https://pypi.org/project/AmpliGone/), and and can be installed using pip:
+
+```bash
+pip install AmpliGone
+```
+
+???+ note
+    AmpliGone is not yet available via Conda. We will update these docs when this is available.
 
 ## Prerequisites
 
-AmpliGone requires Python 3.7 or later to be installed on your system (or in an environment).
+AmpliGone requires Python 3.8 or later to be installed on your system (or in an environment).
 
-Other dependencies will be installed during the installation, you don't have to install them manually. These extra dependencies are as follows:
+Other dependencies will be installed during setup, you don't have to install them manually. These extra dependencies are as follows:
 
-* pysam>=0.16
-* pandas>=1.2.3
-* numpy>=1.20
-* mappy>=2.17
-* biopython>=1.78
-* parmap>=1.5.2
-* tqdm>=4.59.0
+* pysam ≥ 0.16
+* pandas ≥ 1.2.3
+* numpy ≥ 1.20
+* mappy ≥ 2.17
+* biopython ≥ 1.79
+* parmap ≥ 1.5.2
+* regex ≥ 2021.11.10
+* tqdm ≥ 4.59.0
 
 We strongly advise you to use a conda environment (or similar) to make sure there won't be any conflicts in package dependencies.
 
@@ -59,7 +66,7 @@ To do this, simply add the following structure to your conda-environment recipe,
 dependencies:
     - pip
     - pip:
-        - git+https://github.com/RIVM-bioinformatics/AmpliGone.git@{VERSION}
+        - AmpliGone
 ```
 
 Conda will now install AmpliGone and its dependencies in the specified snakemake conda-environment.

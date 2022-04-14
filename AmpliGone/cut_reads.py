@@ -56,8 +56,17 @@ def cut_read(
     return seq, qual, removed_coords, query_start, query_end
 
 
-def CutReads(data, FWList, RVList, reference, preset, scoring, amplicon_type, workers):
+def CutReads(data, primer_df, reference, preset, scoring, amplicon_type, workers):
     Frame, _threadnumber = data
+    RVSet = FWSet = set()
+    for _, start, end, strand in primer_df[["start", "end", "strand"]].itertuples():
+        for coord in range(start, end):
+            if strand == "+":
+                FWSet.add(coord)
+            elif strand == "-":
+                RVSet.add(coord)
+    FWList = tuple(FWSet)  # Since tuples are hashable
+    RVList = tuple(RVSet)
 
     Aln = mp.Aligner(
         reference,
