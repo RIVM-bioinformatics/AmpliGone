@@ -4,8 +4,8 @@ from setuptools import find_packages, setup
 
 from AmpliGone.version import __version__
 
-if sys.version_info.major != 3 or sys.version_info.minor < 7:
-    print("Error: you must execute setup.py using Python 3.7 or later")
+if sys.version_info.major != 3 or sys.version_info.minor < 8:
+    print("Error: you must execute setup.py using Python 3.8 or later")
     sys.exit(1)
 
 with open("README.md", "r", encoding="utf-8") as readme:
@@ -21,7 +21,7 @@ setup(
     description="Ampligone is a tool which accurately removes primer sequences from FastQ NGS reads in an amplicon sequencing experiment",
     long_description=DESCR,
     long_description_content_type="text/markdown",
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     license="AGPLv3",
     packages=find_packages(),
     install_requires=[
@@ -29,7 +29,7 @@ setup(
         "pandas>=1.2.3",
         "numpy>=1.20",
         "mappy>=2.17",
-        "biopython>=1.78",
+        "biopython>=1.79",
         "parmap>=1.5.2",
         "regex>=2021.11.10",
         "tqdm>=4.59.0",
@@ -44,7 +44,7 @@ setup(
     zip_safe=False,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
-        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "License :: OSI Approved :: GNU Affero General Public License v3",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
         "Intended Audience :: Science/Research",
