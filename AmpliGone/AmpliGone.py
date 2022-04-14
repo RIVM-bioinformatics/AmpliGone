@@ -10,7 +10,6 @@ import concurrent.futures as cf
 import multiprocessing
 import os
 import pathlib
-from re import L
 import sys
 
 import numpy as np

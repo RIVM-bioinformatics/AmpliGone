@@ -1,6 +1,5 @@
 import mappy as mp
 import pandas as pd
-from itertools import chain
 
 from .cutlery import PositionInOrAfterPrimer, PositionInOrBeforePrimer
 
