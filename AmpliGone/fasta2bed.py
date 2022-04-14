@@ -65,12 +65,12 @@ def MakeCoordinateLists(*args, **kwargs):
 
     """
     return pd.DataFrame(
-        CoodListGen(*args, **kwargs),
+        CoordListGen(*args, **kwargs),
         columns=["ref", "start", "end", "name", "score", "strand", "seq", "revcomp"],
     )
 
 
-def CoodListGen(primerfile, referencefile, err_rate=0.1):
+def CoordListGen(primerfile, referencefile, err_rate=0.1):
     """Takes a fasta file of primers and a fasta file of a reference sequence, and returns a list of
     dictionaries containing the coordinates of the primers in the reference sequence
 
@@ -96,26 +96,26 @@ def CoodListGen(primerfile, referencefile, err_rate=0.1):
         seq = str(primer.seq)
         revcomp = Seq.reverse_complement(seq)
 
-        coods = get_coords(seq, ref_seq, err_rate)
-        rev_coods = get_coords(revcomp, ref_seq, err_rate)
-        if coods and rev_coods:
+        coords = get_coords(seq, ref_seq, err_rate)
+        rev_coords = get_coords(revcomp, ref_seq, err_rate)
+        if coords and rev_coords:
             print(
                 f"Primer {primer.id} found on both forward and reverse strand of {ref_file.name}.\nCheck to see if this is intended."
             )
-        if not coods and not rev_coods:
+        if not coords and not rev_coords:
             print(
                 f"Skipping {primer.id} as it is found on neither forward or reverse strand of {ref_file.name}.\nCheck to see if this is intended."
             )
             continue
-        if coods and len(coods) > 1:
+        if coords and len(coords) > 1:
             print(
-                f"Primer {primer.id} found on multiple locations on forward strand: \n\t{coods}.\nCheck to see if this is intended."
+                f"Primer {primer.id} found on multiple locations on forward strand: \n\t{coords}.\nCheck to see if this is intended."
             )
-        if rev_coods and len(rev_coods) > 1:
+        if rev_coords and len(rev_coords) > 1:
             print(
-                f"Primer {primer.id} found on multiple locations on reverse strand: {coods}.\nCheck to see if this is intended."
+                f"Primer {primer.id} found on multiple locations on reverse strand: {coords}.\nCheck to see if this is intended."
             )
-        for start, end in coods.union(rev_coods):
+        for start, end in coords.union(rev_coords):
             if any(o in primer.id for o in keyl):
                 strand = "+"
             elif any(o in primer.id for o in keyr):
