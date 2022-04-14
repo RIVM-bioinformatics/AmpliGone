@@ -32,6 +32,8 @@ def fastq_opener(inputfile):
         return read_gzip(inputfile)
     return read_fastq(inputfile)
 
+def LoadBam(inputfile):
+    return pysam.AlignmentFile(inputfile, "rb")
 
 def read_bed(filename):
     primer_df = pd.read_csv(
@@ -53,10 +55,6 @@ def read_bed(filename):
     ]
 
     return primer_df
-
-
-def LoadBam(inputfile):
-    return pysam.AlignmentFile(inputfile, "rb")
 
 
 def FlipStrand(seq, qual):
