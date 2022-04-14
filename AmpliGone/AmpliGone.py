@@ -26,26 +26,79 @@ from .version import __version__
 
 
 def get_args(givenargs):
-    """
-    Parse the cmd args
+    """It takes the arguments given to the script and parses them into the argparse namespace
+
+    Parameters
+    ----------
+    givenargs
+        the arguments given to the script
+
+    Returns
+    -------
+        The arguments that are given to the program.
+
     """
 
     def fastq_or_bam(choices, fname):
+        """If the input file exists, check that it ends with one of the extensions in the list of choices. If
+        it does, return the file name. If it doesn't, print an error message and exit
+
+        Parameters
+        ----------
+        choices
+            a list of file extensions that are allowed
+        fname
+            the name of the file to be processed
+
+        Returns
+        -------
+            the file name if it is a file and if it ends with one of the choices.
+
+        """
         if os.path.isfile(fname):
             ext = "".join(pathlib.Path(fname).suffixes)
             if ext not in choices:
-                parser.error("Input file doesn't end with one of {}".format(choices))
+                parser.error(f"Input file doesn't end with one of {choices}")
             return fname
         print(f'"{fname}" is not a file. Exiting...')
         sys.exit(-1)
 
     def fastq_output(choices, fname):
+        """If the file extension of the input file is not one of the choices, then raise an error
+
+        Parameters
+        ----------
+        choices
+            a list of file extensions that are allowed
+        fname
+            The name of the file to be read.
+
+        Returns
+        -------
+            The file name.
+
+        """
         ext = "".join(pathlib.Path(fname).suffixes)
         if ext not in choices:
-            parser.error("Input file doesn't end with one of {}".format(choices))
+            parser.error(f"Input file doesn't end with one of {choices}")
         return fname
 
     def check_extensions(choices, fname):
+        """It checks that the file extension of the file name passed to it is one of the extensions in the list
+        passed to it
+
+        Parameters
+        ----------
+        choices
+            a list of strings that are valid extensions
+        fname
+            The name of the file to be read.
+
+        Returns
+        -------
+            The file name.
+
+        """
         ext = "".join(pathlib.Path(fname).suffixes)
         if ext not in choices:
             parser.error(
@@ -170,7 +223,14 @@ def get_args(givenargs):
 
 
 def parallel(
-    frame, function, workers, primer_df, reference, preset, scoring, amplicon_type,
+    frame,
+    function,
+    workers,
+    primer_df,
+    reference,
+    preset,
+    scoring,
+    amplicon_type,
 ):
     frame_split = np.array_split(frame, workers)
     tr = [*range(workers)]
@@ -276,10 +336,11 @@ def main():
     ProcessedReads.reset_index(drop=True)
 
     if args.export_primers is not None:
-        removed_coods = set(chain(*ProcessedReads["Removed_coordinates"]))
+        removed_coords = set(chain(*ProcessedReads["Removed_coordinates"]))
         filtered_primer_df = primer_df[
             primer_df[["start", "end"]].apply(
-                lambda r: any(cood in removed_coods for cood in range(*r)), axis=1,
+                lambda r: any(coord in removed_coords for coord in range(*r)),
+                axis=1,
             )
         ]
         CoordinateListsToBed(filtered_primer_df, args.export_primers)
