@@ -20,11 +20,16 @@ Additionally, AmpliGone works best with reads that have already been processed b
 
 ### Primers
 
-AmpliGone searches for the primer coordinates based on the given reference. It does so by matching a given primer to the reference, up to 3 differences (substitutions) between primer and reference are tolerated before the coordinates can no longer be found.
+AmpliGone has two options for primer input: [BED](https://en.wikipedia.org/wiki/BED_(file_format)) and [fasta](https://en.wikipedia.org/wiki/FASTA_format).
+The BED format specifies the coordinates of the primers with respect to the given reference genome. If this is the format you use, you can skip to [Primer Orientation](#primer-orientation)
+
+When the primers are supplied in fasta format, AmpliGone searches for the primer coordinates based on the given reference.
+By default, mismatches are tolerated for up to 0.1 of the length of the primer sequence.
 It's therefore important that the given primers adequately match the given reference, otherwise the primer-coordinates cannot be determined.
 
-If necessary, you can adjust the maximum amount of differences (substitutions) which are tolerated to be either more lenient or stringent. You can do so by giving the `--error-rate`/ `-er` flag in your command, followed by a single number. For example: `--error-rate 1`
+If necessary, you can adjust the maximum amount of differences (substitutions) which are tolerated to be either more lenient or stringent. You can do so by giving the `--error-rate`/ `-er` flag in your command, followed by a single number. For example `--error-rate 0.15` can be used to make the search more leniant.
 
+### Primer Orientation
 AmpliGone determines whether a given sequence is considered to be a 'forward primer' or a 'reverse primer'. This information is taken from the name of a primer sequence in the FASTA header with specific keywords, the usable keywords are as follows:
 
 **Forward primers**
