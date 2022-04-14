@@ -30,9 +30,7 @@ def SequenceStability(QualRange, LengthRange, avg_qual, avg_len):
 
 
 def IsLongRead(avg_len):
-    if avg_len > 300:
-        return True
-    return False
+    return avg_len > 300
 
 
 def FindPreset(threads, data):
