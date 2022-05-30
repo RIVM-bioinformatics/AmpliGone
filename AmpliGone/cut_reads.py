@@ -58,7 +58,8 @@ def cut_read(
 
 def CutReads(data, primer_df, reference, preset, scoring, amplicon_type, workers):
     Frame, _threadnumber = data
-    RVSet = FWSet = set()
+    RVSet = set()
+    FWSet = set()
     for _, start, end, strand in primer_df[["start", "end", "strand"]].itertuples():
         for coord in range(start, end):
             if strand == "+":
@@ -85,7 +86,8 @@ def CutReads(data, primer_df, reference, preset, scoring, amplicon_type, workers
         ["Readname", "Sequence", "Qualities"]
     ].itertuples():
 
-        removed_coords_fw = removed_coords_rv = []
+        removed_coords_fw = []
+        removed_coords_rv = []
         max_iter = 10  # If more iterations are needed, the sequence is discarded (not recorded)
         previous_seq = "impossible"
         cutting_is_done = False
