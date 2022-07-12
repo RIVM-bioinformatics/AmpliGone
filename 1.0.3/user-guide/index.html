@@ -1,0 +1,860 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.3.9">
+    
+    
+      
+        <title>User guide - AmpliGone</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.1d29e8d0.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.cbb835fc.min.css">
+        
+      
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="light-blue">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#user-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-component="outdated" hidden>
+        <aside class="md-banner md-banner--warning">
+          
+        </aside>
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="AmpliGone" class="md-header__button md-logo" aria-label="AmpliGone" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 2h2v2c0 1.44.68 2.61 1.88 3.78.86.83 2.01 1.63 3.21 2.42l-1.83 1.19C8.27 10.72 7.31 10 6.5 9.21 5.07 7.82 4 6.1 4 4V2m14 0h2v2c0 2.1-1.07 3.82-2.5 5.21-1.41 1.38-3.21 2.52-4.96 3.63-1.75 1.12-3.45 2.21-4.66 3.38C6.68 17.39 6 18.56 6 20v2H4v-2c0-2.1 1.07-3.82 2.5-5.21 1.41-1.38 3.21-2.52 4.96-3.63 1.75-1.12 3.45-2.21 4.66-3.38C17.32 6.61 18 5.44 18 4V2m-3.26 10.61c.99.67 1.95 1.39 2.76 2.18C18.93 16.18 20 17.9 20 20v2h-2v-2c0-1.44-.68-2.61-1.88-3.78-.86-.83-2.01-1.63-3.21-2.42l1.83-1.19M7 3h10v1l-.06.5H7.06L7 4V3m.68 3h8.64c-.24.34-.52.69-.9 1.06l-.51.44H9.07l-.49-.44c-.38-.37-.66-.72-.9-1.06m1.41 10.5h5.84l.49.44c.38.37.66.72.9 1.06H7.68c.24-.34.52-.69.9-1.06l.51-.44m-2.03 3h9.88l.06.5v1H7v-1l.06-.5Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AmpliGone
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              User guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="light-blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="orange"  aria-label="Switch light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/RIVM-bioinformatics/AmpliGone" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    RIVM-bioinformatics/AmpliGone
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href=".." class="md-tabs__link">
+      Home
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../installation/" class="md-tabs__link">
+      Installation
+    </a>
+  </li>
+
+      
+        
+  
+  
+    
+  
+
+
+  <li class="md-tabs__item">
+    <a href="./" class="md-tabs__link md-tabs__link--active">
+      User guide
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../amplicon-types/" class="md-tabs__link">
+      Amplicon types
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../changelog/" class="md-tabs__link">
+      Changelog
+    </a>
+  </li>
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="AmpliGone" class="md-nav__button md-logo" aria-label="AmpliGone" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 2h2v2c0 1.44.68 2.61 1.88 3.78.86.83 2.01 1.63 3.21 2.42l-1.83 1.19C8.27 10.72 7.31 10 6.5 9.21 5.07 7.82 4 6.1 4 4V2m14 0h2v2c0 2.1-1.07 3.82-2.5 5.21-1.41 1.38-3.21 2.52-4.96 3.63-1.75 1.12-3.45 2.21-4.66 3.38C6.68 17.39 6 18.56 6 20v2H4v-2c0-2.1 1.07-3.82 2.5-5.21 1.41-1.38 3.21-2.52 4.96-3.63 1.75-1.12 3.45-2.21 4.66-3.38C17.32 6.61 18 5.44 18 4V2m-3.26 10.61c.99.67 1.95 1.39 2.76 2.18C18.93 16.18 20 17.9 20 20v2h-2v-2c0-1.44-.68-2.61-1.88-3.78-.86-.83-2.01-1.63-3.21-2.42l1.83-1.19M7 3h10v1l-.06.5H7.06L7 4V3m.68 3h8.64c-.24.34-.52.69-.9 1.06l-.51.44H9.07l-.49-.44c-.38-.37-.66-.72-.9-1.06m1.41 10.5h5.84l.49.44c.38.37.66.72.9 1.06H7.68c.24-.34.52-.69.9-1.06l.51-.44m-2.03 3h9.88l.06.5v1H7v-1l.06-.5Z"/></svg>
+
+    </a>
+    AmpliGone
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/RIVM-bioinformatics/AmpliGone" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    RIVM-bioinformatics/AmpliGone
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        Installation
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          User guide
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        User guide
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#preparing-input-data" class="md-nav__link">
+    Preparing input data
+  </a>
+  
+    <nav class="md-nav" aria-label="Preparing input data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#primers" class="md-nav__link">
+    Primers
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primer-orientation" class="md-nav__link">
+    Primer Orientation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reference" class="md-nav__link">
+    Reference
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exporting-found-primer-coordinates" class="md-nav__link">
+    Exporting found primer coordinates
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-multiple-threads" class="md-nav__link">
+    Using multiple threads
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#basic-usage-examples" class="md-nav__link">
+    Basic usage examples
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-ampligone-in-a-pipelineworkflow" class="md-nav__link">
+    Using AmpliGone in a pipeline/workflow
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../amplicon-types/" class="md-nav__link">
+        Amplicon types
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        Changelog
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+
+
+<h1 id="user-guide">User Guide<a class="headerlink" href="#user-guide" title="Permanent link">&para;</a></h1>
+<p>AmpliGone works with both reads in FASTQ format, as well as aligned data in BAM-format. However, when data is presented in the BAM-format then only read-data (sequence and quality scores) will be used. Other data present in the BAM-format will not be used in this version of AmpliGone.</p>
+<p>Currently, AmpliGone supports Nanopore data and Illumina data. The Illumina platform (NextSeq/MiSeq/HiSeq/other) does not matter.</p>
+<p>It is however important that you know the read-length in relation to the amplicon length.
+AmpliGone expects this information in the form of an 'amplicon-type'.
+Please see <a href="../amplicon-types/">this page</a> for more information regarding supported amplicon-types.</p>
+<h2 id="preparing-input-data">Preparing input data<a class="headerlink" href="#preparing-input-data" title="Permanent link">&para;</a></h2>
+<p>For optimal results we ask you to format your inputs to make sure you get the best results in your analysis.</p>
+<p>It is required that adapters/barcodes have been removed from your sequencing reads <em>before</em> they are processed by AmpliGone.
+Processing read-data with adapters/barcodes still attached to your reads may result in inaccurate output data.</p>
+<p>Additionally, AmpliGone works best with reads that have already been processed by quality filtering tools such as <a href="https://github.com/OpenGene/fastp">fastp</a> or <a href="https://github.com/usadellab/Trimmomatic">Trimmomatic</a>.</p>
+<h3 id="primers">Primers<a class="headerlink" href="#primers" title="Permanent link">&para;</a></h3>
+<p>AmpliGone has two options for primer input: <a href="https://en.wikipedia.org/wiki/BED_(file_format)">BED</a> and <a href="https://en.wikipedia.org/wiki/FASTA_format">fasta</a>.
+The BED format specifies the coordinates of the primers with respect to the given reference genome. If this is the format you use, you can skip to <a href="#primer-orientation">Primer Orientation</a></p>
+<p>When the primers are supplied in fasta format, AmpliGone searches for the primer coordinates based on the given reference.
+By default, mismatches are tolerated for up to 10% (0.1) of the length of the primer sequence.
+It's therefore important that the given primers adequately match the given reference, otherwise the primer-coordinates cannot be determined.</p>
+<p>If necessary, you can adjust the maximum amount of differences (substitutions) which are tolerated to be either more lenient or stringent. You can do so by giving the <code>--error-rate</code>/ <code>-er</code> flag in your command, followed by a decimal number. For example <code>--error-rate 0.15</code> can be used to make the search more lenient.<br />
+Please see the <a href="#basic-usage-examples">usage examples</a> to see this flag in combination with other settings for AmpliGone.</p>
+<h3 id="primer-orientation">Primer Orientation<a class="headerlink" href="#primer-orientation" title="Permanent link">&para;</a></h3>
+<p>AmpliGone determines whether a given sequence is considered to be a 'forward primer' or a 'reverse primer'. This information is taken from the name of a primer sequence in the FASTA header with specific keywords, the usable keywords are as follows:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Usable keywords</label><label for="__tabbed_1_2">Example fasta</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<table>
+<thead>
+<tr>
+<th>Forward primers</th>
+<th>Reverse primers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LEFT</td>
+<td>RIGHT</td>
+</tr>
+<tr>
+<td>PLUS</td>
+<td>MINUS</td>
+</tr>
+<tr>
+<td>POSITIVE</td>
+<td>NEGATIVE</td>
+</tr>
+<tr>
+<td>FORWARD</td>
+<td>REVERSE</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>&gt;primer_1_LEFT
+ACTGGC
+&gt;primer_1_RIGHT
+TGGCTCA
+&gt;primer_2_FORWARD
+ACAATTCG
+&gt;primer_2_REVERSE
+TATTAAGC
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>The primer sequences may contain IUPAC ambiguity nucleotides, though be aware that this may result in differently found coordinates as expected depending on your experiments.</p>
+<h3 id="reference">Reference<a class="headerlink" href="#reference" title="Permanent link">&para;</a></h3>
+<p>Unlike the primer sequences, AmpliGone currently only supports a reference sequence that <em><u>does not</u></em> contain IUPAC ambiguity nucleotides. This may change in a future version.</p>
+<h2 id="exporting-found-primer-coordinates">Exporting found primer coordinates<a class="headerlink" href="#exporting-found-primer-coordinates" title="Permanent link">&para;</a></h2>
+<p>In a downstream analysis you might want to know which primers have actually been removed from which coordinates by AmpliGone.
+AmpliGone can provide you with this information with the <code>--export-primers {file}</code> flag, replace <code>{file}</code> with your desired output file.
+Using this flag will give you a BED-file with found primer coordinates as in the example below:</p>
+<table>
+<thead>
+<tr>
+<th>ref</th>
+<th>start</th>
+<th>end</th>
+<th>name</th>
+<th>score</th>
+<th>strand</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NC_045512.2</td>
+<td>30</td>
+<td>54</td>
+<td>primer_1_LEFT</td>
+<td>.</td>
+<td>+</td>
+</tr>
+<tr>
+<td>NC_045512.2</td>
+<td>385</td>
+<td>410</td>
+<td>primer_1_RIGHT</td>
+<td>.</td>
+<td>-</td>
+</tr>
+<tr>
+<td>NC_045512.2</td>
+<td>320</td>
+<td>342</td>
+<td>primer_2_LEFT</td>
+<td>.</td>
+<td>+</td>
+</tr>
+<tr>
+<td>NC_045512.2</td>
+<td>704</td>
+<td>726</td>
+<td>primer_2_RIGHT</td>
+<td>.</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<p>Please see the <a href="#basic-usage-examples">usage examples</a> to see this flag in combination with other settings for AmpliGone.</p>
+<h2 id="using-multiple-threads">Using multiple threads<a class="headerlink" href="#using-multiple-threads" title="Permanent link">&para;</a></h2>
+<p>AmpliGone is multi-threaded by design, as it splits your input data to process over the amount of threads which are available for use.
+Therefore, AmpliGone scales (almost) linearly when given more threads. A computer with a lot of computing power is therefore advised.</p>
+<p>AmpliGone defaults to the amount of threads which are available in your system. (if the CPU of your computer has 24 threads, AmpliGone will use all 24 threads by default)
+You can use the <code>--threads</code> or <code>-t</code> flag to set a different number of threads to use.</p>
+<h2 id="basic-usage-examples">Basic usage examples<a class="headerlink" href="#basic-usage-examples" title="Permanent link">&para;</a></h2>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">End-to-end amplicons</label><label for="__tabbed_2_2">End-to-mid amplicons</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>Here you can find various examples to remove primers from <strong>"end-to-end"</strong> amplicon data.<br />
+Please check what an "end-to-end" amplicon is <u><a href="../amplicon-types/#end-to-end">here</a></u> before continuing.</p>
+<details class="example" open="open">
+<summary>Basic primer removal with a Fasta-file as primer-input</summary>
+<ul>
+<li>The primers in this command are provided in <strong>Fasta</strong> format.  </li>
+<li>The default setting for a primer-mismatches (10%) will be used as no other value is provided in this command.  </li>
+<li>Aside from basic logging messages, AmpliGone will not output any additional data such as removed primer coordinates.  </li>
+<li>The flag <code>--threads</code> is <em>not</em> provided in this command, AmpliGone will therefore use <em>all</em> available threads on the system.</li>
+</ul>
+<div class="highlight"><pre><span></span><code>ampligone <span class="se">\</span>
+    --input input.fastq <span class="se">\</span>
+    --output output.fastq <span class="se">\</span>
+    --reference reference.fasta <span class="se">\</span>
+    --primers primers.fasta <span class="se">\</span>
+    --amplicon-type end-to-end
+</code></pre></div>
+</details>
+<details class="example">
+<summary>Basic primer removal with a BED-file as primer-input</summary>
+<ul>
+<li>The primers in this command are provided in <strong>BED</strong> format.  </li>
+<li>The default setting for a primer-mismatches (10%) will be used as no other value is provided in this command.  </li>
+<li>Aside from basic logging messages, AmpliGone will not output any additional data such as removed primer coordinates.</li>
+<li>The flag <code>--threads 6</code> is given in this command, AmpliGone will therefore use only 6 threads.</li>
+</ul>
+<div class="highlight"><pre><span></span><code>ampligone <span class="se">\</span>
+    --input input.fastq <span class="se">\</span>
+    --output output.fastq <span class="se">\</span>
+    --reference reference.fasta <span class="se">\</span>
+    --primers primer_information.bed <span class="se">\</span>
+    --amplicon-type end-to-end <span class="se">\</span>
+    --threads <span class="m">6</span>
+</code></pre></div>
+</details>
+<details class="example">
+<summary>Primer removal with a BED-file as primer-input and exporting removed primers</summary>
+<ul>
+<li>The primers in this command are provided in <strong>BED</strong> format.</li>
+<li>The default setting for a primer-mismatches (10%) will be used as no other value is provided in this command.  </li>
+<li>AmpliGone will output both basic logging messages as an extra output file containing the found and removed primer coordinates in <strong>BED</strong> format.</li>
+<li>The flag <code>--threads 8</code> is given in this command, AmpliGone will therefore use only 8 threads.</li>
+</ul>
+<div class="highlight"><pre><span></span><code>ampligone <span class="se">\</span>
+    --input input.fastq <span class="se">\</span>
+    --output output.fastq <span class="se">\</span>
+    --reference reference.fasta <span class="se">\</span>
+    --primers primers.fasta <span class="se">\</span>
+    --amplicon-type end-to-end <span class="se">\</span>
+    --export-primers removed_primers.bed <span class="se">\</span>
+    --threads <span class="m">8</span>
+</code></pre></div>
+</details>
+<details class="example">
+<summary>Primer removal with a Fasta-file as primer-input, using a custom primer mismatch rate and exporting removed primers</summary>
+<ul>
+<li>The primers in this command are provided in <strong>Fasta</strong> format.</li>
+<li>The flag <code>--error-rate 0.2</code> is given in this command, meaning that a primer mismatch rate of 20% will be tolerated by AmpliGone instead of the default 10%</li>
+<li>AmpliGone will output both basic logging messages as an extra output file containing the found and removed primer coordinates in <strong>BED</strong> format.</li>
+<li>The flag <code>--threads 16</code> is given in this command, AmpliGone will therefore use only 16 threads.</li>
+</ul>
+<div class="highlight"><pre><span></span><code>ampligone <span class="se">\</span>
+    --input input.fastq <span class="se">\</span>
+    --output output.fastq <span class="se">\</span>
+    --reference reference.fasta <span class="se">\</span>
+    --primers primers.fasta <span class="se">\</span>
+    --amplicon-type end-to-end <span class="se">\</span>
+    --error-rate <span class="m">0</span>.2 <span class="se">\</span>
+    --export-primers removed_primers.bed <span class="se">\</span>
+    --threads <span class="m">16</span>
+</code></pre></div>
+</details>
+</div>
+<div class="tabbed-block">
+<p>Here you can find various examples to remove primers from <strong>"end-to-mid"</strong> amplicon data.<br />
+Please check what an "end-to-mid" amplicon is <u><a href="../amplicon-types/#end-to-mid">here</a></u> before continuing.</p>
+<details class="example" open="open">
+<summary>Basic primer removal with a Fasta-file as primer-input</summary>
+<ul>
+<li>The primers in this command are provided in <strong>Fasta</strong> format.  </li>
+<li>The default setting for a primer-mismatches (10%) will be used as no other value is provided in this command.  </li>
+<li>Aside from basic logging messages, AmpliGone will not output any additional data such as removed primer coordinates.  </li>
+<li>The flag <code>--threads</code> is <em>not</em> provided in this command, AmpliGone will therefore use <em>all</em> available threads on the system.</li>
+</ul>
+<div class="highlight"><pre><span></span><code>ampligone <span class="se">\</span>
+    --input input.fastq <span class="se">\</span>
+    --output output.fastq <span class="se">\</span>
+    --reference reference.fasta <span class="se">\</span>
+    --primers primers.fasta <span class="se">\</span>
+    --amplicon-type end-to-mid
+</code></pre></div>
+</details>
+<details class="example">
+<summary>Basic primer removal with a BED-file as primer-input</summary>
+<ul>
+<li>The primers in this command are provided in <strong>BED</strong> format.  </li>
+<li>The default setting for a primer-mismatches (10%) will be used as no other value is provided in this command.  </li>
+<li>Aside from basic logging messages, AmpliGone will not output any additional data such as removed primer coordinates.</li>
+<li>The flag <code>--threads 6</code> is given in this command, AmpliGone will therefore use only 6 threads.</li>
+</ul>
+<div class="highlight"><pre><span></span><code>ampligone <span class="se">\</span>
+    --input input.fastq <span class="se">\</span>
+    --output output.fastq <span class="se">\</span>
+    --reference reference.fasta <span class="se">\</span>
+    --primers primer_information.bed <span class="se">\</span>
+    --amplicon-type end-to-mid <span class="se">\</span>
+    --threads <span class="m">6</span>
+</code></pre></div>
+</details>
+<details class="example">
+<summary>Primer removal with a BED-file as primer-input and exporting removed primers</summary>
+<ul>
+<li>The primers in this command are provided in <strong>BED</strong> format.</li>
+<li>The default setting for a primer-mismatches (10%) will be used as no other value is provided in this command.  </li>
+<li>AmpliGone will output both basic logging messages as an extra output file containing the found and removed primer coordinates in <strong>BED</strong> format.</li>
+<li>The flag <code>--threads 8</code> is given in this command, AmpliGone will therefore use only 8 threads.</li>
+</ul>
+<div class="highlight"><pre><span></span><code>ampligone <span class="se">\</span>
+    --input input.fastq <span class="se">\</span>
+    --output output.fastq <span class="se">\</span>
+    --reference reference.fasta <span class="se">\</span>
+    --primers primers.fasta <span class="se">\</span>
+    --amplicon-type end-to-mid <span class="se">\</span>
+    --export-primers removed_primers.bed <span class="se">\</span>
+    --threads <span class="m">8</span>
+</code></pre></div>
+</details>
+<details class="example">
+<summary>Primer removal with a Fasta-file as primer-input, using a custom primer mismatch rate and exporting removed primers</summary>
+<ul>
+<li>The primers in this command are provided in <strong>Fasta</strong> format.</li>
+<li>The flag <code>--error-rate 0.2</code> is given in this command, meaning that a primer mismatch rate of 20% will be tolerated by AmpliGone instead of the default 10%</li>
+<li>AmpliGone will output both basic logging messages as an extra output file containing the found and removed primer coordinates in <strong>BED</strong> format.</li>
+<li>The flag <code>--threads 16</code> is given in this command, AmpliGone will therefore use only 16 threads.</li>
+</ul>
+<div class="highlight"><pre><span></span><code>ampligone <span class="se">\</span>
+    --input input.fastq <span class="se">\</span>
+    --output output.fastq <span class="se">\</span>
+    --reference reference.fasta <span class="se">\</span>
+    --primers primers.fasta <span class="se">\</span>
+    --amplicon-type end-to-mid <span class="se">\</span>
+    --error-rate <span class="m">0</span>.2 <span class="se">\</span>
+    --export-primers removed_primers.bed <span class="se">\</span>
+    --threads <span class="m">16</span>
+</code></pre></div>
+</details>
+</div>
+</div>
+</div>
+<h2 id="using-ampligone-in-a-pipelineworkflow">Using AmpliGone in a pipeline/workflow<a class="headerlink" href="#using-ampligone-in-a-pipelineworkflow" title="Permanent link">&para;</a></h2>
+<p>In pipelines it's often required to that output-files are always created, even if they are empty.
+AmpliGone has the <code>-to</code> flag for this. Which stands for 'touch-outputs'.</p>
+<p>When this flag is given, AmpliGone will <em>always</em> create the output-files. Even if AmpliGone would normally fail because of (for example) an empty input file or when primer-sequences couldn't be found on the reference.</p>
+<div class="admonition warning">
+<p class="admonition-title">Please use with caution</p>
+<p>Using the <code>-to</code> flag will ensure that output-files are always created.
+But because of this, common errors may go unnoticed more easily. Please test your experiment setup manually before integrating it in a pipeline</p>
+</div>
+
+              
+            </article>
+            
+          </div>
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="../installation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Installation" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Installation
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../amplicon-types/" class="md-footer__link md-footer__link--next" aria-label="Next: Amplicon types" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Amplicon types
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright © 2021 RIVM
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.instant", "toc.integrate", "navigation.top"], "search": "../assets/javascripts/workers/search.b97dbffb.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.6c7ad80a.min.js"></script>
+      
+    
+  </body>
+</html>
