@@ -154,17 +154,17 @@ def get_args(givenargs):
         help="Used primer sequences in FASTA format or primer coordinates in BED format.\nNote that using bed-files overrides error-rate and ambiguity functionality",
         required=True,
     )
-    required_args.add_argument(
-        "--amplicon-type",
-        "-at",
-        const="end-to-end",
-        nargs="?",
-        choices=("end-to-end", "end-to-mid"),
-        help="Define the amplicon-type, either being 'end-to-end' or 'end-to-mid'.\nSee the docs for more info",
-        required=True,
-    )
 
     optional_args = parser.add_argument_group("Optional Arguments")
+    
+    optional_args.add_argument(
+        "--amplicon-type",
+        "-at",
+        default="end-to-end",
+        choices=("end-to-end", "end-to-mid"),
+        help="Define the amplicon-type, either being 'end-to-end' or 'end-to-mid'.\nSee the docs for more info",
+        required=False,
+    )
 
     optional_args.add_argument(
         "--export-primers",
