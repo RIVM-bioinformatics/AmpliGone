@@ -6,7 +6,11 @@ hide:
 
 [![CodeFactor](https://www.codefactor.io/repository/github/rivm-bioinformatics/ampligone/badge)](https://www.codefactor.io/repository/github/rivm-bioinformatics/ampligone)
 ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/RIVM-bioinformatics/AmpliGone?include_prereleases)
-![GitHub](https://img.shields.io/github/license/RIVM-bioinformatics/AmpliGone)
+![GitHub](https://img.shields.io/github/license/RIVM-bioinformatics/AmpliGone)  
+[![Build and release](https://github.com/RIVM-bioinformatics/AmpliGone/actions/workflows/release.yml/badge.svg)](https://github.com/RIVM-bioinformatics/AmpliGone/actions/workflows/release.yml)
+![GitHub deployments](https://img.shields.io/github/deployments/RIVM-bioinformatics/AmpliGone/github-pages?label=Documentation%20deployment)  
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/ampligone/badges/installer/conda.svg)](https://anaconda.org/bioconda/ampligone)
+
 # AmpliGone
 
 AmpliGone is a tool which accurately finds and removes primer sequences from NGS reads in an amplicon experiment.
@@ -16,4 +20,6 @@ Additionally, AmpliGone is able to compensate for, and therefore properly clean,
 
 AmpliGone is build and tested with Nanopore and Illumina data (fastq) in mind and supports both 'end-to-end' as well as 'end-to-mid' amplicons to be cleaned. Please see [this page](amplicon-types.md) to learn more about this terminology.
 
-AmpliGone is available under the [AGPLv3 licence](https://www.gnu.org/licenses/agpl-3.0.en.html) 
+Please see the [installation instructions page](installation.md) in order to get started quickly, or see our [user guide page](user-guide.md) to learn how to best use AmpliGone for your analysis.
+
+AmpliGone is freely available under the [AGPLv3 licence](https://www.gnu.org/licenses/agpl-3.0.en.html) 
