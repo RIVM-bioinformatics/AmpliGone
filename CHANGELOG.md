@@ -1,5 +1,22 @@
 # Changelog
 
+### [1.0.2](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v1.0.1...v1.0.2) (2022-07-12)
+
+
+### Bug Fixes
+
+* Fix cutting reverse primers too short ([a01c69d](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/a01c69ddd21d69bd9c098f6215be518c5455dbed))
+* FWSet and RVSet are now different objects ([a28d629](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/a28d6292aa8c08e0bdd2c030455112d846626803))
+
+
+### Documentation
+
+* **ci:** update mkdocs config to support tabbed content ([bdfb52d](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/bdfb52d00318378e9dacc918b7e8ce855ca9c319))
+* restructured user guide page, clarified some sections and added many more example commands for reference ([d723b97](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/d723b975a6378b1174dac2b011c6b4b7382cf78f))
+* rewritten installation page with clarified instructions and added conda instructions ([271a0a8](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/271a0a8d238de0a9ad492a829f8597a2e87a8d66))
+* update documentation site landing page ([45a3fca](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/45a3fca2c5a9ed7e719957e9f5f2c29a25baf300))
+* update readme with quick installation instructions ([bdfb52d](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/bdfb52d00318378e9dacc918b7e8ce855ca9c319))
+
 ### [1.0.1](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v1.0.0...v1.0.1) (2022-04-14)
 
 
