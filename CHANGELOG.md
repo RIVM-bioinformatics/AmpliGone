@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.0.3](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v1.0.2...v1.0.3) (2022-07-12)
+
+
+### Bug Fixes
+
+* **ci:** Use other access key in order to trigger publishing workflow ([384625e](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/384625e5171da3e9fc674f0dd3174dfd7ba54ecf))
+
 ### [1.0.2](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v1.0.1...v1.0.2) (2022-07-12)
 
 
