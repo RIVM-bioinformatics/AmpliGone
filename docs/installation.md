@@ -2,40 +2,32 @@
 
 AmpliGone is only available on Linux (or Linux-based) operating systems. MacOS may also work but is not tested. AmpliGone will *not work* on Windows.
 
-AmpliGone is available via [PyPI](https://pypi.org/project/AmpliGone/), and and can be installed using pip:
+AmpliGone can be installed easily with [Conda](https://anaconda.org/bioconda/ampligone) or [pip](https://pypi.org/project/AmpliGone/).
+
+### Installation with conda
+AmpliGone releases are published in Bioconda, and can be installed with the following command:
+
+
+```bash
+conda install -c bioconda ampligone
+```
+
+!!! tip
+    You can also use `mamba` as a replacement for installing conda packages, use the following command if you have `mamba` installed on your system
+    ```bash
+    mamba install -c bioconda ampligone
+    ```
+
+Installation through conda/mamba is the recommended method for installing AmpliGone
+
+### Installation with pip
+AmpliGone releases are also published on [PyPI](https://pypi.org/project/AmpliGone/), and can be installed using pip using the following command:
 
 ```bash
 pip install AmpliGone
 ```
 
-???+ note
-    AmpliGone is not yet available via Conda. We will update these docs when this is available.
-
-## Prerequisites
-
-AmpliGone requires Python 3.8 or later to be installed on your system (or in an environment).
-
-Other dependencies will be installed during setup, you don't have to install them manually. These extra dependencies are as follows:
-
-* pysam ≥ 0.16
-* pandas ≥ 1.2.3
-* numpy ≥ 1.20
-* mappy ≥ 2.17
-* biopython ≥ 1.79
-* parmap ≥ 1.5.2
-* regex ≥ 2021.11.10
-* tqdm ≥ 4.59.0
-
-We strongly advise you to use a conda environment (or similar) to make sure there won't be any conflicts in package dependencies.
-
-## Download and install from source
-
-First start by cloning the repository and make sure you're on the latest released version of AmpliGone:
-```bash
-git clone https://github.com/RIVM-bioinformatics/AmpliGone.git; cd AmpliGone; git checkout tags/$(git tag --sort=committerdate | tail -1) >> /dev/null
-```
-
-You're now in the newly created "AmpliGone" directory.
+### Download and installation from source
 
 !!! tip "Make a new Conda environment before continuing"
     If you have Conda installed on your system, please create and activate a new environment before continuing.
@@ -46,10 +38,14 @@ You're now in the newly created "AmpliGone" directory.
     conda env create -f env.yml; conda activate AmpliGone
     ```
 
-    The "AmpliGone" conda-environment should now be active 
+    The "AmpliGone" conda-environment should now be active
 
-You can now install AmpliGone via the following command:
+First start by cloning the repository and make sure you're on the latest released version of AmpliGone, then install the downloaded package with pip:
+
 ```bash
+# clone the repository from github and switch to the latest released version
+git clone https://github.com/RIVM-bioinformatics/AmpliGone.git; cd AmpliGone; git checkout tags/$(git tag --sort=committerdate | tail -1) >> /dev/null
+# Install the downloaded package with pip
 pip install .
 ```
 
@@ -58,15 +54,19 @@ You can verify if installation was successful by typing `ampligone --version` on
 
 ## Pipeline/workflow integration
 
-You can easily integrate AmpliGone in your snakemake bioinformatics workflow if you use Conda environments in your workflow.
+You can easily integrate AmpliGone in your SnakeMake or Nextflow bioinformatics workflow if you use Conda environments in your workflow.
 
-To do this, simply add the following structure to your conda-environment recipe, replace `{VERSION}` with the AmpliGone version you wish to use:
+To do this, add `ampligone` and the correct channels to your conda-environment recipe as below:
 
 ```yaml
+name: example-env
+channels:
+    - bioconda
+    - conda-forge
+    - anaconda
+    - defaults
 dependencies:
-    - pip
-    - pip:
-        - AmpliGone
+    - ampligone
 ```
 
 Conda will now install AmpliGone and its dependencies in the specified snakemake conda-environment.
