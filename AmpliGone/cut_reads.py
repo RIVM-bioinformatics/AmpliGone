@@ -69,9 +69,6 @@ def CutReads(data, primer_df, reference, preset, scoring, amplicon_type, workers
     FWList = tuple(FWSet)  # Since tuples are hashable
     RVList = tuple(RVSet)
 
-    print(RVSet)
-    print(FWSet)
-
     Aln = mp.Aligner(
         reference,
         preset=preset,
