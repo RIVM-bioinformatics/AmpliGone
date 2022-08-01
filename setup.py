@@ -32,7 +32,7 @@ setup(
         "biopython>=1.79",
         "parmap>=1.5.2",
         "regex>=2021.11.10",
-        "tqdm>=4.59.0",
+        "rich==12.5.*",
     ],
     entry_points={
         "console_scripts": [
