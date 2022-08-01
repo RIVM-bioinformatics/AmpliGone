@@ -101,9 +101,10 @@ class FlexiFormatter(RawTextHelpFormatter):
 class QuickArgFormatter(FlexiFormatter):
     """
     A subclass of the `FlexiFormatter` subclass that adjusts the maximum width of the help text in relationship to the width of the terminal.
-    
+
     Additionally, adds a default value to the help text if one is provided in the ArgParse constructor.
     """
+
     def __init__(self, prog):
         term_width = shutil.get_terminal_size().columns
         max_help_position = min(max(24, term_width // 2), 80)
@@ -138,5 +139,6 @@ class RichParser(ArgumentParser):
     A subclass of `argparse.ArgumentParser` that overrides the `_print_message` method to use
     `rich.print` instead of `print`
     """
+
     def _print_message(self, message: str, file: Optional[IO[str]] = None) -> None:
         return rich.print(message)
