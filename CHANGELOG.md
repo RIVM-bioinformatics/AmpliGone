@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.1.0](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v1.0.3...v1.1.0) (2022-08-11)
+
+
+### Features
+
+* output some basic stats in the log ([c5ad032](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/c5ad032e38bf86c341be8f685ad70f327c1ecdfb))
+* use `rich` as a logging handler to improve logging with timestamps and various information levels. ([c5ad032](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/c5ad032e38bf86c341be8f685ad70f327c1ecdfb))
+
+
+### Dependencies
+
+* add `rich` as a dependency ([c5ad032](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/c5ad032e38bf86c341be8f685ad70f327c1ecdfb))
+* change parmap version to lenient version 1.5.x ([0c4d2a5](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/0c4d2a54974e98542b2b64565eb645898fa36710))
+* remove `tqdm` as a dependency ([c5ad032](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/c5ad032e38bf86c341be8f685ad70f327c1ecdfb))
+* update mappy to latest version 2.24 ([efed0a1](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/efed0a162746afb306351d42139a474e3854b873))
+* update pandas to >=1.3 ([efed0a1](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/efed0a162746afb306351d42139a474e3854b873))
+* update parmap to latest version 1.5.3 ([efed0a1](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/efed0a162746afb306351d42139a474e3854b873))
+* update pysam to lenient version 0.19.* ([efed0a1](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/efed0a162746afb306351d42139a474e3854b873))
+* updated environment recipe and setup.py to newest dependencies ([efed0a1](https://www.github.com/RIVM-bioinformatics/AmpliGone/commit/efed0a162746afb306351d42139a474e3854b873))
+
 ### [1.0.3](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v1.0.2...v1.0.3) (2022-07-12)
 
 
