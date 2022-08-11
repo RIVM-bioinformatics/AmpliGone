@@ -355,6 +355,9 @@ def main():
     log.info(
         f"\tThese nucleotides were removed from [bold cyan]{len(set(removed_coordinates))}[/bold cyan] unique nucleotide-coordinates."
     )
+    log.info(
+        f"\tThese nucleotide-coordinates correspond to the coordinates of [bold cyan]{len(primer_df)}[/bold cyan] (found) primers."
+    )
 
     log.info("Writing output files")
     if args.export_primers is not None:
