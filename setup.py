@@ -29,7 +29,7 @@ setup(
         "pandas>=1.3.*",
         "mappy==2.24",
         "biopython>=1.79",
-        "parmap==1.5.3",
+        "parmap==1.5.*",
         "regex>=2021.11.10",
         "rich==12.5.*",
     ],
