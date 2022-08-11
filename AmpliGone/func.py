@@ -10,7 +10,6 @@ from rich.highlighter import NullHighlighter
 from rich.logging import RichHandler
 
 # Central logging object using Rich's logging library
-##todo: check if this can be properly lifted into a class as that's probably cleaner than a bare object
 FORMAT = "%(message)s"
 logging.basicConfig(
     level="NOTSET",
