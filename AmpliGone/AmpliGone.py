@@ -16,10 +16,13 @@ from itertools import chain
 import numpy as np
 import pandas as pd
 import parmap
+from rich import print
+from rich.console import Console
+from rich.progress import Progress, SpinnerColumn
 
 from .cut_reads import CutReads
 from .fasta2bed import CoordinateListsToBed, MakeCoordinateLists
-from .func import MyHelpFormatter, color
+from .func import QuickArgFormatter, RichParser, log
 from .io_ops import IndexReads, WriteOutput, read_bed
 from .mappreset import FindPreset
 from .version import __version__
@@ -60,8 +63,7 @@ def get_args(givenargs):
             if ext not in choices:
                 parser.error(f"Input file doesn't end with one of {choices}")
             return fname
-        print(f'"{fname}" is not a file. Exiting...')
-        sys.exit(-1)
+        parser.error(f'Input "{fname}" is not a file. Exiting...')
 
     def fastq_output(choices, fname):
         """If the file extension of the input file is not one of the choices, then raise an error
@@ -106,11 +108,11 @@ def get_args(givenargs):
             )
         return fname
 
-    parser = argparse.ArgumentParser(
-        prog="AmpliGone",
-        usage="%(prog)s [required options] [optional arguments]",
-        description="AmpliGone: An accurate and efficient tool to remove primers from NGS reads in reference-based experiments",
-        formatter_class=MyHelpFormatter,
+    parser = RichParser(
+        prog="[bold]AmpliGone[/bold]",
+        usage="%(prog)s \[required options] \[optional arguments]",
+        description="[bold underline]AmpliGone[/bold underline]: An accurate and efficient tool to remove primers from NGS reads in reference-based experiments",
+        formatter_class=QuickArgFormatter,
         add_help=False,
     )
 
@@ -125,7 +127,7 @@ def get_args(givenargs):
             (".fastq", ".fq", ".bam", ".fastq.gz", ".fq.gz"), s
         ),
         metavar="File",
-        help="Input file with reads in either FastQ or BAM format.",
+        help="Input file with reads in either [bold]FastQ[/bold] or BAM format.",
         required=True,
     )
 
@@ -151,18 +153,18 @@ def get_args(givenargs):
         "-pr",
         type=lambda s: check_extensions((".fasta", ".fa", ".bed"), s),
         metavar="File",
-        help="Used primer sequences in FASTA format or primer coordinates in BED format.\nNote that using bed-files overrides error-rate and ambiguity functionality",
+        help="""Used primer sequences in FASTA format or primer coordinates in BED format.\n Note that using bed-files overrides error-rate and ambiguity functionality""",
         required=True,
     )
 
     optional_args = parser.add_argument_group("Optional Arguments")
-    
+
     optional_args.add_argument(
         "--amplicon-type",
         "-at",
         default="end-to-end",
         choices=("end-to-end", "end-to-mid"),
-        help="Define the amplicon-type, either being 'end-to-end' or 'end-to-mid'.\nSee the docs for more info",
+        help="Define the amplicon-type, either being [green]'end-to-end'[/green] or [green]'end-to-mid'[/green]. See the docs for more info :book:",
         required=False,
     )
 
@@ -181,7 +183,7 @@ def get_args(givenargs):
         type=int,
         default=standard_threads,
         metavar="N",
-        help=f"Number of threads you wish to use.\nDefault is the number of available threads in your system ({standard_threads})",
+        help=f"""Number of threads you wish to use.\n Default is the number of available threads in your system ({standard_threads})""",
     )
 
     optional_args.add_argument(
@@ -203,7 +205,7 @@ def get_args(givenargs):
     optional_args.add_argument(
         "-to",
         action="store_true",
-        help="If set, AmpliGone will always create the output files even if there is nothing to output. (for example when an empty input-file is given)\nThis is useful in (automated) pipelines where you want to make sure that the output files are always created.",
+        help="If set, AmpliGone will always create the output files even if there is nothing to output. (for example when an empty input-file is given)\n This is useful in (automated) pipelines where you want to make sure that the output files are always created.",
         required=False,
     )
 
@@ -213,7 +215,7 @@ def get_args(givenargs):
         type=float,
         default=0.1,
         metavar="N",
-        help="The maximum allowed error rate for the primer search. Use 0 for exact primer matches.\nDefault is '0.1'. ",
+        help="The maximum allowed error rate for the primer search. Use 0 for exact primer matches.",
         required=False,
     )
 
@@ -257,6 +259,9 @@ def main():
         )
         sys.exit(1)
     args = get_args(sys.argv[1:])
+    log.info(
+        f"Starting AmpliGone with inputfile [green]'{os.path.abspath(args.input)}'[/green]"
+    )
 
     with cf.ThreadPoolExecutor(max_workers=args.threads) as ex:
         TP_indexreads = ex.submit(IndexReads, args.input)
@@ -267,9 +272,10 @@ def main():
             )
             primer_df = TP_PrimerLists.result()
         else:
+            log.info(
+                "Primer coordinates are given in BED format, skipping primer search"
+            )
             primer_df = read_bed(args.primers)
-        # print(primer_df)
-        # exit(0)
         IndexedReads = TP_indexreads.result()
 
     if len(IndexedReads.index) < 1 and args.to is True:
@@ -278,41 +284,33 @@ def main():
         if args.export_primers is not None:
             with open(args.export_primers, "w") as f:
                 f.write("")
-        print(
-            f"""
-    {color.RED}AmpliGone was given an empty input file but the '-to' flag was given.
-    {color.YELLOW}One or multiple empty output file(s) have therefore been generated.
-    {color.RED}Please check the input file to make sure this is correct{color.END}
-    """
+        log.warning(
+            "AmpliGone was given an empty input file but the [green]'-to'[/green] flag was given.\nOne or multiple empty output file(s) have therefore been generated.\n[bold yellow]Please check the input file to make sure this is correct[/bold yellow]"
         )
         sys.exit(0)
     elif len(IndexedReads.index) < 1:
-        print(
-            f"""
-    {color.RED}AmpliGone was given an empty input file. Exiting...
-    Please check the input file to make sure this is correct{color.END}
-
-    {color.YELLOW}Use the -to flag to force AmpliGone to create an output file even if there is nothing to output.{color.END}
-    """
+        log.error(
+            "AmpliGone was given an empty input file. Exiting..\nPlease check the input file to make sure this is correct\n\n[bold yellow]Use the -to flag to force AmpliGone to create an output file even if there is nothing to output.[/bold yellow]"
         )
         sys.exit(1)
     else:
-        print(
-            f"""
-    Succesfully loaded {color.BOLD + color.GREEN}{len(IndexedReads.index)}{color.END} reads.
-            """
+        log.info(
+            f"Succesfully loaded [bold green]{len(IndexedReads.index)}[/bold green] reads."
         )
 
     if len(primer_df) < 1:
-        print(
-            f"""
-    {color.RED}AmpliGone was unable to match any primers to the reference. AmpliGone is therefore unable to remove primers from the reads.
-    {color.RED}Please check the primers and reference to make sure this is correct
-    {color.RED}Exiting...{color.END}
-    """
+        log.error(
+            "AmpliGone was unable to match any primers to the reference. AmpliGone is therefore unable to remove primers from the reads.\nPlease check the primers and reference to make sure this is correct\nExiting..."
         )
         sys.exit(1)
 
+    if len(IndexedReads.index) < args.threads:
+        log.info(
+            f"[yellow]AmpliGone is set to use more threads than reads present. Downscaling threads to match.[/yellow]"
+        )
+        args.threads = len(IndexedReads.index)
+
+    log.info("Finding optimal alignment parameters for the given reads")
     # Todo: split this over two threads if possible
     if len(IndexedReads.index) > 20000:
         preset, scoring = FindPreset(
@@ -321,22 +319,49 @@ def main():
     else:
         preset, scoring = FindPreset(args.threads, IndexedReads)
 
+    log.info(
+        f"Distributing {len(IndexedReads.index)} reads across {args.threads} threads for processing. Processing around [bold green]{round(len(IndexedReads.index)/args.threads)}[/bold green] reads per thread"
+    )
+
     IndexedReads = IndexedReads.sample(frac=1).reset_index(drop=True)
 
-    ProcessedReads = parallel(
-        IndexedReads,
-        CutReads,
-        args.threads,
-        primer_df,
-        args.reference,
-        preset,
-        scoring,
-        amplicon_type=args.amplicon_type,
-    )
-    ProcessedReads.reset_index(drop=True)
+    with Progress(
+        SpinnerColumn(),
+        *Progress.get_default_columns(),
+        console=Console(record=True),
+        transient=True,
+    ) as progress:
+        progress.add_task("[yellow]Removing primer sequences...", total=None)
+        ProcessedReads = parallel(
+            IndexedReads,
+            CutReads,
+            args.threads,
+            primer_df,
+            args.reference,
+            preset,
+            scoring,
+            amplicon_type=args.amplicon_type,
+        )
 
+        ProcessedReads.reset_index(drop=True)
+    log.info("Done removing primer sequences")
+
+    total_nuc_preprocessing = sum(tuple(chain(IndexedReads["Sequence"].str.len())))
+    removed_coordinates = tuple(chain(*ProcessedReads["Removed_coordinates"]))
+
+    log.info(
+        f"\tRemoved a total of [bold cyan]{len(removed_coordinates)}[/bold cyan] nucleotides. This is [bold cyan]{round((len(removed_coordinates)/total_nuc_preprocessing)*100, 2)}%[/bold cyan] of the total amount of nucleotides present in the original reads."
+    )
+    log.info(
+        f"\tThese nucleotides were removed from [bold cyan]{len(set(removed_coordinates))}[/bold cyan] unique nucleotide-coordinates."
+    )
+    log.info(
+        f"\tThese nucleotide-coordinates correspond to the coordinates of [bold cyan]{len(primer_df)}[/bold cyan] (found) primers."
+    )
+
+    log.info("Writing output files")
     if args.export_primers is not None:
-        removed_coords = set(chain(*ProcessedReads["Removed_coordinates"]))
+        removed_coords = set(removed_coordinates)
         filtered_primer_df = primer_df[
             primer_df[["start", "end"]].apply(
                 lambda r: any(coord in removed_coords for coord in range(*r)),

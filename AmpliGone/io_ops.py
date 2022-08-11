@@ -5,6 +5,8 @@ import sys
 import pandas as pd
 import pysam
 
+from .func import log
+
 
 def is_zipped(filename):
     """If the filename has a ".gz" suffix, return True, otherwise return False
@@ -233,7 +235,7 @@ def LoadData(inputfile):
 
             Reads.append((name, seq, qual))
         return Reads
-    print(
+    log.error(
         f'"{inputfile}" is an unsupported filetype. Please try again with a supported filetype'
     )
     sys.exit(-1)

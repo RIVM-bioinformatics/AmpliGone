@@ -5,6 +5,8 @@ import pandas as pd
 import regex as re
 from Bio import Seq, SeqIO
 
+from .func import log
+
 
 def FindAmbigousOptions(seq):
     """It takes a sequence containing ambiguous nucleotides and returns a list of all possible unambiguous
@@ -99,20 +101,20 @@ def CoordListGen(primerfile, referencefile, err_rate=0.1):
         coords = get_coords(seq, ref_seq, err_rate)
         rev_coords = get_coords(revcomp, ref_seq, err_rate)
         if coords and rev_coords:
-            print(
-                f"Primer {primer.id} found on both forward and reverse strand of {ref_file.name}.\nCheck to see if this is intended."
+            log.warn(
+                f"Primer [yellow underline]{primer.id}[/yellow underline] found on both forward and reverse strand of '[yellow]{ref_file.name}[/yellow]'.\n[yellow bold]Check to see if this is intended.[/yellow bold]"
             )
         if not coords and not rev_coords:
-            print(
-                f"Skipping {primer.id} as it is found on neither forward or reverse strand of {ref_file.name}.\nCheck to see if this is intended."
+            log.warn(
+                f"Skipping [yellow underline]{primer.id}[/yellow underline] as it is found on neither forward or reverse strand of [yellow underline]{ref_file.name}[/yellow underline].\n[yellow bold]Check to see if this is intended.[/yellow bold]"
             )
             continue
         if coords and len(coords) > 1:
-            print(
-                f"Primer {primer.id} found on multiple locations on forward strand: \n\t{coords}.\nCheck to see if this is intended."
+            log.warn(
+                f"Primer [yellow underline]{primer.id}[/yellow underline] found on multiple locations on [underline]forward strand[/underline]: \n\t[yellow]{coords}\n[bold]Check to see if this is intended.[/yellow][/bold]"
             )
         if rev_coords and len(rev_coords) > 1:
-            print(
+            log.warn(
                 f"Primer {primer.id} found on multiple locations on reverse strand: {coords}.\nCheck to see if this is intended."
             )
         for start, end in coords.union(rev_coords):
@@ -121,7 +123,7 @@ def CoordListGen(primerfile, referencefile, err_rate=0.1):
             elif any(o in primer.id for o in keyr):
                 strand = "-"
             else:
-                print(
+                log.error(
                     f"Primer name {primer.id} does not contain orientation (e.g. {primer.id}_RIGHT). Consider suffixing with {keyl + keyr}"
                 )
                 exit(1)
