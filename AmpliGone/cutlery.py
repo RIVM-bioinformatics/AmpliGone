@@ -2,7 +2,7 @@ from functools import lru_cache
 
 
 @lru_cache(maxsize=2000000)
-def PositionInOrBeforePrimer(pos, clist):
+def PositionInOrBeforePrimer(pos, clist, max_lookback):
     """Given a position and a list of positions, return True if the position is in the list or is before
     the nearest position in the list
 
@@ -20,11 +20,11 @@ def PositionInOrBeforePrimer(pos, clist):
     """
     d = lambda x: abs(x - pos)
     near = min(clist, key=d)
-    return pos <= near
+    return abs(pos - near) < max_lookback and pos <= near
 
 
 @lru_cache(maxsize=2000000)
-def PositionInOrAfterPrimer(pos, clist):
+def PositionInOrAfterPrimer(pos, clist, max_lookback):
     """Given a position and a list of positions, return True if the position is in the list or after the
     closest position in the list
 
@@ -42,7 +42,7 @@ def PositionInOrAfterPrimer(pos, clist):
     """
     d = lambda x: abs(x - pos)
     near = min(clist, key=d)
-    return pos >= near
+    return abs(pos - near) < max_lookback and pos >= near
 
 
 @lru_cache(maxsize=2000000)
