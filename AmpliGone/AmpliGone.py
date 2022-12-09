@@ -59,14 +59,14 @@ def get_args(givenargs):
 
         """
         if os.path.isfile(fname):
-            ext = "".join(pathlib.Path(fname).suffixes)
+            ext = "".join(pathlib.Path(fname).suffix)
             if ext not in choices:
                 parser.error(f"Input file doesn't end with one of {choices}")
             return fname
         parser.error(f'Input "{fname}" is not a file. Exiting...')
 
     def fastq_output(choices, fname):
-        """If the file extension of the input file is not one of the choices, then raise an error
+        """If the file extension of the output file is not one of the choices, then raise an error
 
         Parameters
         ----------
@@ -77,12 +77,12 @@ def get_args(givenargs):
 
         Returns
         -------
-            The file name.
+            The output file name.
 
         """
         ext = "".join(pathlib.Path(fname).suffixes)
         if ext not in choices:
-            parser.error(f"Input file doesn't end with one of {choices}")
+            parser.error(f"Output file doesn't end with one of {choices}")
         return fname
 
     def check_extensions(choices, fname):
