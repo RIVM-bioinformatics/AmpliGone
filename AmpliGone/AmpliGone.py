@@ -22,7 +22,7 @@ from rich.progress import Progress, SpinnerColumn
 
 from .cut_reads import CutReads
 from .fasta2bed import CoordinateListsToBed, MakeCoordinateLists
-from .func import QuickArgFormatter, RichParser, log
+from .func import FlexibleArgFormatter, RichParser, log
 from .io_ops import IndexReads, WriteOutput, read_bed
 from .mappreset import FindPreset
 from .version import __version__
@@ -112,7 +112,7 @@ def get_args(givenargs):
         prog="[bold]AmpliGone[/bold]",
         usage="%(prog)s \[required options] \[optional arguments]",
         description="[bold underline]AmpliGone[/bold underline]: An accurate and efficient tool to remove primers from NGS reads in reference-based experiments",
-        formatter_class=QuickArgFormatter,
+        formatter_class=FlexibleArgFormatter,
         add_help=False,
     )
 
