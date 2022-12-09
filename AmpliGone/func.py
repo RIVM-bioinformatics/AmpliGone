@@ -14,7 +14,7 @@ FORMAT = "%(message)s"
 logging.basicConfig(
     level="NOTSET",
     format=FORMAT,
-    datefmt="[%x %X]",
+    datefmt="[%d/%m/%y %H:%M:%S]",
     handlers=[
         RichHandler(
             show_path=False,
