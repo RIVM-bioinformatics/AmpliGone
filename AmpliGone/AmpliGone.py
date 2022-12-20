@@ -22,7 +22,7 @@ from rich.progress import Progress, SpinnerColumn
 
 from .cut_reads import CutReads
 from .fasta2bed import CoordinateListsToBed, MakeCoordinateLists
-from .func import QuickArgFormatter, RichParser, log
+from .func import FlexibleArgFormatter, RichParser, log
 from .io_ops import IndexReads, WriteOutput, read_bed
 from .mappreset import FindPreset
 from .version import __version__
@@ -59,14 +59,14 @@ def get_args(givenargs):
 
         """
         if os.path.isfile(fname):
-            ext = "".join(pathlib.Path(fname).suffixes)
+            ext = "".join(pathlib.Path(fname).suffix)
             if ext not in choices:
                 parser.error(f"Input file doesn't end with one of {choices}")
             return fname
         parser.error(f'Input "{fname}" is not a file. Exiting...')
 
     def fastq_output(choices, fname):
-        """If the file extension of the input file is not one of the choices, then raise an error
+        """If the file extension of the output file is not one of the choices, then raise an error
 
         Parameters
         ----------
@@ -77,12 +77,12 @@ def get_args(givenargs):
 
         Returns
         -------
-            The file name.
+            The output file name.
 
         """
         ext = "".join(pathlib.Path(fname).suffixes)
         if ext not in choices:
-            parser.error(f"Input file doesn't end with one of {choices}")
+            parser.error(f"Output file doesn't end with one of {choices}")
         return fname
 
     def check_extensions(choices, fname):
@@ -112,7 +112,7 @@ def get_args(givenargs):
         prog="[bold]AmpliGone[/bold]",
         usage="%(prog)s \[required options] \[optional arguments]",
         description="[bold underline]AmpliGone[/bold underline]: An accurate and efficient tool to remove primers from NGS reads in reference-based experiments",
-        formatter_class=QuickArgFormatter,
+        formatter_class=FlexibleArgFormatter,
         add_help=False,
     )
 
@@ -127,7 +127,7 @@ def get_args(givenargs):
             (".fastq", ".fq", ".bam", ".fastq.gz", ".fq.gz"), s
         ),
         metavar="File",
-        help="Input file with reads in either [bold]FastQ[/bold] or BAM format.",
+        help="Input file with reads in either FastQ or BAM format.",
         required=True,
     )
 
@@ -163,9 +163,19 @@ def get_args(givenargs):
         "--amplicon-type",
         "-at",
         default="end-to-end",
-        choices=("end-to-end", "end-to-mid"),
-        help="Define the amplicon-type, either being [green]'end-to-end'[/green] or [green]'end-to-mid'[/green]. See the docs for more info :book:",
+        choices=("end-to-end", "end-to-mid", "fragmented"),
+        help="Define the amplicon-type, either being [green]'end-to-end'[/green], [green]'end-to-mid'[/green], or [green]'fragmented'[/green]. See the docs for more info :book:",
         required=False,
+        metavar="'end-to-end'/'end-to-mid'/'fragmented'",
+    )
+
+    optional_args.add_argument(
+        "--fragment-lookaround-size",
+        "-fls",
+        required=False,
+        type=int,
+        metavar="N",
+        help="The number of bases to look around a primer-site to consider it part of a fragment. Only used if amplicon-type is 'fragmented'. Default is 10",
     )
 
     optional_args.add_argument(
@@ -187,22 +197,6 @@ def get_args(givenargs):
     )
 
     optional_args.add_argument(
-        "--version",
-        "-v",
-        action="version",
-        version=__version__,
-        help="Show the AmpliGone version and exit",
-    )
-
-    optional_args.add_argument(
-        "--help",
-        "-h",
-        action="help",
-        default=argparse.SUPPRESS,
-        help="Show this help message and exit",
-    )
-
-    optional_args.add_argument(
         "-to",
         action="store_true",
         help="If set, AmpliGone will always create the output files even if there is nothing to output. (for example when an empty input-file is given)\n This is useful in (automated) pipelines where you want to make sure that the output files are always created.",
@@ -219,6 +213,22 @@ def get_args(givenargs):
         required=False,
     )
 
+    optional_args.add_argument(
+        "--version",
+        "-v",
+        action="version",
+        version=__version__,
+        help="Show the AmpliGone version and exit",
+    )
+
+    optional_args.add_argument(
+        "--help",
+        "-h",
+        action="help",
+        default=argparse.SUPPRESS,
+        help="Show this help message and exit",
+    )
+
     flags = parser.parse_args(givenargs)
 
     return flags
@@ -232,6 +242,7 @@ def parallel(
     reference,
     preset,
     scoring,
+    fragment_lookaround_size,
     amplicon_type,
 ):
     frame_split = np.array_split(frame, workers)
@@ -244,6 +255,7 @@ def parallel(
             reference,
             preset,
             scoring,
+            fragment_lookaround_size,
             amplicon_type,
             workers,
             pm_processes=workers,
@@ -319,6 +331,15 @@ def main():
     else:
         preset, scoring = FindPreset(args.threads, IndexedReads)
 
+    ## correct the lookaround size if the amplicon type is not fragmented
+    if args.amplicon_type != "fragmented":
+        args.fragment_lookaround_size = 10000
+    elif args.fragment_lookaround_size is None:
+        args.fragment_lookaround_size = 10
+        log.warning(
+            "[yellow]No fragment lookaround size was given, [underline]using default of 10[/underline][/yellow]"
+        )
+
     log.info(
         f"Distributing {len(IndexedReads.index)} reads across {args.threads} threads for processing. Processing around [bold green]{round(len(IndexedReads.index)/args.threads)}[/bold green] reads per thread"
     )
@@ -340,6 +361,7 @@ def main():
             args.reference,
             preset,
             scoring,
+            fragment_lookaround_size=args.fragment_lookaround_size,
             amplicon_type=args.amplicon_type,
         )
 

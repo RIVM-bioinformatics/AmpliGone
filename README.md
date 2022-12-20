@@ -12,7 +12,7 @@ AmpliGone is a tool which accurately finds and removes primer sequences from NGS
 In contrast to a lot of other primer-removal tools, AmpliGone does not actively look for primer sequences within the NGS reads. Instead, reads are trimmed based on primer sequence coordinates in relation to a given reference sequence.
 Additionally, AmpliGone is able to compensate for, and therefore properly clean, reads that start or end outside of a primer-region as this is a common occurrence in amplicon-based sequencing data.
 
-AmpliGone is build and tested with Nanopore and Illumina data (fastq) in mind and supports both 'end-to-end' as well as 'end-to-mid' amplicons to be cleaned.  
+AmpliGone is build and tested with Nanopore and Illumina data (fastq) in mind and supports 'end-to-end', 'end-to-mid' and 'fragmented' amplicons to be cleaned.  
 Please see [this page](https://rivm-bioinformatics.github.io/AmpliGone/latest/amplicon-types/) to learn more about this terminology.
 
 ## Installation instructions

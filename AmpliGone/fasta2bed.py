@@ -115,7 +115,7 @@ def CoordListGen(primerfile, referencefile, err_rate=0.1):
             )
         if rev_coords and len(rev_coords) > 1:
             log.warn(
-                f"Primer {primer.id} found on multiple locations on reverse strand: {coords}.\nCheck to see if this is intended."
+                f"Primer [yellow underline]{primer.id}[/yellow underline] found on multiple locations on [underline]reverse strand[/underline]: {rev_coords}.\nCheck to see if this is intended."
             )
         for start, end in coords.union(rev_coords):
             if any(o in primer.id for o in keyl):

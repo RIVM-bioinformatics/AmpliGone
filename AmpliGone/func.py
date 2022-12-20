@@ -1,7 +1,7 @@
 import logging
 import shutil
 import textwrap
-from argparse import SUPPRESS, ArgumentParser, RawTextHelpFormatter
+from argparse import SUPPRESS, ArgumentParser, HelpFormatter
 from typing import IO, Optional
 
 import regex as _re
@@ -14,7 +14,7 @@ FORMAT = "%(message)s"
 logging.basicConfig(
     level="NOTSET",
     format=FORMAT,
-    datefmt="[%x %X]",
+    datefmt="[%d/%m/%y %H:%M:%S]",
     handlers=[
         RichHandler(
             show_path=False,
@@ -27,15 +27,49 @@ logging.basicConfig(
 log = logging.getLogger("rich")
 
 
-# A subclass of ArgumentParser.RawTextHelpFormatter that fixes spacing in the help text and respects bullet points.
-# Especially useful for multi-line help texts combined with default values.
-# This class is taken, though slightly refactored to better work for Python3, from the 'argparse-formatter' module from davesteele; https://github.com/davesteele/argparse_formatter
-# Direct link to original code: https://github.com/davesteele/argparse_formatter/blob/a15d89a99e20b0cad4c389a2aa490c551cef4f9c/argparse_formatter/flexi_formatter.py
-class FlexiFormatter(RawTextHelpFormatter):
+class FlexibleArgFormatter(HelpFormatter):
     """
-    Help message formatter which respects paragraphs and bulleted lists.
-    Only the name of this class is considered a public API.
+    A subclass of ArgumentParser.HelpFormatter that fixes spacing in the help text and respects bullet points.
+    Especially useful for multi-line help texts combined with default values.
+
+    This class has taken a lot of inspiration from the 'argparse-formatter' made by Dave Steele; https://github.com/davesteele/argparse_formatter
+
+    Direct link to davesteele's original code that served as an inspiration for this class: https://github.com/davesteele/argparse_formatter/blob/a15d89a99e20b0cad4c389a2aa490c551cef4f9c/argparse_formatter/flexi_formatter.py
+
+    ---
+    This class helps to alleviate the following points of the ArgParse help formatting:
+    * The help text will be aligned with the argument name/flags, instead of printing the help description on a newline
+    * Adjusting the width of the help text in relationship to the width of the terminal to make sure there is enough space between the argument name/flags and the help text (thus not overloading the end-user with an unreadable wall of text)
+    * Adding a default value to the help text (on a newline, and indented) if one is provided in the ArgParse constructor
+    * Respecting bullet points in the help description
+    * Respecting newlines in the help description (you may have to add a space after the newline to make sure it is properly catched by the formatter)
+    * Respecting indentation in the help description (up to a certain degree)
+    * Changes the behaviour of the metavar to be only printed once per long AND shorthand argument, instead of printing the metavar multiple times for every possible flag.
     """
+
+    def __init__(self, prog):
+        term_width = shutil.get_terminal_size().columns
+        max_help_position = min(max(24, term_width // 2), 80)
+        super().__init__(prog, max_help_position=max_help_position)
+
+    def _get_help_string(self, action):
+        """ """
+        help_text = action.help
+        if (
+            action.default != SUPPRESS
+            and "default" not in help_text.lower()
+            and action.default is not None
+        ):
+            help_text += f"\n  ([underline]default: {str(action.default)}[/underline])"
+        return help_text
+
+    def _format_action_invocation(self, action):
+        """ """
+        if not action.option_strings or action.nargs == 0:
+            return super()._format_action_invocation(action)
+        default = self._get_default_metavar_for_optional(action)
+        args_string = self._format_args(action, default)
+        return ", ".join(action.option_strings) + " " + args_string
 
     def _split_lines(self, text, width):
         return self._para_reformat(text, width)
@@ -95,42 +129,6 @@ class FlexiFormatter(RawTextHelpFormatter):
             paragraphs.extend(new_paragraphs or [" "])
 
         return paragraphs
-
-
-class QuickArgFormatter(FlexiFormatter):
-    """
-    A subclass of the `FlexiFormatter` subclass that adjusts the maximum width of the help text in relationship to the width of the terminal.
-
-    Additionally, adds a default value to the help text if one is provided in the ArgParse constructor.
-    """
-
-    def __init__(self, prog):
-        term_width = shutil.get_terminal_size().columns
-        max_help_position = min(max(24, term_width // 2), 80)
-        super().__init__(prog, max_help_position=max_help_position)
-
-    def _get_help_string(self, action):
-        """
-        If the default value is not SUPPRESS and the word "default" is not in the help text, then add
-        the default value to the help text
-
-        Parameters
-        ----------
-        action
-            The action object that is being processed.
-
-        Returns
-        -------
-            The help text for the action.
-        """
-        help_text = action.help
-        if (
-            action.default != SUPPRESS
-            and "default" not in help_text.lower()
-            and action.default is not None
-        ):
-            help_text += f"\n ([underline]default: {str(action.default)}[/underline])"
-        return help_text
 
 
 class RichParser(ArgumentParser):
