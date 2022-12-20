@@ -15,6 +15,7 @@ def cut_read(
     cigar,
     query_start,
     query_end,
+    fragment_lookaround_size,
 ):
     removed_coords = []
 
@@ -28,7 +29,9 @@ def cut_read(
 
     for cigar_len, cigar_type in cigar:
         while cigar_len > 0 and (
-            PositionNeedsCutting(position_on_reference, primer_list)
+            PositionNeedsCutting(
+                position_on_reference, primer_list, fragment_lookaround_size
+            )
             or cigar_type not in (0, 7)  # always end with a match
         ):
             cigar_len -= 1
@@ -42,7 +45,7 @@ def cut_read(
             if cigar_type in (0, 2, 7, 8):
                 position_on_reference += cut_direction
         if not PositionNeedsCutting(
-            position_on_reference, primer_list
+            position_on_reference, primer_list, fragment_lookaround_size
         ) and cigar_type in (0, 7):
             break
 
@@ -56,7 +59,16 @@ def cut_read(
     return seq, qual, removed_coords, query_start, query_end
 
 
-def CutReads(data, primer_df, reference, preset, scoring, amplicon_type, workers):
+def CutReads(
+    data,
+    primer_df,
+    reference,
+    preset,
+    scoring,
+    fragment_lookaround_size,
+    amplicon_type,
+    workers,
+):
     Frame, _threadnumber = data
     RVSet = set()
     FWSet = set()
@@ -118,8 +130,10 @@ def CutReads(data, primer_df, reference, preset, scoring, amplicon_type, workers
                 qstart = hit.q_st
                 qend = hit.q_en
 
-                if amplicon_type == "end-to-end" or (
-                    amplicon_type == "end-to-mid" and hit.strand == 1
+                if (
+                    amplicon_type == "end-to-end"
+                    or (amplicon_type == "end-to-mid" and hit.strand == 1)
+                    or amplicon_type == "fragmented"
                 ):
                     seq, qual, removed_fw, qstart, qend = cut_read(
                         seq,
@@ -132,11 +146,14 @@ def CutReads(data, primer_df, reference, preset, scoring, amplicon_type, workers
                         cigar=hit.cigar,
                         query_start=qstart,
                         query_end=qend,
+                        fragment_lookaround_size=fragment_lookaround_size,
                     )
                     removed_coords_fw.extend(removed_fw)
 
-                if amplicon_type == "end-to-end" or (
-                    amplicon_type == "end-to-mid" and hit.strand == -1
+                if (
+                    amplicon_type == "end-to-end"
+                    or (amplicon_type == "end-to-mid" and hit.strand == -1)
+                    or amplicon_type == "fragmented"
                 ):
                     seq, qual, removed_rv, qstart, qend = cut_read(
                         seq,
@@ -149,8 +166,9 @@ def CutReads(data, primer_df, reference, preset, scoring, amplicon_type, workers
                         cigar=list(reversed(hit.cigar)),
                         query_start=qstart,
                         query_end=qend,
+                        fragment_lookaround_size=fragment_lookaround_size,
                     )
-                    removed_coords_fw.extend(removed_rv)
+                    removed_coords_rv.extend(removed_rv)
 
     ProcessedReads = pd.DataFrame(
         {

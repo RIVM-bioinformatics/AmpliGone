@@ -163,9 +163,19 @@ def get_args(givenargs):
         "--amplicon-type",
         "-at",
         default="end-to-end",
-        choices=("end-to-end", "end-to-mid"),
-        help="Define the amplicon-type, either being [green]'end-to-end'[/green] or [green]'end-to-mid'[/green]. See the docs for more info :book:",
+        choices=("end-to-end", "end-to-mid", "fragmented"),
+        help="Define the amplicon-type, either being [green]'end-to-end'[/green], [green]'end-to-mid'[/green], or [green]'fragmented'[/green]. See the docs for more info :book:",
         required=False,
+        metavar="'end-to-end'/'end-to-mid'/'fragmented'",
+    )
+
+    optional_args.add_argument(
+        "--fragment-lookaround-size",
+        "-fls",
+        required=False,
+        type=int,
+        metavar="N",
+        help="The number of bases to look around a primer-site to consider it part of a fragment. Only used if amplicon-type is 'fragmented'. Default is 10",
     )
 
     optional_args.add_argument(
@@ -232,6 +242,7 @@ def parallel(
     reference,
     preset,
     scoring,
+    fragment_lookaround_size,
     amplicon_type,
 ):
     frame_split = np.array_split(frame, workers)
@@ -244,6 +255,7 @@ def parallel(
             reference,
             preset,
             scoring,
+            fragment_lookaround_size,
             amplicon_type,
             workers,
             pm_processes=workers,
@@ -319,6 +331,15 @@ def main():
     else:
         preset, scoring = FindPreset(args.threads, IndexedReads)
 
+    ## correct the lookaround size if the amplicon type is not fragmented
+    if args.amplicon_type != "fragmented":
+        args.fragment_lookaround_size = 10000
+    elif args.fragment_lookaround_size is None:
+        args.fragment_lookaround_size = 10
+        log.warning(
+            "[yellow]No fragment lookaround size was given, [underline]using default of 10[/underline][/yellow]"
+        )
+
     log.info(
         f"Distributing {len(IndexedReads.index)} reads across {args.threads} threads for processing. Processing around [bold green]{round(len(IndexedReads.index)/args.threads)}[/bold green] reads per thread"
     )
@@ -340,6 +361,7 @@ def main():
             args.reference,
             preset,
             scoring,
+            fragment_lookaround_size=args.fragment_lookaround_size,
             amplicon_type=args.amplicon_type,
         )
 

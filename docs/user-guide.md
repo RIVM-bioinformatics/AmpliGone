@@ -134,7 +134,7 @@ You can use the `--threads` or `-t` flag to set a different number of threads to
             --input input.fastq \
             --output output.fastq \
             --reference reference.fasta \
-            --primers primers.fasta \
+            --primers primer_information.bed \
             --amplicon-type end-to-end \
             --export-primers removed_primers.bed \
             --threads 8
@@ -209,7 +209,7 @@ You can use the `--threads` or `-t` flag to set a different number of threads to
             --input input.fastq \
             --output output.fastq \
             --reference reference.fasta \
-            --primers primers.fasta \
+            --primers primer_information.bed \
             --amplicon-type end-to-mid \
             --export-primers removed_primers.bed \
             --threads 8
@@ -229,6 +229,87 @@ You can use the `--threads` or `-t` flag to set a different number of threads to
             --reference reference.fasta \
             --primers primers.fasta \
             --amplicon-type end-to-mid \
+            --error-rate 0.2 \
+            --export-primers removed_primers.bed \
+            --threads 16
+        ```
+
+=== "Fragmented amplicons"
+
+    Here you can find various examples to remove primers from **"fragmented"** amplicon data.  
+    Please check what a "fragmented" amplicon is <u>[here](amplicon-types.md#fragmented)</u> before continuing.
+
+    ???+ Example "Basic primer removal with a Fasta-file as primer-input"
+
+        * The primers in this command are provided in **Fasta** format.  
+        * The default setting for a primer-mismatches (10%) will be used as no other value is provided in this command.  
+        * The default setting for a fragment-lookaround-size (10bp) will be used as no other value is provided in this command. 
+        * Aside from basic logging messages, AmpliGone will not output any additional data such as removed primer coordinates.  
+        * The flag `--threads` is *not* provided in this command, AmpliGone will therefore use *all* available threads on the system.
+
+        ```bash
+        ampligone \
+            --input input.fastq \
+            --output output.fastq \
+            --reference reference.fasta \
+            --primers primers.fasta \
+            --amplicon-type fragmented
+        ```
+
+    ??? Example "Basic primer removal with a BED-file as primer-input"
+
+        * The primers in this command are provided in **BED** format.  
+        * The default setting for a primer-mismatches (10%) will be used as no other value is provided in this command.  
+        * The default setting for a fragment-lookaround-size (10bp) will be used as no other value is provided in this command.
+        * Aside from basic logging messages, AmpliGone will not output any additional data such as removed primer coordinates.
+        * The flag `--threads 6` is given in this command, AmpliGone will therefore use only 6 threads.
+
+        ```bash
+        ampligone \
+            --input input.fastq \
+            --output output.fastq \
+            --reference reference.fasta \
+            --primers primer_information.bed \
+            --amplicon-type fragmented \
+            --threads 6
+        ```
+
+    ??? Example "Primer removal with a BED-file as primer-input, using a custom fragment-lookaround-size and exporting removed primers"
+
+        * The primers in this command are provided in **BED** format.
+        * The default setting for a primer-mismatches (10%) will be used as no other value is provided in this command.  
+        * The flag `--fragment-lookaround-size 15` is provided in this command, meaning that fragmentend reads within 15bp of a primer site will be associated with said primer-site and will therefore be cut if necessary.
+        * AmpliGone will output both basic logging messages as an extra output file containing the found and removed primer coordinates in **BED** format.
+        * The flag `--threads 8` is given in this command, AmpliGone will therefore use only 8 threads.
+
+        ```bash
+        ampligone \
+            --input input.fastq \
+            --output output.fastq \
+            --reference reference.fasta \
+            --primers primer_information.bed \
+            --amplicon-type fragmented \
+            --fragment-lookaround-size 15 \
+            --export-primers removed_primers.bed \
+            --threads 8
+        ```
+    
+    ??? Example "Primer removal with a Fasta-file as primer-input, using a custom primer mismatch rate, a custom fragment-lookaround-size, and exporting removed primers"
+
+        * The primers in this command are provided in **Fasta** format.
+        * The flag `--error-rate 0.2` is given in this command, meaning that a primer mismatch rate of 20% will be tolerated by AmpliGone instead of the default 10%
+        * The flag `--fragment-lookaround-size 20` is provided in this command, meaning that fragmentend reads within 20bp of a primer site will be associated with said primer-site and will therefore be cut if necessary.
+        * AmpliGone will output both basic logging messages as an extra output file containing the found and removed primer coordinates in **BED** format.
+        * The flag `--threads 16` is given in this command, AmpliGone will therefore use only 16 threads.
+
+        ```bash
+        ampligone \
+            --input input.fastq \
+            --output output.fastq \
+            --reference reference.fasta \
+            --primers primers.fasta \
+            --amplicon-type fragmented \
+            --fragment-lookaround-size 20 \
             --error-rate 0.2 \
             --export-primers removed_primers.bed \
             --threads 16
