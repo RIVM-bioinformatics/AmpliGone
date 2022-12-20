@@ -127,7 +127,7 @@ def get_args(givenargs):
             (".fastq", ".fq", ".bam", ".fastq.gz", ".fq.gz"), s
         ),
         metavar="File",
-        help="Input file with reads in either [bold]FastQ[/bold] or BAM format.",
+        help="Input file with reads in either FastQ or BAM format.",
         required=True,
     )
 
@@ -197,22 +197,6 @@ def get_args(givenargs):
     )
 
     optional_args.add_argument(
-        "--version",
-        "-v",
-        action="version",
-        version=__version__,
-        help="Show the AmpliGone version and exit",
-    )
-
-    optional_args.add_argument(
-        "--help",
-        "-h",
-        action="help",
-        default=argparse.SUPPRESS,
-        help="Show this help message and exit",
-    )
-
-    optional_args.add_argument(
         "-to",
         action="store_true",
         help="If set, AmpliGone will always create the output files even if there is nothing to output. (for example when an empty input-file is given)\n This is useful in (automated) pipelines where you want to make sure that the output files are always created.",
@@ -227,6 +211,22 @@ def get_args(givenargs):
         metavar="N",
         help="The maximum allowed error rate for the primer search. Use 0 for exact primer matches.",
         required=False,
+    )
+
+    optional_args.add_argument(
+        "--version",
+        "-v",
+        action="version",
+        version=__version__,
+        help="Show the AmpliGone version and exit",
+    )
+
+    optional_args.add_argument(
+        "--help",
+        "-h",
+        action="help",
+        default=argparse.SUPPRESS,
+        help="Show this help message and exit",
     )
 
     flags = parser.parse_args(givenargs)
