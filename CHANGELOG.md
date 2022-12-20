@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.2.0](https://github.com/RIVM-bioinformatics/AmpliGone/compare/v1.1.0...v1.2.0) (2022-12-20)
+
+
+### Features
+
+* add support for fragmented amplicon reads with the `--amplicon-type fragmented` mode ([9d5559b](https://github.com/RIVM-bioinformatics/AmpliGone/commit/9d5559bd261af37350ad760bb9212f82685b4caf))
+
+
+### Bug Fixes
+
+* only check the last file extension to see for a fastq or bam file (fixes check for file with multiple dots in the filename) ([386fb1f](https://github.com/RIVM-bioinformatics/AmpliGone/commit/386fb1ff9a6cd405166fc75fd5b0cd2f2c1fd89a))
+* print the correct coordinates when a primer is found multiple times on the reverse strand ([420438c](https://github.com/RIVM-bioinformatics/AmpliGone/commit/420438cb18d870f5807998996fde8c7ddc2e362c))
+
+
+### Documentation
+
+* update docstrings ([c8af27a](https://github.com/RIVM-bioinformatics/AmpliGone/commit/c8af27a995bc04296e3553e437642af4297ce4f9))
+* update readme ([0287408](https://github.com/RIVM-bioinformatics/AmpliGone/commit/02874081733dc5dcd1aa06a9ae266755a93596db))
+* update user documentation to include the new "fragmented" amplicon-type ([159366e](https://github.com/RIVM-bioinformatics/AmpliGone/commit/159366e0a6832dc4dacfcd484fbe2ca2debd2806))
+
 ## [1.1.0](https://www.github.com/RIVM-bioinformatics/AmpliGone/compare/v1.0.3...v1.1.0) (2022-08-11)
 
 
