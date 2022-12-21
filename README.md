@@ -3,7 +3,8 @@
 ![GitHub](https://img.shields.io/github/license/RIVM-bioinformatics/AmpliGone)  
 [![Build and release](https://github.com/RIVM-bioinformatics/AmpliGone/actions/workflows/release.yml/badge.svg)](https://github.com/RIVM-bioinformatics/AmpliGone/actions/workflows/release.yml)
 ![GitHub deployments](https://img.shields.io/github/deployments/RIVM-bioinformatics/AmpliGone/github-pages?label=Documentation%20deployment)  
-[![Anaconda-Server Badge](https://anaconda.org/bioconda/ampligone/badges/installer/conda.svg)](https://anaconda.org/bioconda/ampligone)
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/ampligone/README.html)
+
 
 # AmpliGone
 
