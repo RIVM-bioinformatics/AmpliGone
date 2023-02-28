@@ -42,7 +42,7 @@ def get_args(givenargs):
 
     """
 
-    def check_input(allowed_extensions, fname):
+    def check_file_extensions(allowed_extensions, fname):
         """It checks that the file extension of the file name passed to it is one of the extensions in the list
         passed to it
 
@@ -58,38 +58,28 @@ def get_args(givenargs):
             The absolute path of the file passed.
 
         """
-        if os.path.isfile(fname):
-            ext = "".join(pathlib.Path(fname).suffixes)
-            if not any(ext.endswith(c) for c in allowed_extensions):
-                parser.error(
-                    f"File {fname} doesn't end with one of {allowed_extensions}"
-                )
-            return os.path.abspath(fname)
-        parser.error(f'"{fname}" is not a file. Exiting...')
 
-
-    def check_output(allowed_extensions, fname):
-        """It checks that the file extension of the file name passed to it is one of the extensions in the list
-        passed to it
-
-        Parameters
-        ----------
-        choices
-            a list of strings that are valid extensions
-        fname
-            The name of the file to be read.
-
-        Returns
-        -------
-            The absolute path of the file passed.
-
-        """
         ext = "".join(pathlib.Path(fname).suffixes)
         if not any(ext.endswith(c) for c in allowed_extensions):
-            parser.error(
-                f"File doesn't end with {allowed_extensions[0] if len(allowed_extensions) == 1 else f'one of {allowed_extensions}'}"
-            )
-        return fname
+            parser.error(f"File {fname} doesn't end with one of {allowed_extensions}")
+        return os.path.abspath(fname)
+
+    def check_file_exists(fname):
+        """Errors if the given file `fname` does not exist
+
+        Parameters
+        ----------
+        fname
+            The name of the file to be read.
+
+        Returns
+        -------
+            The name of the file to be read.
+            
+        """
+        if os.path.isfile(fname):
+            return fname
+        parser.error(f'"{fname}" is not a file. Exiting...')
 
     parser = RichParser(
         prog="[bold]AmpliGone[/bold]",
@@ -106,8 +96,8 @@ def get_args(givenargs):
     required_args.add_argument(
         "--input",
         "-i",
-        type=lambda s: check_input(
-            (".fastq", ".fq", ".bam", ".fastq.gz", ".fq.gz"), s
+        type=lambda s: check_file_exists(
+            check_file_extensions((".fastq", ".fq", ".bam", ".fastq.gz", ".fq.gz"), s)
         ),
         metavar="File",
         help="Input file with reads in either FastQ or BAM format.",
@@ -117,7 +107,7 @@ def get_args(givenargs):
     required_args.add_argument(
         "--output",
         "-o",
-        type=lambda s: check_output((".fastq", ".fq"), s),
+        type=lambda s: check_file_extensions((".fastq", ".fq"), s),
         metavar="File",
         help="Output (FastQ) file with cleaned reads.",
         required=True,
@@ -126,7 +116,7 @@ def get_args(givenargs):
     required_args.add_argument(
         "--reference",
         "-ref",
-        type=lambda s: check_input((".fasta", ".fa"), s),
+        type=lambda s: check_file_exists(check_file_extensions((".fasta", ".fa"), s)),
         metavar="File",
         help="Input Reference genome in FASTA format",
         required=True,
@@ -134,7 +124,9 @@ def get_args(givenargs):
     required_args.add_argument(
         "--primers",
         "-pr",
-        type=lambda s: check_input((".fasta", ".fa", ".bed"), s),
+        type=lambda s: check_file_exists(
+            check_file_extensions((".fasta", ".fa", ".bed"), s)
+        ),
         metavar="File",
         help="""Used primer sequences in FASTA format or primer coordinates in BED format.\n Note that using bed-files overrides error-rate and ambiguity functionality""",
         required=True,
@@ -164,7 +156,7 @@ def get_args(givenargs):
     optional_args.add_argument(
         "--export-primers",
         "-ep",
-        type=lambda s: check_output((".bed",), s),
+        type=lambda s: check_file_extensions((".bed",), s),
         metavar="File",
         help="Output BED file with found primer coordinates if they are actually cut from the reads",
         required=False,
