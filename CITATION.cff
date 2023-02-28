@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+title: "AmpliGone"
+message: "If you use AmpliGone for your data analysis, then please cite it as below"
+authors:
+  - given-names: Florian
+    family-names: Zwagemaker
+    affiliation: >-
+      National Institute for Public Health and the
+      Environment (RIVM)
+    orcid: 'https://orcid.org/0000-0001-7788-0307'
+  - given-names: Karim
+    family-names: Hajji
+    affiliation: >-
+      National Institute for Public Health and the
+      Environment (RIVM)
+  - name: "The RIVM-IDS Bioinformatics team"
+version: 1.2.0 #x-release-please-version
+# identifiers:
+#   - type: doi
+#     value: none
+#     description: This is the collection of archived snapshots of all versions of AmpliGone
+repository-code: 'https://github.com/RIVM-bioinformatics/AmpliGone'
+url: >-
+  https://rivm-bioinformatics.github.io/AmpliGone/latest/
+abstract: >-
+  AmpliGone is a tool in order to accurately remove primer
+  sequences from NGS reads in an amplicon experiment
+license: AGPL-3.0
