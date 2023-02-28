@@ -42,50 +42,7 @@ def get_args(givenargs):
 
     """
 
-    def fastq_or_bam(choices, fname):
-        """If the input file exists, check that it ends with one of the extensions in the list of choices. If
-        it does, return the file name. If it doesn't, print an error message and exit
-
-        Parameters
-        ----------
-        choices
-            a list of file extensions that are allowed
-        fname
-            the name of the file to be processed
-
-        Returns
-        -------
-            the file name if it is a file and if it ends with one of the choices.
-
-        """
-        if os.path.isfile(fname):
-            ext = "".join(pathlib.Path(fname).suffix)
-            if ext not in choices:
-                parser.error(f"Input file doesn't end with one of {choices}")
-            return fname
-        parser.error(f'Input "{fname}" is not a file. Exiting...')
-
-    def fastq_output(choices, fname):
-        """If the file extension of the output file is not one of the choices, then raise an error
-
-        Parameters
-        ----------
-        choices
-            a list of file extensions that are allowed
-        fname
-            The name of the file to be read.
-
-        Returns
-        -------
-            The output file name.
-
-        """
-        ext = "".join(pathlib.Path(fname).suffixes)
-        if ext not in choices:
-            parser.error(f"Output file doesn't end with one of {choices}")
-        return fname
-
-    def check_extensions(choices, fname):
+    def check_extensions(allowed_extensions, fname):
         """It checks that the file extension of the file name passed to it is one of the extensions in the list
         passed to it
 
@@ -98,15 +55,15 @@ def get_args(givenargs):
 
         Returns
         -------
-            The file name.
+            The absolute path of the file passed.
 
         """
-        ext = "".join(pathlib.Path(fname).suffixes)
-        if ext not in choices:
-            parser.error(
-                f"File doesn't end with {choices[0] if len(choices) == 1 else f'one of {choices}'}"
-            )
-        return fname
+        if os.path.isfile(fname):
+            ext = "".join(pathlib.Path(fname).suffixes)
+            if not any(ext.endswith(c) for c in allowed_extensions):
+                parser.error(f"Input file doesn't end with one of {allowed_extensions}")
+            return os.path.abspath(fname)
+        parser.error(f'"{fname}" is not a file. Exiting...')
 
     parser = RichParser(
         prog="[bold]AmpliGone[/bold]",
@@ -123,7 +80,7 @@ def get_args(givenargs):
     required_args.add_argument(
         "--input",
         "-i",
-        type=lambda s: fastq_or_bam(
+        type=lambda s: check_extensions(
             (".fastq", ".fq", ".bam", ".fastq.gz", ".fq.gz"), s
         ),
         metavar="File",
@@ -134,7 +91,7 @@ def get_args(givenargs):
     required_args.add_argument(
         "--output",
         "-o",
-        type=lambda s: fastq_output((".fastq", ".fq"), s),
+        type=lambda s: check_extensions((".fastq", ".fq"), s),
         metavar="File",
         help="Output (FastQ) file with cleaned reads.",
         required=True,
