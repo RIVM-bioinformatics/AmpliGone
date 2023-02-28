@@ -13,6 +13,7 @@ authors:
     affiliation: >-
       National Institute for Public Health and the
       Environment (RIVM)
+    orcid: https://orcid.org/0009-0002-6384-3446
   - name: "The RIVM-IDS Bioinformatics team"
 version: 1.2.0 #x-release-please-version
 # identifiers:
