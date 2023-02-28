@@ -16,6 +16,7 @@ authors:
     orcid: 'https://orcid.org/0009-0002-6384-3446'
   - name: "The RIVM-IDS Bioinformatics team"
 version: 1.2.1 #x-release-please-version
+doi: 10.5281/zenodo.7684307
 identifiers:
   - type: doi
     value: 10.5281/zenodo.7684307
