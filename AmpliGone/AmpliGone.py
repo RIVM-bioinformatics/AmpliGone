@@ -61,7 +61,9 @@ def get_args(givenargs):
         if os.path.isfile(fname):
             ext = "".join(pathlib.Path(fname).suffixes)
             if not any(ext.endswith(c) for c in allowed_extensions):
-                parser.error(f"Input file doesn't end with one of {allowed_extensions}")
+                parser.error(
+                    f"File {fname} doesn't end with one of {allowed_extensions}"
+                )
             return os.path.abspath(fname)
         parser.error(f'"{fname}" is not a file. Exiting...')
 
