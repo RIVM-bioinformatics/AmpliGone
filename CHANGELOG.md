@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.2.1](https://github.com/RIVM-bioinformatics/AmpliGone/compare/v1.2.0...v1.2.1) (2023-02-28)
+
+
+### Bug Fixes
+
+* Fix extension checking for cli arguments ([015e10d](https://github.com/RIVM-bioinformatics/AmpliGone/commit/015e10d9828bc7f5974d914401454c278efde897))
+* fix pandas version string in setup.py install_requires ([d0a40f0](https://github.com/RIVM-bioinformatics/AmpliGone/commit/d0a40f04d3e7302fc6065df5f0751812cef32955))
+* split file extension checking for input and output files ([c5cc43a](https://github.com/RIVM-bioinformatics/AmpliGone/commit/c5cc43acd501b707580889acb8d399bcffda10fa))
+* update permissions for GH-actions workflows ([59fead2](https://github.com/RIVM-bioinformatics/AmpliGone/commit/59fead2015808db8f80026317db3b32d0c5349c0))
+* use log.warning() instead of the deprecated log.warn() ([87685f6](https://github.com/RIVM-bioinformatics/AmpliGone/commit/87685f6d0109d108eab6da507ddd8f9159ed06c0))
+
+
+### Documentation
+
+* add citation file ([59fead2](https://github.com/RIVM-bioinformatics/AmpliGone/commit/59fead2015808db8f80026317db3b32d0c5349c0))
+* update conda installation badge ([d88f4f4](https://github.com/RIVM-bioinformatics/AmpliGone/commit/d88f4f4fe0544bea58f4a85ac1d73305532dbe26))
+
 ## [1.2.0](https://github.com/RIVM-bioinformatics/AmpliGone/compare/v1.1.0...v1.2.0) (2022-12-20)
 
 
