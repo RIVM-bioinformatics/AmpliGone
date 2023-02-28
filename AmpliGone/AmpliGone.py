@@ -42,7 +42,7 @@ def get_args(givenargs):
 
     """
 
-    def check_extensions(allowed_extensions, fname):
+    def check_input(allowed_extensions, fname):
         """It checks that the file extension of the file name passed to it is one of the extensions in the list
         passed to it
 
@@ -67,6 +67,30 @@ def get_args(givenargs):
             return os.path.abspath(fname)
         parser.error(f'"{fname}" is not a file. Exiting...')
 
+
+    def check_output(allowed_extensions, fname):
+        """It checks that the file extension of the file name passed to it is one of the extensions in the list
+        passed to it
+
+        Parameters
+        ----------
+        choices
+            a list of strings that are valid extensions
+        fname
+            The name of the file to be read.
+
+        Returns
+        -------
+            The absolute path of the file passed.
+
+        """
+        ext = "".join(pathlib.Path(fname).suffixes)
+        if not any(ext.endswith(c) for c in allowed_extensions):
+            parser.error(
+                f"File doesn't end with {allowed_extensions[0] if len(allowed_extensions) == 1 else f'one of {allowed_extensions}'}"
+            )
+        return fname
+
     parser = RichParser(
         prog="[bold]AmpliGone[/bold]",
         usage="%(prog)s \[required options] \[optional arguments]",
@@ -82,7 +106,7 @@ def get_args(givenargs):
     required_args.add_argument(
         "--input",
         "-i",
-        type=lambda s: check_extensions(
+        type=lambda s: check_input(
             (".fastq", ".fq", ".bam", ".fastq.gz", ".fq.gz"), s
         ),
         metavar="File",
@@ -93,7 +117,7 @@ def get_args(givenargs):
     required_args.add_argument(
         "--output",
         "-o",
-        type=lambda s: check_extensions((".fastq", ".fq"), s),
+        type=lambda s: check_output((".fastq", ".fq"), s),
         metavar="File",
         help="Output (FastQ) file with cleaned reads.",
         required=True,
@@ -102,7 +126,7 @@ def get_args(givenargs):
     required_args.add_argument(
         "--reference",
         "-ref",
-        type=lambda s: check_extensions((".fasta", ".fa"), s),
+        type=lambda s: check_input((".fasta", ".fa"), s),
         metavar="File",
         help="Input Reference genome in FASTA format",
         required=True,
@@ -110,7 +134,7 @@ def get_args(givenargs):
     required_args.add_argument(
         "--primers",
         "-pr",
-        type=lambda s: check_extensions((".fasta", ".fa", ".bed"), s),
+        type=lambda s: check_input((".fasta", ".fa", ".bed"), s),
         metavar="File",
         help="""Used primer sequences in FASTA format or primer coordinates in BED format.\n Note that using bed-files overrides error-rate and ambiguity functionality""",
         required=True,
@@ -140,7 +164,7 @@ def get_args(givenargs):
     optional_args.add_argument(
         "--export-primers",
         "-ep",
-        type=lambda s: check_extensions((".bed",), s),
+        type=lambda s: check_output((".bed",), s),
         metavar="File",
         help="Output BED file with found primer coordinates if they are actually cut from the reads",
         required=False,
