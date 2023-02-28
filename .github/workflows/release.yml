@@ -4,6 +4,10 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   bump-version:
     name: Release version
@@ -16,6 +20,8 @@ jobs:
           release-type: python
           package-name: AmpliGone
           token: ${{ secrets.RELEASE_TOKEN }}
+          extra-files: |
+            CITATION.cff
 
   update-docs:
     needs: bump-version

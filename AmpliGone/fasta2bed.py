@@ -101,20 +101,20 @@ def CoordListGen(primerfile, referencefile, err_rate=0.1):
         coords = get_coords(seq, ref_seq, err_rate)
         rev_coords = get_coords(revcomp, ref_seq, err_rate)
         if coords and rev_coords:
-            log.warn(
+            log.warning(
                 f"Primer [yellow underline]{primer.id}[/yellow underline] found on both forward and reverse strand of '[yellow]{ref_file.name}[/yellow]'.\n[yellow bold]Check to see if this is intended.[/yellow bold]"
             )
         if not coords and not rev_coords:
-            log.warn(
+            log.warning(
                 f"Skipping [yellow underline]{primer.id}[/yellow underline] as it is found on neither forward or reverse strand of [yellow underline]{ref_file.name}[/yellow underline].\n[yellow bold]Check to see if this is intended.[/yellow bold]"
             )
             continue
         if coords and len(coords) > 1:
-            log.warn(
+            log.warning(
                 f"Primer [yellow underline]{primer.id}[/yellow underline] found on multiple locations on [underline]forward strand[/underline]: \n\t[yellow]{coords}\n[bold]Check to see if this is intended.[/yellow][/bold]"
             )
         if rev_coords and len(rev_coords) > 1:
-            log.warn(
+            log.warning(
                 f"Primer [yellow underline]{primer.id}[/yellow underline] found on multiple locations on [underline]reverse strand[/underline]: {rev_coords}.\nCheck to see if this is intended."
             )
         for start, end in coords.union(rev_coords):

@@ -26,7 +26,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         "pysam==0.19.*",
-        "pandas>=1.3.*",
+        "pandas>=1.3.0",
         "mappy==2.24",
         "biopython>=1.79",
         "parmap==1.5.*",
