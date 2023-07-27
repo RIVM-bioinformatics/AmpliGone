@@ -347,7 +347,10 @@ def main():
     removed_coordinates = tuple(chain(*ProcessedReads["Removed_coordinates"]))
 
     log.info(
-        f"\tRemoved a total of [bold cyan]{len(removed_coordinates)}[/bold cyan] nucleotides. This is [bold cyan]{round((len(removed_coordinates)/total_nuc_preprocessing)*100, 2)}%[/bold cyan] of the total amount of nucleotides present in the original reads."
+        f"\tRemoved a total of [bold cyan]{len(removed_coordinates)}[/bold cyan] nucleotides."
+    )
+    log.info(
+        f"\tThis is [bold cyan]{round((len(removed_coordinates)/total_nuc_preprocessing)*100, 2)}%[/bold cyan] of the total amount of nucleotides present in the original reads."
     )
     log.info(
         f"\tThese nucleotides were removed from [bold cyan]{len(set(removed_coordinates))}[/bold cyan] unique nucleotide-coordinates."
