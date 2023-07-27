@@ -100,6 +100,7 @@ def CoordListGen(primerfile, referencefile, err_rate=0.1):
     # cpu or time intensive process anyway.
     # Might come back to this when there's more time to create a better solution.
     for ref_seq, ref_id in zip(ref_seq, ref_id):
+        log.info(f"Searching for primers in reference-id: [yellow]{ref_id}[/yellow]")
         for primer in primers:
             seq = str(primer.seq)
             revcomp = Seq.reverse_complement(seq)
@@ -108,20 +109,20 @@ def CoordListGen(primerfile, referencefile, err_rate=0.1):
             rev_coords = get_coords(revcomp, ref_seq, err_rate)
             if coords and rev_coords:
                 log.warning(
-                    f"Primer [yellow underline]{primer.id}[/yellow underline] found on both forward and reverse strand of '[yellow]{ref_id}[/yellow]'.\n[yellow bold]Check to see if this is intended.[/yellow bold]"
+                    f"\tPrimer [yellow underline]{primer.id}[/yellow underline] found on both forward and reverse strand of [yellow]{ref_id}[/yellow].\n\t[yellow bold]Check to see if this is intended.[/yellow bold]"
                 )
             if not coords and not rev_coords:
                 log.warning(
-                    f"Skipping [yellow underline]{primer.id}[/yellow underline] as it is found on neither forward or reverse strand of [yellow underline]{ref_id}[/yellow underline].\n[yellow bold]Check to see if this is intended.[/yellow bold]"
+                    f"\tSkipping [yellow underline]{primer.id}[/yellow underline] as it is found on neither forward or reverse strand of [yellow underline]{ref_id}[/yellow underline].\n\t[yellow bold]Check to see if this is intended.[/yellow bold]"
                 )
                 continue
             if coords and len(coords) > 1:
                 log.warning(
-                    f"Primer [yellow underline]{primer.id}[/yellow underline] found on multiple locations on [underline]forward strand[/underline]: \n\t[yellow]{coords}\n[bold]Check to see if this is intended.[/yellow][/bold]"
+                    f"\tPrimer [yellow underline]{primer.id}[/yellow underline] found on multiple locations on [underline]forward strand[/underline] of [yellow underline]{ref_id}[/yellow underline]: \n\t[yellow]{coords}\n\t[bold]Check to see if this is intended.[/yellow][/bold]"
                 )
             if rev_coords and len(rev_coords) > 1:
                 log.warning(
-                    f"Primer [yellow underline]{primer.id}[/yellow underline] found on multiple locations on [underline]reverse strand[/underline]: {rev_coords}.\nCheck to see if this is intended."
+                    f"\tPrimer [yellow underline]{primer.id}[/yellow underline] found on multiple locations on [underline]reverse strand[/underline] of [yellow underline]{ref_id}[/yellow underline]: \n\t[yellow]{rev_coords}\n\t[bold]Check to see if this is intended.[/yellow][/bold]"
                 )
             for start, end in coords.union(rev_coords):
                 if any(o in primer.id for o in keyl):
