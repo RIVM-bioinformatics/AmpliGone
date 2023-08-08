@@ -1,8 +1,10 @@
+from collections import defaultdict
+
 import mappy as mp
 import pandas as pd
 
 from .cutlery import PositionInOrAfterPrimer, PositionInOrBeforePrimer
-from collections import defaultdict
+
 
 def cut_read(
     seq,
@@ -139,7 +141,7 @@ def CutReads(
                 # we're using tuples here because they are hashable
                 FWTuple = tuple(FWDict[hit.ctg])
                 RVTuple = tuple(RVDict[hit.ctg])
-                
+
                 if not FWTuple or not RVTuple:
                     print(FWTuple, RVTuple, hit.ctg)
 
