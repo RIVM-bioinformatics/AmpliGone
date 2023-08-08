@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.0](https://github.com/RIVM-bioinformatics/AmpliGone/compare/v1.2.1...v1.3.0) (2023-08-08)
+
+
+### Features
+
+* allow multi-fasta reference input ([cd4f413](https://github.com/RIVM-bioinformatics/AmpliGone/commit/cd4f4138118482dea683fde4d201a6e4159b37bb))
+* primer removal process now works with reference-specific primer coordinates ([7a1a899](https://github.com/RIVM-bioinformatics/AmpliGone/commit/7a1a8991d455d8eb8767f09b3ea80356ddf42ca3))
+
+
+### Bug Fixes
+
+* add a default value of 0 to min() to avoid a ValueError when an empty list is provided ([c23301f](https://github.com/RIVM-bioinformatics/AmpliGone/commit/c23301f74d355857f73b79e3ab4629bead26192e))
+
 ## [1.2.1](https://github.com/RIVM-bioinformatics/AmpliGone/compare/v1.2.0...v1.2.1) (2023-02-28)
 
 
