@@ -13,13 +13,14 @@ authors:
     affiliation: >-
       National Institute for Public Health and the
       Environment (RIVM)
-    orcid: https://orcid.org/0009-0002-6384-3446
+    orcid: 'https://orcid.org/0009-0002-6384-3446'
   - name: "The RIVM-IDS Bioinformatics team"
 version: 1.2.1 #x-release-please-version
-# identifiers:
-#   - type: doi
-#     value: none
-#     description: This is the collection of archived snapshots of all versions of AmpliGone
+doi: 10.5281/zenodo.7684307
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.7684307
+    description: This is the collection of archived snapshots of all versions of AmpliGone
 repository-code: 'https://github.com/RIVM-bioinformatics/AmpliGone'
 url: >-
   https://rivm-bioinformatics.github.io/AmpliGone/latest/

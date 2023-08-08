@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 import mappy as mp
 import pandas as pd
 
@@ -70,16 +72,24 @@ def CutReads(
     workers,
 ):
     Frame, _threadnumber = data
-    RVSet = set()
-    FWSet = set()
-    for _, start, end, strand in primer_df[["start", "end", "strand"]].itertuples():
+
+    RVDict = defaultdict(set)
+    FWDict = defaultdict(set)
+
+    reference_ids = set(primer_df["ref"].unique())
+    for refid in reference_ids:
+        RVDict[refid] = set()
+        FWDict[refid] = set()
+
+    for _, refid, start, end, strand in primer_df[
+        ["ref", "start", "end", "strand"]
+    ].itertuples():
+
         for coord in range(start + 1, end):  # +1 because reference is 1-based
             if strand == "+":
-                FWSet.add(coord)
+                FWDict[refid].add(coord)
             elif strand == "-":
-                RVSet.add(coord)
-    FWList = tuple(FWSet)  # Since tuples are hashable
-    RVList = tuple(RVSet)
+                RVDict[refid].add(coord)
 
     Aln = mp.Aligner(
         reference,
@@ -127,6 +137,14 @@ def CutReads(
 
                 previous_seq = seq
 
+                # Fetch the primer coordinates that correspond to the reference that the read maps to
+                # we're using tuples here because they are hashable
+                FWTuple = tuple(FWDict[hit.ctg])
+                RVTuple = tuple(RVDict[hit.ctg])
+
+                if not FWTuple or not RVTuple:
+                    print(FWTuple, RVTuple, hit.ctg)
+
                 qstart = hit.q_st
                 qend = hit.q_en
 
@@ -139,7 +157,7 @@ def CutReads(
                         seq,
                         qual,
                         PositionNeedsCutting=PositionInOrBeforePrimer,
-                        primer_list=FWList,
+                        primer_list=FWTuple,
                         position_on_reference=hit.r_st,
                         cut_direction=1,
                         read_direction=hit.strand,
@@ -159,7 +177,7 @@ def CutReads(
                         seq,
                         qual,
                         PositionNeedsCutting=PositionInOrAfterPrimer,
-                        primer_list=RVList,
+                        primer_list=RVTuple,
                         position_on_reference=hit.r_en,
                         cut_direction=-1,
                         read_direction=hit.strand,
