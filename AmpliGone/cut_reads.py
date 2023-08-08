@@ -72,17 +72,19 @@ def CutReads(
     Frame, _threadnumber = data
     RVDict = {}
     FWDict = {}
-    
+
     reference_ids = set(primer_df["ref"].unique())
     for refid in reference_ids:
         RVDict[refid] = set()
         FWDict[refid] = set()
 
-    for _, refid, start, end, strand in primer_df[["ref", "start", "end", "strand"]].itertuples():
+    for _, refid, start, end, strand in primer_df[
+        ["ref", "start", "end", "strand"]
+    ].itertuples():
 
         for coord in range(start + 1, end):  # +1 because reference is 1-based
             if strand == "+":
-                FWDict[refid].add(coord) 
+                FWDict[refid].add(coord)
             elif strand == "-":
                 RVDict[refid].add(coord)
 
