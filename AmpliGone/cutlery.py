@@ -22,7 +22,7 @@ def PositionInOrBeforePrimer(pos, clist, max_lookaround):
 
     """
     d = lambda x: abs(x - pos)
-    near = min(clist, key=d)
+    near = min(clist, key=d, default=0)
     return abs(pos - near) < max_lookaround and pos <= near
 
 
@@ -47,7 +47,7 @@ def PositionInOrAfterPrimer(pos, clist, max_lookaround):
 
     """
     d = lambda x: abs(x - pos)
-    near = min(clist, key=d)
+    near = min(clist, key=d, default=0)
     return abs(pos - near) < max_lookaround and pos >= near
 
 
