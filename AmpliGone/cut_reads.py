@@ -2,7 +2,7 @@ import mappy as mp
 import pandas as pd
 
 from .cutlery import PositionInOrAfterPrimer, PositionInOrBeforePrimer
-
+from collections import defaultdict
 
 def cut_read(
     seq,
@@ -70,8 +70,9 @@ def CutReads(
     workers,
 ):
     Frame, _threadnumber = data
-    RVDict = {}
-    FWDict = {}
+
+    RVDict = defaultdict(set)
+    FWDict = defaultdict(set)
 
     reference_ids = set(primer_df["ref"].unique())
     for refid in reference_ids:
@@ -138,6 +139,9 @@ def CutReads(
                 # we're using tuples here because they are hashable
                 FWTuple = tuple(FWDict[hit.ctg])
                 RVTuple = tuple(RVDict[hit.ctg])
+                
+                if not FWTuple or not RVTuple:
+                    print(FWTuple, RVTuple, hit.ctg)
 
                 qstart = hit.q_st
                 qend = hit.q_en
