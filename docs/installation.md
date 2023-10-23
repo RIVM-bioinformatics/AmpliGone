@@ -63,8 +63,6 @@ name: example-env
 channels:
     - bioconda
     - conda-forge
-    - anaconda
-    - defaults
 dependencies:
     - ampligone
 ```
