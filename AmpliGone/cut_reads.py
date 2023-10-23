@@ -84,7 +84,6 @@ def CutReads(
     for _, refid, start, end, strand in primer_df[
         ["ref", "start", "end", "strand"]
     ].itertuples():
-
         for coord in range(start + 1, end):  # +1 because reference is 1-based
             if strand == "+":
                 FWDict[refid].add(coord)
@@ -107,7 +106,6 @@ def CutReads(
     for _index, name, seq, qual in Frame[
         ["Readname", "Sequence", "Qualities"]
     ].itertuples():
-
         removed_coords_fw = []
         removed_coords_rv = []
         max_iter = 10  # If more iterations are needed, the sequence is discarded (not recorded)

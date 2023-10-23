@@ -114,7 +114,6 @@ class FlexibleArgFormatter(HelpFormatter):
 
         paragraphs = []
         for paragraph in self._split_paragraphs(text):
-
             (indent, sub_indent) = self._indents(paragraph)
 
             paragraph = self._whitespace_matcher.sub(" ", paragraph).strip()

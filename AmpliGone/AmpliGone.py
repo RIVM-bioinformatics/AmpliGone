@@ -75,7 +75,7 @@ def get_args(givenargs):
         Returns
         -------
             The name of the file to be read.
-            
+
         """
         if os.path.isfile(fname):
             return fname
