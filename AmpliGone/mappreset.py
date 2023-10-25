@@ -160,9 +160,6 @@ def FindPreset(threads, data):
         ]
     ]
 
-    if len(ReadList) < 1:
-        return None
-
     with ThreadPoolExecutor(max_workers=threads) as ex:
         TP_averagelength = ex.submit(Calculate_avg_seq_len, ReadList)
         TP_averagequal = ex.submit(Calculate_avg_seq_qual, QualList)
