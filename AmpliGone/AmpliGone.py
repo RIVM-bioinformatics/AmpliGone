@@ -222,7 +222,7 @@ def parallel(
 ):
     frame_split = np.array_split(frame, workers)
     tr = [*range(workers)]
-    readframe = pd.concat(
+    return pd.concat(
         parmap.map(
             function,
             zip(frame_split, tr),
@@ -236,7 +236,6 @@ def parallel(
             pm_processes=workers,
         )
     )
-    return readframe
 
 
 def main():
@@ -293,7 +292,7 @@ def main():
 
     if len(IndexedReads.index) < args.threads:
         log.info(
-            f"[yellow]AmpliGone is set to use more threads than reads present. Downscaling threads to match.[/yellow]"
+            "[yellow]AmpliGone is set to use more threads than reads present. Downscaling threads to match.[/yellow]"
         )
         args.threads = len(IndexedReads.index)
 
