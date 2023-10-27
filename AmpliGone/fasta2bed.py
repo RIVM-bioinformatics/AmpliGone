@@ -1,5 +1,6 @@
 import argparse
 from itertools import product
+from typing import Any, Dict, Generator, Hashable, List, Set, Tuple
 
 import pandas as pd
 import regex as re
@@ -8,41 +9,52 @@ from Bio import Seq, SeqIO
 from .func import log
 
 
-def FindAmbigousOptions(seq):
-    """It takes a sequence containing ambiguous nucleotides and returns a list of all possible unambiguous
-    sequences
+def FindAmbigousOptions(seq: str) -> List[str]:
+    """
+    Find all possible unambiguous sequences from a sequence containing ambiguous nucleotides.
 
     Parameters
     ----------
-    seq
-        The sequence to be searched for.
+    seq : str
+        The sequence containing ambiguous nucleotides.
 
     Returns
     -------
+    List[str]
         A list of all possible combinations of the nucleotides in the sequence without ambiguous options.
 
+    Examples
+    --------
+    >>> FindAmbigousOptions('ATGCR')
+    ['ATGCA', 'ATGCT']
     """
     ambigs = Seq.IUPACData.ambiguous_dna_values
     return list(map("".join, product(*[ambigs.get(nuc, nuc) for nuc in seq])))
 
 
-def get_coords(seq, ref_seq, err_rate=0.1):
-    """Finds all the positions in the reference sequence where the query sequence could be found, allowing
-    for up to `err_rate` errors
+def get_coords(seq: str, ref_seq: str, err_rate: float = 0.1) -> Set[Tuple[int, int]]:
+    """
+    Find all the positions in the reference sequence where the query sequence could be found, allowing
+    for up to `err_rate` errors.
 
     Parameters
     ----------
-    seq
+    seq : str
         The sequence you want to find in the reference sequence.
-    ref_seq
+    ref_seq : str
         The reference sequence to search in.
-    err_rate
-        The maximum error rate you want to allow.
+    err_rate : float, optional
+        The maximum error rate you want to allow. Default is 0.1.
 
     Returns
     -------
+    set of tuple of int
         A set of tuples, each tuple is a match of the sequence in the reference sequence.
 
+    Examples
+    --------
+    >>> get_coords('ATCG', 'CGTATCGTACG')
+    {(3, 7)}
     """
     max_errors = int(len(seq) * err_rate)
 
@@ -58,7 +70,7 @@ def get_coords(seq, ref_seq, err_rate=0.1):
     return matches
 
 
-def MakeCoordinateLists(*args, **kwargs):
+def MakeCoordinateLists(*args, **kwargs) -> pd.DataFrame:
     """Takes a list of sequences, and returns a list of coordinates for each sequence
 
     Returns
@@ -72,18 +84,41 @@ def MakeCoordinateLists(*args, **kwargs):
     )
 
 
-def CoordListGen(primerfile, referencefile, err_rate=0.1):
-    """Takes a fasta file of primers and a fasta file of a reference sequence, and returns a list of
-    dictionaries containing the coordinates of the primers in the reference sequence
+def CoordListGen(
+    primerfile: str, referencefile: str, err_rate: float = 0.1
+) -> Generator[Dict[Hashable, Any], None, None]:
+    """
+    Generate a list of dictionaries containing the coordinates of primers in a reference sequence.
 
     Parameters
     ----------
-    primerfile
-        The file containing the primers.
-    referencefile
-        The reference file that you want to search for the primers in.
-    err_rate
-        The maximum number of mismatches allowed between the primer and the reference.
+    primerfile : str
+        The name of the file containing the primers in FASTA format.
+    referencefile : str
+        The name of the file containing the reference sequence in FASTA format.
+    err_rate : float, optional
+        The maximum number of mismatches allowed between the primer and the reference. Default is 0.1.
+
+    Yields
+    ------
+    dict
+        A dictionary containing the coordinates of a primer in the reference sequence with keys "ref", "start", "end",
+        "name", "score", "strand", "seq", and "revcomp".
+
+    Notes
+    -----
+    This function takes a FASTA file of primers and a FASTA file of a reference sequence, and returns a list of
+    dictionaries containing the coordinates of the primers in the reference sequence. The coordinates are returned as a
+    dictionary with keys "ref", "start", "end", "name", "score", "strand", "seq", and "revcomp". The "ref" key contains
+    the reference sequence ID, the "start" and "end" keys contain the start and end positions of the primer in the
+    reference sequence, the "name" key contains the name of the primer, the "score" key contains a score ("."
+    by default), the "strand" key contains the strand of the primer ("+" or "-"), the "seq" key contains the sequence
+    of the primer, and the "revcomp" key contains the reverse complement of the primer sequence.
+
+    Examples
+    --------
+    >>> for coord in CoordListGen('primers.fasta', 'reference.fasta', 0.1):
+    ...     print(coord)
 
     """
     keyl = ("LEFT", "PLUS", "POSITIVE", "FORWARD")
@@ -103,7 +138,7 @@ def CoordListGen(primerfile, referencefile, err_rate=0.1):
         log.info(f"Searching for primers in reference-id: [yellow]{ref_id}[/yellow]")
         for primer in primers:
             seq = str(primer.seq)
-            revcomp = Seq.reverse_complement(seq)
+            revcomp = str(Seq.reverse_complement(seq))
 
             coords = get_coords(seq, ref_seq, err_rate)
             rev_coords = get_coords(revcomp, ref_seq, err_rate)
@@ -146,20 +181,32 @@ def CoordListGen(primerfile, referencefile, err_rate=0.1):
                 )
 
 
-def CoordinateListsToBed(df, outfile):
-    """It takes a dataframe with columns named "ref", "start", "end", "name", "score", and "strand" and
-    writes them to a file in BED (headerless tsv) format
+def CoordinateListsToBed(df: pd.DataFrame, outfile: str) -> None:
+    """
+    Write the coordinates in BED format to a file.
 
     Parameters
     ----------
-    df
-        the dataframe containing the coordinates
-    outfile
-        the name of the file to write to
+    df : pandas.DataFrame
+        A DataFrame containing the coordinates with columns named "ref", "start", "end", "name", "score", and "strand".
+    outfile : str
+        The name of the file to write to.
 
     Returns
     -------
-        A dataframe with the columns ref, start, end, name, score, and strand.
+    None
+
+    Notes
+    -----
+    BED format is a tab-separated file format used to store genomic regions as intervals. The first three columns
+    represent the reference name, start position, and end position of the interval, respectively. The remaining
+    columns are optional and can be used to store additional information about the interval, such as a name, score,
+    and strand.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'ref': ['chr1', 'chr2'], 'start': [100, 200], 'end': [200, 300], 'name': ['region1', 'region2'], 'score': [0.5, 0.8], 'strand': ['+', '-']})
+    >>> CoordinateListsToBed(df, 'regions.bed')
 
     """
     return df[["ref", "start", "end", "name", "score", "strand"]].to_csv(
