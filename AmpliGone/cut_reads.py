@@ -19,7 +19,41 @@ def cut_read(
     query_start: int,
     query_end: int,
     fragment_lookaround_size: int,
-):
+) -> Tuple[str, str, List[int], int, int]:
+    """
+    Cut a read sequence and quality string based read-direction, cigar-information, orientation, and fragment position.
+
+    Parameters
+    ----------
+    seq : str
+        The read sequence.
+    qual : str
+        The quality string.
+    PositionNeedsCutting : Callable[..., bool]
+        A function that returns True if the position on the reference needs to be cut.
+    primer_list : Tuple[int, ...]
+        A tuple of integers representing the positions of primers on the reference.
+    position_on_reference : int
+        The position on the reference where the read sequence starts.
+    cut_direction : int
+        The direction in which the read sequence needs to be cut.
+    read_direction : int
+        The direction in which the read sequence is read.
+    cigar : List[List[int]]
+        A list of lists representing the CIGAR string.
+    query_start : int
+        The start position of the read sequence on the query.
+    query_end : int
+        The end position of the read sequence on the query.
+    fragment_lookaround_size : int
+        The size of the fragment lookaround.
+
+    Returns
+    -------
+    Tuple[str, str, List[int], int, int]
+        A tuple containing the cut read sequence, the cut quality string, a list of removed coordinates,
+        the new query start position, and the new query end position.
+    """
     removed_coords = []
 
     # Whether to start at the end or at the start of the read sequence
@@ -71,7 +105,37 @@ def CutReads(
     fragment_lookaround_size: int,
     amplicon_type: str,
     workers: int,
-):
+) -> pd.DataFrame:
+    """
+    Cut reads based on primer locations and reference mapping.
+
+    Parameters
+    ----------
+    data : Tuple[pd.DataFrame, int]
+        A tuple containing a pandas DataFrame with columns "Readname", "Sequence", and "Qualities",
+        and an integer representing the thread number.
+    primer_df : pd.DataFrame
+        A pandas DataFrame with columns "ref", "start", "end", and "strand" representing the primer
+        locations on the reference genome.
+    reference : str
+        The reference genome sequence.
+    preset : str
+        The preset used for minimap2 alignment.
+    scoring : List[int]
+        The scoring matrix used for minimap2 alignment.
+    fragment_lookaround_size : int
+        The number of bases to look around a fragment when cutting reads.
+    amplicon_type : str
+        The type of amplicon, either "end-to-end", "end-to-mid", or "fragmented".
+    workers : int
+        The number of workers to use for parallel processing.
+
+    Returns
+    -------
+    pd.DataFrame
+        A pandas DataFrame with columns "Readname", "Sequence", "Qualities", and "Removed_coordinates",
+        representing the processed reads and the coordinates that were removed.
+    """
     Frame, _threadnumber = data
 
     RVDict = defaultdict(set)
