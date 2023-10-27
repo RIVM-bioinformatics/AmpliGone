@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import Callable, List, Set, Tuple
 
 import mappy as mp
 import pandas as pd
@@ -7,17 +8,17 @@ from .cutlery import PositionInOrAfterPrimer, PositionInOrBeforePrimer
 
 
 def cut_read(
-    seq,
-    qual,
-    PositionNeedsCutting,
-    primer_list,
-    position_on_reference,
-    cut_direction,
-    read_direction,
-    cigar,
-    query_start,
-    query_end,
-    fragment_lookaround_size,
+    seq: str,
+    qual: str,
+    PositionNeedsCutting: Callable[..., bool],
+    primer_list: Tuple[int, ...],
+    position_on_reference: int,
+    cut_direction: int,
+    read_direction: int,
+    cigar: List[List[int]],
+    query_start: int,
+    query_end: int,
+    fragment_lookaround_size: int,
 ):
     removed_coords = []
 
@@ -62,21 +63,21 @@ def cut_read(
 
 
 def CutReads(
-    data,
-    primer_df,
-    reference,
-    preset,
-    scoring,
-    fragment_lookaround_size,
-    amplicon_type,
-    workers,
+    data: Tuple[pd.DataFrame, int],
+    primer_df: pd.DataFrame,
+    reference: str,
+    preset: str,
+    scoring: List[int],
+    fragment_lookaround_size: int,
+    amplicon_type: str,
+    workers: int,
 ):
     Frame, _threadnumber = data
 
     RVDict = defaultdict(set)
     FWDict = defaultdict(set)
 
-    reference_ids = set(primer_df["ref"].unique())
+    reference_ids: Set[str] = set(primer_df["ref"].unique())
     for refid in reference_ids:
         RVDict[refid] = set()
         FWDict[refid] = set()
@@ -84,6 +85,10 @@ def CutReads(
     for _, refid, start, end, strand in primer_df[
         ["ref", "start", "end", "strand"]
     ].itertuples():
+        refid: str
+        start: int
+        end: int
+        strand: str
         for coord in range(start + 1, end):  # +1 because reference is 1-based
             if strand == "+":
                 FWDict[refid].add(coord)
@@ -103,16 +108,22 @@ def CutReads(
     processed_qualities = []
     removed_coords_per_read = []  # A list of lists
 
+    max_iter = (
+        10  # If more iterations are needed, the sequence is discarded (not recorded)
+    )
     for _index, name, seq, qual in Frame[
         ["Readname", "Sequence", "Qualities"]
     ].itertuples():
+        name: str
+        seq: str
+        qual: str
+
         removed_coords_fw = []
         removed_coords_rv = []
-        max_iter = 10  # If more iterations are needed, the sequence is discarded (not recorded)
-        previous_seq = "impossible"
+        previous_seq: str = "impossible"
         cutting_is_done = False
 
-        for i in range(max_iter):
+        for _ in range(max_iter):
             if cutting_is_done:
                 break
 
@@ -137,14 +148,15 @@ def CutReads(
 
                 # Fetch the primer coordinates that correspond to the reference that the read maps to
                 # we're using tuples here because they are hashable
-                FWTuple = tuple(FWDict[hit.ctg])
-                RVTuple = tuple(RVDict[hit.ctg])
+
+                FWTuple: Tuple[int, ...] = tuple(FWDict[hit.ctg])
+                RVTuple: Tuple[int, ...] = tuple(RVDict[hit.ctg])
 
                 if not FWTuple or not RVTuple:
                     print(FWTuple, RVTuple, hit.ctg)
 
-                qstart = hit.q_st
-                qend = hit.q_en
+                qstart: int = hit.q_st
+                qend: int = hit.q_en
 
                 if (
                     amplicon_type == "end-to-end"
@@ -186,7 +198,7 @@ def CutReads(
                     )
                     removed_coords_rv.extend(removed_rv)
 
-    ProcessedReads = pd.DataFrame(
+    return pd.DataFrame(
         {
             "Readname": processed_readnames,
             "Sequence": processed_sequences,
@@ -194,5 +206,3 @@ def CutReads(
             "Removed_coordinates": removed_coords_per_read,
         }
     )
-
-    return ProcessedReads
