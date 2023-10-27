@@ -23,7 +23,7 @@ def FindAmbigousOptions(seq):
 
     """
     ambigs = Seq.IUPACData.ambiguous_dna_values
-    return list(map("".join, product(*map(ambigs.get, seq))))
+    return list(map("".join, product(*[ambigs.get(nuc, nuc) for nuc in seq])))
 
 
 def get_coords(seq, ref_seq, err_rate=0.1):
