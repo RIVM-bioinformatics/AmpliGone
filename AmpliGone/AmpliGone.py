@@ -12,6 +12,7 @@ import os
 import pathlib
 import sys
 from itertools import chain
+from typing import Callable, Iterable, List
 
 import numpy as np
 import pandas as pd
@@ -28,7 +29,7 @@ from .mappreset import FindPreset
 from .version import __version__
 
 
-def get_args(givenargs):
+def get_args(givenargs: List[str]) -> argparse.Namespace:
     """It takes the arguments given to the script and parses them into the argparse namespace
 
     Parameters
@@ -42,38 +43,43 @@ def get_args(givenargs):
 
     """
 
-    def check_file_extensions(allowed_extensions, fname):
-        """It checks that the file extension of the file name passed to it is one of the extensions in the list
-        passed to it
+    def check_file_extensions(allowed_extensions: Iterable[str], fname: str) -> str:
+        """
+        Check if the file extension of the file name passed to it is one of the extensions in the list passed to it.
 
         Parameters
         ----------
-        choices
-            a list of strings that are valid extensions
-        fname
+        allowed_extensions : iterable of str
+            A tuple of strings that are valid extensions.
+        fname : str
             The name of the file to be read.
 
         Returns
         -------
+        str
             The absolute path of the file passed.
 
+        Raises
+        ------
+        ArgumentParser.error
+            If the file extension of the file name passed to it is not one of the extensions in the list passed to it.
         """
-
         ext = "".join(pathlib.Path(fname).suffixes)
         if not any(ext.endswith(c) for c in allowed_extensions):
             parser.error(f"File {fname} doesn't end with one of {allowed_extensions}")
         return os.path.abspath(fname)
 
-    def check_file_exists(fname):
+    def check_file_exists(fname: str) -> str:
         """Errors if the given file `fname` does not exist
 
         Parameters
         ----------
-        fname
+        fname : str
             The name of the file to be read.
 
         Returns
         -------
+        str
             The name of the file to be read.
 
         """
@@ -210,16 +216,45 @@ def get_args(givenargs):
 
 
 def parallel(
-    frame,
-    function,
-    workers,
-    primer_df,
-    reference,
-    preset,
-    scoring,
-    fragment_lookaround_size,
-    amplicon_type,
-):
+    frame: pd.DataFrame,
+    function: Callable[..., pd.DataFrame],
+    workers: int,
+    primer_df: pd.DataFrame,
+    reference: str,
+    preset: str,
+    scoring: List[int],
+    fragment_lookaround_size: int,
+    amplicon_type: str,
+) -> pd.DataFrame:
+    """
+    Apply a function to a pandas DataFrame in parallel using multiple workers.
+
+    Parameters
+    ----------
+    frame : pandas.DataFrame
+        The DataFrame to apply the function to.
+    function : Callable[..., pandas.DataFrame]
+        The function to apply to the DataFrame.
+    workers : int
+        The number of workers to use for parallel processing.
+    primer_df : pandas.DataFrame
+        The DataFrame containing primer information.
+    reference : str
+        The reference sequence to use for alignment.
+    preset : str
+        The preset to use for alignment.
+    scoring : List[int]
+        The scoring matrix to use for alignment.
+    fragment_lookaround_size : int
+        The size of the fragment lookaround.
+    amplicon_type : str
+        The type of amplicon.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The resulting DataFrame after applying the function to the input DataFrame in parallel.
+    """
     frame_split = np.array_split(frame, workers)
     tr = [*range(workers)]
     return pd.concat(
