@@ -57,6 +57,7 @@ class FlexibleArgFormatter(HelpFormatter):
         help_text = action.help
         if (
             action.default != SUPPRESS
+            and help_text is not None
             and "default" not in help_text.lower()
             and action.default is not None
         ):
