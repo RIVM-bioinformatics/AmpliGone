@@ -1,6 +1,7 @@
 import gzip
 import pathlib
 import sys
+from typing import Any, Dict, Hashable, List, TextIO, Tuple
 
 import pandas as pd
 import pysam
@@ -8,99 +9,159 @@ import pysam
 from .func import log
 
 
-def is_zipped(filename):
-    """If the filename has a ".gz" suffix, return True, otherwise return False
-
-    Parameters
-    ----------
-    filename
-        the name of the file to be read
-
-    Returns
-    -------
-        A boolean value.
-
+def is_zipped(filename: str) -> bool:
     """
-    return bool(".gz" in pathlib.Path(filename).suffixes)
-
-
-def is_fastq(filename):
-    """If any of the items in the list `ext` are in the list of suffixes of the file `filename`, then
-    return `True`, otherwise return `False`
+    Check if the given file is a gzipped file.
 
     Parameters
     ----------
-    filename
+    filename : str
         The name of the file to be checked.
 
     Returns
     -------
-        A boolean value.
+    bool
+        True if the file is gzipped, False otherwise.
 
+    Examples
+    --------
+    >>> is_zipped("file.txt.gz")
+    True
+
+    >>> is_zipped("file.txt")
+    False
+    """
+    return bool(".gz" in pathlib.Path(filename).suffixes)
+
+
+def is_fastq(filename: str) -> bool:
+    """
+    Check if the given file is a FASTQ file.
+
+    Parameters
+    ----------
+    filename : str
+        The name of the file to be checked.
+
+    Returns
+    -------
+    bool
+        True if the file is a FASTQ file, False otherwise.
+
+    Examples
+    --------
+    >>> is_fastq("file.fastq")
+    True
+
+    >>> is_fastq("file.txt")
+    False
     """
     ext = [".fastq", ".fq"]
     return bool(any(item in ext for item in pathlib.Path(filename).suffixes))
 
 
-def is_bam(filename):
-    """It returns True if the filename ends in ".bam", return False otherwise
+def is_bam(filename: str) -> bool:
+    """
+    Check if the given file is a BAM file.
 
     Parameters
     ----------
-    filename
-        the name of the file to be checked
+    filename : str
+        The name of the file to be checked.
 
     Returns
     -------
-        A boolean value.
+    bool
+        True if the file is a BAM file, False otherwise.
 
+    Examples
+    --------
+    >>> is_bam("file.bam")
+    True
+
+    >>> is_bam("file.txt")
+    False
     """
     return bool(".bam" in pathlib.Path(filename).suffixes)
 
 
-def read_gzip(filename):
-    """It opens a gzip file for reading, and returns an opened file object.
+def read_gzip(filename: str) -> TextIO:
+    """
+    Open a gzip file for reading and return an opened file object.
 
     Parameters
     ----------
-    filename
-        The name of the file to open.
+    filename : str
+        The name of the file to be opened.
 
     Returns
     -------
-        A file object
+    TextIO
+        An opened file object.
+
+    Examples
+    --------
+    >>> with read_gzip("file.txt.gz") as f:
+    ...     print(f.read())
+    ...
+    This is a gzipped file.
 
     """
     return gzip.open(filename, "rt")
 
 
-def read_fastq(filename):
-    """It opens a file and returns a file object
+def read_fastq(filename: str) -> TextIO:
+    """
+    Open a FASTQ file for reading and return an opened file object.
 
     Parameters
     ----------
-    filename
-        the name of the file to read
+    filename : str
+        The name of the file to be opened.
 
     Returns
     -------
-        An opened file object
+    TextIO
+        An opened file object.
+
+    Examples
+    --------
+    >>> with read_fastq("file.fastq") as f:
+    ...     print(f.read())
+    ...
+    @SEQ_ID
+    GATTTGGGGTTCAAAGCAGTATCGATCAAATAGTAAATCCATTTGTTCAACTCACAGTTT
+    +
+    !''*((((***+))%%%++)(%%%%).1***-+*''))**55CCF>>>>>>CCCCCCC65
 
     """
     return open(filename, "rt")
 
 
-def fastq_opener(inputfile):
-    """It opens a fastq file, and if it's zipped, it unzips it
+def fastq_opener(inputfile: str) -> TextIO:
+    """
+    Open a FASTQ file for reading and return an opened file object.
+    If the file is gzipped, it will be unzipped before opening.
 
     Parameters
     ----------
-    inputfile
-        the name of the input file
+    inputfile : str
+        The name of the input file.
 
     Returns
     -------
-        A file object
+    TextIO
+        An opened file object.
+
+    Examples
+    --------
+    >>> with fastq_opener("file.fastq.gz") as f:
+    ...     print(f.read())
+    ...
+    @SEQ_ID
+    GATTTGGGGTTCAAAGCAGTATCGATCAAATAGTAAATCCATTTGTTCAACTCACAGTTT
+    +
+    !''*((((***+))%%%++)(%%%%).1***-+*''))**55CCF>>>>>>CCCCCCC65
 
     """
     if is_zipped(inputfile) is True:
@@ -108,33 +169,56 @@ def fastq_opener(inputfile):
     return read_fastq(inputfile)
 
 
-def LoadBam(inputfile):
-    """It loads a BAM file and returns a pysam.AlignmentFile object
+def LoadBam(inputfile: str) -> pysam.AlignmentFile:
+    """
+    Load a BAM file and return a pysam.AlignmentFile object.
 
     Parameters
     ----------
-    inputfile
-        the path to the BAM file
+    inputfile : str
+        The path to the BAM file.
 
     Returns
     -------
-        A pysam.AlignmentFile object
+    pysam.AlignmentFile
+        A file object for reading the BAM file.
+
+    Examples
+    --------
+    >>> bam_file = LoadBam('path/to/file.bam')
+    >>> for read in bam_file:
+    ...     print(read)
 
     """
     return pysam.AlignmentFile(inputfile, "rb")
 
 
-def read_bed(filename):
-    """It reads a BED file, removes the original BEDfile header lines, and returns a pandas dataframe
+def read_bed(filename: str) -> pd.DataFrame:
+    """
+    Read a BED file and return a pandas DataFrame.
 
     Parameters
     ----------
-    filename
-        the name of the file needs to be read
+    filename : str
+        The path to the BED file.
 
     Returns
     -------
-        A dataframe with the columns ref, start, end, name, score, and strand.
+    pd.DataFrame
+        A DataFrame with the columns 'ref', 'start', 'end', 'name', 'score', and 'strand'.
+
+    See Also
+    --------
+    pandas.read_csv : Function for reading CSV files into a DataFrame.
+
+    Notes
+    -----
+    This function removes the original BED file header lines and filters out any rows that start with 'browser ' or 'track '.
+
+    Examples
+    --------
+    >>> bed_df = read_bed('path/to/file.bed')
+    >>> print(bed_df.head())
 
     """
     primer_df = pd.read_csv(
@@ -163,20 +247,33 @@ def read_bed(filename):
     return primer_df
 
 
-def FlipStrand(seq, qual):
-    """It takes a sequence and a quality score, and returns the reverse complement of the sequence and the
-    reverse of the quality score
+def FlipStrand(seq: str, qual: str) -> Tuple[str, str]:
+    """
+    Return the reverse complement of a DNA sequence and its quality score.
 
     Parameters
     ----------
-    seq
-        the sequence of the read
-    qual
-        the quality score of the read
+    seq : str
+        The DNA sequence to be reverse complemented.
+    qual : str
+        The quality score of the DNA sequence.
 
     Returns
     -------
-        the sequence and quality score in reverse complement order.
+    Tuple[str, str]
+        A tuple containing the reverse complement of the DNA sequence and its quality score.
+
+    Notes
+    -----
+    This function uses the standard Watson-Crick base pairing rules to obtain the reverse complement of the DNA sequence.
+
+    Examples
+    --------
+    >>> seq = 'ATCG'
+    >>> qual = 'IIII'
+    >>> flipped_seq, flipped_qual = FlipStrand(seq, qual)
+    >>> print(flipped_seq, flipped_qual)
+    CGAT IIII
 
     """
     complement = {"A": "T", "C": "G", "G": "C", "T": "A", "N": "N"}
@@ -189,29 +286,46 @@ def FlipStrand(seq, qual):
     return seq, qual
 
 
-def LoadData(inputfile):
-    """It takes a file and returns a list of tuples, where each tuple contains the name, sequence, and
-    quality score of a read
+def LoadData(inputfile: str) -> List[Tuple[str, str, str]]:
+    """
+    Load data from a file and return a list of tuples, where each tuple contains the name, sequence, and quality score of a read.
 
     Parameters
     ----------
-    inputfile
+    inputfile : str
         The input file to be processed.
 
     Returns
     -------
+    List[Tuple[str, str, str]]
         A list of tuples. Each tuple contains the name, sequence, and quality score of a read.
 
+    Raises
+    ------
+    SystemExit
+        If the input file is an unsupported filetype.
+
+    Notes
+    -----
+    This function supports two file types: FASTQ and BAM. If the input file is a FASTQ file, it reads the file and extracts the name, sequence, and quality score of each read. If the input file is a BAM file, it uses the LoadBam function to extract the necessary information.
+
+    Examples
+    --------
+    >>> LoadData('example.fastq')
+    [('read1', 'ACGT', 'IIII'), ('read2', 'TGCA', 'JJJJ')]
+
+    >>> LoadData('example.bam')
+    [('read1', 'ACGT', 'IIII'), ('read2', 'TGCA', 'JJJJ')]
     """
     Reads = []
 
     if is_fastq(inputfile) is True:
         with fastq_opener(inputfile) as fq:
             for line in fq:
-                name = line.split()[0][1:]
-                seq = next(fq).strip()
+                name: str = line.split()[0][1:]
+                seq: str = next(fq).strip()
                 next(fq)
-                qual = next(fq).strip()
+                qual: str = next(fq).strip()
 
                 Reads.append((name, seq, qual))
         return Reads
@@ -220,9 +334,9 @@ def LoadData(inputfile):
             if read.is_unmapped is True:
                 continue
 
-            name = read.query_name
-            seq = read.query_sequence
-            qual = "".join(map(lambda x: chr(x + 33), read.query_qualities))
+            name: str = read.query_name
+            seq: str = read.query_sequence
+            qual: str = "".join(map(lambda x: chr(x + 33), read.query_qualities))
 
             if read.is_reverse is True:
                 seq, qual = FlipStrand(seq, qual)
@@ -241,35 +355,59 @@ def LoadData(inputfile):
     sys.exit(-1)
 
 
-def IndexReads(inputfile):
-    """It reads in an input file and returns a dataframe with the readname, sequence, and qualities
+def IndexReads(inputfile: str) -> pd.DataFrame:
+    """
+    Read in an input file and return a pandas dataframe with the readname, sequence, and qualities.
 
     Parameters
     ----------
-    inputfile
+    inputfile : str
         The path to the input file.
 
     Returns
     -------
-        A dataframe with the columns Readname, Sequence, and Qualities.
+    pd.DataFrame
+        A pandas dataframe with the columns Readname, Sequence, and Qualities.
 
+    Notes
+    -----
+    This function uses the LoadData function to extract the necessary information from the input file and returns a pandas dataframe with the extracted information.
+
+    Examples
+    --------
+    >>> IndexReads('example.fastq')
+           Readname Sequence Qualities
+    0      read1    ACGT     IIII
+    1      read2    TGCA     JJJJ
     """
     return pd.DataFrame.from_records(
         LoadData(inputfile), columns=["Readname", "Sequence", "Qualities"]
     )
 
 
-def WriteOutput(output, ReadDict):
-    """This function takes the output file name and the dictionary of reads as input, and writes the reads
-    to the output file
+def WriteOutput(output: str, ReadDict: List[Dict[Hashable, Any]]) -> None:
+    """
+    Write the reads to the output file.
 
     Parameters
     ----------
-    output
-        the name of the output file
-    ReadDict
-        a dictionary of dictionaries, where each dictionary is a read.
+    output : str
+        The name of the output file.
+    ReadDict : List[Dict[Hashable, Any]]
+        A list of dictionaries, where each dictionary is a read.
 
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    This function takes the output file name and the dictionary of reads as input, and writes the reads
+    to the output file.
+
+    Examples
+    --------
+    >>> WriteOutput("output.txt", [{"Readname": "read1", "Sequence": "ATCG", "Qualities": "20"}])
     """
     with open(output, "w") as fileout:
         for index, k in enumerate(ReadDict):
