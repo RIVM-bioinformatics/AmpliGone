@@ -1,24 +1,27 @@
 from functools import lru_cache
+from typing import List
 
 
 @lru_cache(maxsize=2000000)
-def PositionInOrBeforePrimer(pos, clist, max_lookaround):
-    """Given a position, a list of positions, and a maximum distance, return True if the position is
-    within the maximum distance of the closest position in the list AND the position is less than or
-    equal to the closest position in the list
+def PositionInOrBeforePrimer(pos: int, clist: List[int], max_lookaround: int) -> bool:
+    """
+    Determine if a position is within the maximum distance of the closest position in the list of primer positions
+    and the position is less than or equal to the closest position in the list.
 
     Parameters
     ----------
-    pos
-        the position of the variant
-    clist
-        a list of primer positions
-    max_lookaround
-        the maximum distance from the position to the closest primer
+    pos : int
+        The start or stop position of the read.
+    clist : List[int]
+        A list of primer positions.
+    max_lookaround : int
+        The maximum distance from the position to the closest primer.
 
     Returns
     -------
-        A boolean value.
+    bool
+        True if the position is within the maximum distance of the closest position in the list AND the position is
+        less than or equal to the closest position in the list, False otherwise.
 
     """
     d = lambda x: abs(x - pos)
@@ -27,23 +30,25 @@ def PositionInOrBeforePrimer(pos, clist, max_lookaround):
 
 
 @lru_cache(maxsize=2000000)
-def PositionInOrAfterPrimer(pos, clist, max_lookaround):
-    """Given a position, a list of positions, and a maximum distance, return True if the position is
-    within the maximum distance of the closest position in the list AND the position is greater than or equal
-    to the closest position in the list
+def PositionInOrAfterPrimer(pos: int, clist: List[int], max_lookaround: int) -> bool:
+    """
+    Determine if a position is within the maximum distance of the closest position in the list of primer positions
+    and the position is greater than or equal to the closest position in the list.
 
     Parameters
     ----------
-    pos
-        the start or stop position of the read
-    clist
-        a list of primer positions
-    max_lookaround
-        the maximum distance from the position to the closest primer
+    pos : int
+        The start or stop position of the read.
+    clist : List[int]
+        A list of primer positions.
+    max_lookaround : int
+        The maximum distance from the position to the closest primer.
 
     Returns
     -------
-        A boolean value.
+    bool
+        True if the position is within the maximum distance of the closest position in the list AND the position is
+        greater than or equal to the closest position in the list, False otherwise.
 
     """
     d = lambda x: abs(x - pos)
