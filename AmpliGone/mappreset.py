@@ -1,7 +1,10 @@
+import sys
 from concurrent.futures import ThreadPoolExecutor
-from typing import List, Tuple
+from typing import List, Set, Tuple
 
 import pandas as pd
+
+from AmpliGone.func import log
 
 
 def Calculate_avg_seq_len(sequence_list: List[str]) -> float:
@@ -182,7 +185,7 @@ def IsLongRead(avg_len: float) -> bool:
     return avg_len > 300
 
 
-def FindPreset(threads: int, data: pd.DataFrame) -> Tuple[str, List[int]]:
+def FindPreset(threads: int, data: pd.DataFrame) -> str:
     """
     Takes a dataframe with the sequence and quality data, and returns a preset name and a list of scoring parameters.
 
@@ -195,18 +198,8 @@ def FindPreset(threads: int, data: pd.DataFrame) -> Tuple[str, List[int]]:
 
     Returns
     -------
-    Tuple[str, List[int]]
-        A tuple of two values. The first value is a string that represents the preset. The second value is a list of integers that represent the scoring matrix.
-
-    Raises
-    ------
-    None
-
-    Examples
-    --------
-    >>> data = pd.DataFrame({'Sequence': ['ATCG', 'GCTA'], 'Qualities': ['!@#$', 'abcd']})
-    >>> FindPreset(threads=2, data=data)
-    ('sr', [])
+    str
+        A string that represents the preset.
 
     Notes
     -----
@@ -215,6 +208,12 @@ def FindPreset(threads: int, data: pd.DataFrame) -> Tuple[str, List[int]]:
     as well as the range of quality scores and sequence lengths. Based on these values, it determines the appropriate preset to use for the data.
     If the data is considered stable and short, it returns the 'sr' preset. If the data is considered stable and long, it returns the 'map-ont' preset.
     If the data is considered unstable or from an unsupported platform, it falls back to the 'sr' preset.
+
+    Examples
+    --------
+    >>> data = pd.DataFrame({'Sequence': ['ATCG', 'GCTA'], 'Qualities': ['!@#$', 'abcd']})
+    >>> FindPreset(threads=2, data=data)
+    'sr'
     """
     ReadList: List[str] = data["Sequence"].tolist()
     QualList: List[int] = [
@@ -238,22 +237,142 @@ def FindPreset(threads: int, data: pd.DataFrame) -> Tuple[str, List[int]]:
         if IsLongRead(avg_len) is False:
             # this is probably 'short read' illumina NextSeq data
             # --> set the 'SR' preset
-            return "sr", []
+            return "sr"
         ##! previous if-statement is not False.
         # this is probably 'long read' illumina MiSeq data
         # --> the 'SR' preset still applies but we keep it split
         # in case a custom set of parameters is necessary in the future
-        return "sr", []
+        return "sr"
     if IsLongRead(avg_len) is True:
         # this is probably oxford nanopore data
         # --> set the preset to 'map-ont'
-        O1, O2 = 8, 24
-        E1, E2 = 2, 0
-        A, B = 4, 4
-        scoring = [A, B, O1, E1, O2, E2]
-        return "map-ont", scoring
+        return "map-ont"
     ##! previous if-statement is not True.
     # this might be very 'unstable' nextseq data,
     # or from a platform we currently dont really support officially.
     # fallback to 'sr' preset
-    return "sr", []
+    return "sr"
+
+
+def valid_scoring_list_length(input_list: List[str]) -> bool:
+    """
+    Check if the length of the input list is either 4, 6, or 7.
+
+    Parameters
+    ----------
+    input_list : list of str
+        The list to check the length of.
+
+    Returns
+    -------
+    bool
+        True if the length of the list is 4, 6, or 7, False otherwise.
+    """
+    return len(input_list) in {4, 6, 7}
+
+
+def valid_scoring_elements(input_list: Set[str], required_elements: Set[str]) -> bool:
+    """
+    Check if all elements of the input list are present in the set of required elements.
+
+    Parameters
+    ----------
+    input_list : set of str
+        The set to check if its elements are in the required elements set.
+    required_elements : set of str
+        The set of required elements.
+
+    Returns
+    -------
+    bool
+        True if all elements of the input list are in the required elements set, False otherwise.
+    """
+    return input_list.issubset(required_elements)
+
+
+def scoring_has_negative_values(input_list: List[int]) -> bool:
+    """
+    Check if the input list contains any negative values.
+
+    Parameters
+    ----------
+    input_list : list of int
+        The list to check for negative values.
+
+    Returns
+    -------
+    bool
+        True if any item in the list is less than 0, False otherwise.
+    """
+    return any(item < 0 for item in input_list)
+
+
+def parse_scoring_matrix(input_matrix: List[str]) -> List[int]:
+    """
+    Parse the scoring matrix from a list of strings to a list of integers.
+
+    Parameters
+    ----------
+    input_matrix : list of str
+        The scoring matrix as a list of strings, where each string is a key-value pair separated by '='.
+
+    Returns
+    -------
+    list of int
+        The scoring matrix as a list of integers, ordered according to the keys in the input.
+
+    Raises
+    ------
+    SystemExit
+        If the input matrix is invalid (e.g., wrong length, contains negative values, invalid keys).
+
+    """
+    required_4 = ["match", "mismatch", "gap_o1", "gap_e1"]
+    required_6 = required_4 + ["gap_o2", "gap_e2"]
+    required_7 = required_6 + ["mma"]
+
+    matrix_dict = {item.split("=")[0]: int(item.split("=")[1]) for item in input_matrix}
+
+    if valid_scoring_list_length(list(matrix_dict.keys())) is False:
+        log.error(
+            f"Invalid scoring matrix length. The scoring-matrix must have a length of 4, 6 or 7. \nThe following input was given: '[red]{' '.join(input_matrix)}[/red]'. \nPlease note that adding the same key multiple times will result in the last value being used."
+        )
+        sys.exit(1)
+
+    # check if the values of the scoring matrix are non-negative integers
+    if scoring_has_negative_values(list(matrix_dict.values())) is True:
+        log.error(
+            "Given scoring matrix contains a negative value. \nThe scoring matrix may only contain non-negative integers. Please check your input and try again."
+        )
+        sys.exit(1)
+
+    # this section is quite redundant and the same thing is being done multiple times, will see to optimize it later but this is reasonably valid for now.
+    ordered_vals: List[int] = []
+    if len(matrix_dict.keys()) == 4:
+        if not set(matrix_dict.keys()).issubset(required_4):
+            log.error(
+                f"Invalid combination of scoring matrix keys. A total of 4 valid scoring-matrix keys were given. \nThe following keys are supported for 4 scoring-matrix keys: '[green]{' | '.join(required_4)}[/green]'. \nThe following keys were given: '[red]{' | '.join(matrix_dict.keys())}[/red]'."
+            )
+            sys.exit(1)
+        ordered_vals: List[int] = [
+            matrix_dict[key] for key in required_4 if key in matrix_dict
+        ]
+    elif len(matrix_dict.keys()) == 6:
+        if set(required_6) != set(matrix_dict.keys()):
+            log.error(
+                f"Invalid combination of scoring matrix keys. A total of 6 valid scoring-matrix keys were given. \nThe following keys are supported for 6 scoring-matrix keys: '[green]{' | '.join(required_6)}[/green]'. \nThe following keys were given: '[red]{' | '.join(matrix_dict.keys())}[/red]'."
+            )
+            sys.exit(1)
+        ordered_vals: List[int] = [
+            matrix_dict[key] for key in required_6 if key in matrix_dict
+        ]
+    elif len(matrix_dict.keys()) == 7:
+        if set(required_7) != set(matrix_dict.keys()):
+            log.error(
+                f"Invalid combination of scoring matrix keys. A total of 7 valid scoring-matrix keys were given. \nThe following keys are supported for 7 scoring-matrix keys: '[green]{' | '.join(required_7)}[/green]'. \nThe following keys were given: '[red]{' | '.join(matrix_dict.keys())}[/red]'."
+            )
+            sys.exit(1)
+        ordered_vals: List[int] = [
+            matrix_dict[key] for key in required_7 if key in matrix_dict
+        ]
+    return ordered_vals
