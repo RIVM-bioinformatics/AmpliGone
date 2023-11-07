@@ -212,7 +212,7 @@ def get_args(givenargs: List[str]) -> argparse.Namespace:
         default=None,
         metavar="KEY=VALUE",
         nargs="+",
-        help="The scoring matrix to use for alignment of reads. This should be list of key-value pairs, where the key is the scoring-parameter and the value is a positive integer indicating the scoring-value for that parameter. Possible parameters are \n * match\n * mismatch\n * gap_o1\n * gap_e1\n * gap_o2 (optional)\n * gap_e2 (optional)\n * mma (optional)\nFor example:\n --alignment-scoring match=4 mismatch=3 gap_o1=2 gap_o2=1 gap_e1=1 gap_e2=1 mma=2\nSee the docs for more info :book:",
+        help="The scoring matrix to use for alignment of reads. This should be list of key-value pairs, where the key is the scoring-parameter and the value is a positive integer indicating the scoring-value for that parameter. Possible parameters are \n * match\n * mismatch\n * gap_o1\n * gap_e1\n * gap_o2 (optional)\n * gap_e2 (optional)\n * mma (optional)\nFor example:\n --alignment-scoring match=4 mismatch=3 gap_o1=2 gap_e1=1\nSee the docs for more info :book:",
         required=False,
     )
 
