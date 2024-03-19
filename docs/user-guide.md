@@ -82,6 +82,68 @@ Therefore, AmpliGone scales (almost) linearly when given more threads. A compute
 AmpliGone defaults to the amount of threads which are available in your system. (if the CPU of your computer has 24 threads, AmpliGone will use all 24 threads by default)
 You can use the `--threads` or `-t` flag to set a different number of threads to use.
 
+## Adjusting alignment-preset and scoring matrix
+
+AmpliGone relies on minimap2 for read-mapping under the hood. Therefore, the read-mapping settings usually don't need to be adjusted for your data as the existing presets are already fine-tuned for most situations. AmpliGone has a system in place that can assign the best fitting alignment-preset based on your data.
+
+However, in certain edge-cases it may be beneficial or necessary to change the preset manually or even make adjustments to the underlying alignment scoring-matrix.
+These settings can be changed with the `--alignment-preset` and `--alignment-scoring` flags respectively.
+
+**Alignment preset**
+
+The following 4 read-alignment presets are supported:
+
+| Preset keyword | Intended use |
+| ---            | ---          |
+| sr             | Short reads with high accuracy |
+| map-ont   	 | Long reads with lesser accuracy, specifically from the Nanopore platform |
+| map-pb         | PacBio continuous long reads (CLR) |
+| splice         | Long reads with splicing mode enabled |
+
+When no alignment-preset is given manually, AmpliGone will choose between either the `sr` or the `map-ont` preset depending on your input data.
+
+The alignment-preset can be set manually by using the `--alignment-preset` / `-ap` flag with any of the presets listed above.  
+Example: `--alignment-preset sr`
+
+**Alignment scoring-matrix**
+
+When no scoring-matrix is given then the default scoring matrix values will be used that fit the alignment-preset. These default scoring values are most likely fine for the majority of use cases.  
+However, it may be beneficial to fine tune the scoring matrix to your liking if this is better for your specific analysis.
+
+This can be done by using the `--alignment-scoring`/`-as` flag and providing a set of key=value pairs.
+
+A scoring matrix may consist of 4 key-value pairs, 6 key-value pairs, or 7 key-value pairs.  
+The scoring-value is at all times a *<u>positive</u>* integer (number), negative values are **<u>not</u>** supported.
+
+The list of usable keys for the scoring-matrix is as follows:
+
+| key | Explanation | when to use |
+| --- | ---         | ---         |
+| match | The score that is added for every match | always required |
+| mismatch | The penalty score that is applied for every mismatch | always required |
+| gap_o1 | The first gap open penalty that is applied for opening a gap in a sequence | always required |
+| gap_e1 | The first gap extension penalty that is applied for extending a gap in a sequence | always required |
+| gap_o2 | The second gap open penalty that is applied for opening a gap in a sequence | required when giving 6 key-value pairs or more |
+| gap_e2 | The second gap extension penaltythat is applied for extending a gap in a sequence | required when giving 6 key-value pairs or more |
+| mma | The penalty score that is applied for mismatches involving ambiguous bases | required when giving 7 key-value pairs.
+
+!!! Example "Usage examples for providing a custom scoring-matrix through key-value pairs"
+    The following flag is to demonstrate how to provide a custom scoring-matrix with 4 key-value pairs. The order of the key-value pairs does not matter.
+    ```
+    --alignment-scoring match=4 mismatch=2 gap_o1=5 gap_e1=1
+    ```
+
+    The following flag is to demonstrate how to provide a custom scoring-matrix with 6 key-value pairs. The order of these key-value pairs does not matter.
+    ```
+    --alignment-scoring match=4 mismatch=2 gap_o1=5 gap_e1=1 gap_o2=15 gap_e2=0
+    ```
+
+    The following flag is to demonstrate how to provide a custom scoring-matrix with 7 key-value pairs. The order of these key-value pairs does not matter.
+    ```
+    --alignment-scoring match=4 mismatch=2 gap_o1=5 gap_e1=1 gap_o2=15 gap_e2=0 mma=1
+    ```
+
+
 ## Basic usage examples
 
 === "End-to-end amplicons"

@@ -25,7 +25,7 @@ from .cut_reads import CutReads
 from .fasta2bed import CoordinateListsToBed, MakeCoordinateLists
 from .func import FlexibleArgFormatter, RichParser, log
 from .io_ops import IndexReads, WriteOutput, read_bed
-from .mappreset import FindPreset
+from .mappreset import FindPreset, parse_scoring_matrix
 from .version import __version__
 
 
@@ -195,6 +195,28 @@ def get_args(givenargs: List[str]) -> argparse.Namespace:
     )
 
     optional_args.add_argument(
+        "--alignment-preset",
+        "-ap",
+        type=str,
+        default=None,
+        choices=("sr", "map-ont", "map-pb", "splice"),
+        help="The preset to use for alignment of reads against the reference. This can be either 'sr', 'map-ont', 'map-pb', or 'splice'. The alignment-preset can be combined with a custom alignment-scoring matrix. See the docs for more info :book:",
+        required=False,
+        metavar="'sr'/'map-ont'/'map-pb'/'splice'",
+    )
+
+    optional_args.add_argument(
+        "--alignment-scoring",
+        "-as",
+        type=str,
+        default=None,
+        metavar="KEY=VALUE",
+        nargs="+",
+        help="The scoring matrix to use for alignment of reads. This should be list of key-value pairs, where the key is the scoring-parameter and the value is a positive integer indicating the scoring-value for that parameter. Possible parameters are \n * (1) match\n * (2) mismatch\n * (3) gap_o1\n * (4) gap_e1\n * (5) gap_o2 (Optional: requires 1,2,3,4)\n * (6) gap_e2 (Optional, requires 1,2,3,4,5)\n * (7) mma (Optional, requires 1,2,3,4,5,6)\nFor example:\n --alignment-scoring match=4 mismatch=3 gap_o1=2 gap_e1=1\nSee the docs for more info :book:",
+        required=False,
+    )
+
+    optional_args.add_argument(
         "--version",
         "-v",
         action="version",
@@ -331,15 +353,24 @@ def main():
         )
         args.threads = len(IndexedReads.index)
 
-    log.info("Finding optimal alignment parameters for the given reads")
-    # Todo: split this over two threads if possible
-    if len(IndexedReads.index) > 20000:
-        preset, scoring = FindPreset(
-            args.threads, IndexedReads.sample(frac=0.3)
-        )  # Todo: Make this more efficient
-    else:
-        preset, scoring = FindPreset(args.threads, IndexedReads)
+    preset: str = args.alignment_preset
+    if preset is None:
+        log.info("Finding optimal alignment-preset for the given reads")
+        # Todo: split this over two threads if possible
+        if len(IndexedReads.index) > 20000:
+            preset = FindPreset(
+                args.threads, IndexedReads.sample(frac=0.3)
+            )  # Todo: Make this more efficient
+        else:
+            preset = FindPreset(args.threads, IndexedReads)
 
+    if args.alignment_scoring is not None:
+        log.info("Alignment scoring values given, parsing to scoring-matrix")
+        scoring = parse_scoring_matrix(sorted(args.alignment_scoring))
+    else:
+        scoring = []
+
+    print(preset, scoring)
     ## correct the lookaround size if the amplicon type is not fragmented
     if args.amplicon_type != "fragmented":
         args.fragment_lookaround_size = 10000
