@@ -212,7 +212,7 @@ def get_args(givenargs: List[str]) -> argparse.Namespace:
         default=None,
         metavar="KEY=VALUE",
         nargs="+",
-        help="The scoring matrix to use for alignment of reads. This should be list of key-value pairs, where the key is the scoring-parameter and the value is a positive integer indicating the scoring-value for that parameter. Possible parameters are \n * match\n * mismatch\n * gap_o1\n * gap_e1\n * gap_o2 (optional)\n * gap_e2 (optional)\n * mma (optional)\nFor example:\n --alignment-scoring match=4 mismatch=3 gap_o1=2 gap_e1=1\nSee the docs for more info :book:",
+        help="The scoring matrix to use for alignment of reads. This should be list of key-value pairs, where the key is the scoring-parameter and the value is a positive integer indicating the scoring-value for that parameter. Possible parameters are \n * (1) match\n * (2) mismatch\n * (3) gap_o1\n * (4) gap_e1\n * (5) gap_o2 (Optional: requires 1,2,3,4)\n * (6) gap_e2 (Optional, requires 1,2,3,4,5)\n * (7) mma (Optional, requires 1,2,3,4,5,6)\nFor example:\n --alignment-scoring match=4 mismatch=3 gap_o1=2 gap_e1=1\nSee the docs for more info :book:",
         required=False,
     )
 
@@ -366,7 +366,7 @@ def main():
 
     if args.alignment_scoring is not None:
         log.info("Alignment scoring values given, parsing to scoring-matrix")
-        scoring = parse_scoring_matrix(args.alignment_scoring)
+        scoring = parse_scoring_matrix(sorted(args.alignment_scoring))
     else:
         scoring = []
 

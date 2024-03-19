@@ -309,7 +309,7 @@ def scoring_has_negative_values(input_list: List[int]) -> bool:
 
 def parse_scoring_matrix(input_matrix: List[str]) -> List[int]:
     """
-    Parse the scoring matrix from a list of strings to a list of integers.
+    Parse the scoring matrix from a list of 'key=value' strings to a list of integers matching the required scoring matrix order.
 
     Parameters
     ----------
@@ -319,7 +319,7 @@ def parse_scoring_matrix(input_matrix: List[str]) -> List[int]:
     Returns
     -------
     list of int
-        The scoring matrix as a list of integers, ordered according to the keys in the input.
+        The scoring matrix as a list of integers, ordered to fit the mappy input.
 
     Raises
     ------
@@ -327,15 +327,17 @@ def parse_scoring_matrix(input_matrix: List[str]) -> List[int]:
         If the input matrix is invalid (e.g., wrong length, contains negative values, invalid keys).
 
     """
-    required_4 = ["match", "mismatch", "gap_o1", "gap_e1"]
-    required_6 = required_4 + ["gap_o2", "gap_e2"]
-    required_7 = required_6 + ["mma"]
+    required_4 = sorted(["match", "mismatch", "gap_o1", "gap_e1"])
+    required_6 = sorted(required_4 + ["gap_o2", "gap_e2"])
+    required_7 = sorted(required_6 + ["mma"])
 
-    matrix_dict = {item.split("=")[0]: int(item.split("=")[1]) for item in input_matrix}
+    matrix_dict = {
+        item.split("=")[0]: int(item.split("=")[1]) for item in sorted(input_matrix)
+    }
 
     if valid_scoring_list_length(list(matrix_dict.keys())) is False:
         log.error(
-            f"Invalid scoring matrix length. The scoring-matrix must have a length of 4, 6 or 7. \nThe following input was given: '[red]{' '.join(input_matrix)}[/red]'. \nPlease note that adding the same key multiple times will result in the last value being used."
+            f"Invalid scoring matrix length. The scoring-matrix must have a length of 4, 6 or 7 parameters. \nThe following input parameters were given: '[red]{' '.join(input_matrix)}[/red]'. \nAfter parsing, these inputs result in the following: [red]{matrix_dict}[/red]. \nPlease note that adding the same key multiple times will result in the last value being used."
         )
         sys.exit(1)
 
@@ -348,31 +350,26 @@ def parse_scoring_matrix(input_matrix: List[str]) -> List[int]:
 
     # this section is quite redundant and the same thing is being done multiple times, will see to optimize it later but this is reasonably valid for now.
     ordered_vals: List[int] = []
-    if len(matrix_dict.keys()) == 4:
-        if not set(matrix_dict.keys()).issubset(required_4):
+    matrix_keys = list(matrix_dict.keys())
+    if len(matrix_keys) == 4:
+        if not set(matrix_keys).issubset(required_4):
             log.error(
-                f"Invalid combination of scoring matrix keys. A total of 4 valid scoring-matrix keys were given. \nThe following keys are supported for 4 scoring-matrix keys: '[green]{' | '.join(required_4)}[/green]'. \nThe following keys were given: '[red]{' | '.join(matrix_dict.keys())}[/red]'."
+                f"Invalid combination of scoring matrix keys. A total of 4 valid scoring-matrix keys were given. \nThe following keys are supported for 4 scoring-matrix keys: '[green]{' | '.join(required_4)}[/green]'. \nThe following keys were given: '[red]{' | '.join(matrix_keys)}[/red]'."
             )
             sys.exit(1)
-        ordered_vals: List[int] = [
-            matrix_dict[key] for key in required_4 if key in matrix_dict
-        ]
-    elif len(matrix_dict.keys()) == 6:
-        if set(required_6) != set(matrix_dict.keys()):
+        ordered_vals = [matrix_dict[key] for key in required_4]
+    elif len(matrix_keys) == 6:
+        if not set(matrix_keys).issubset(required_6):
             log.error(
-                f"Invalid combination of scoring matrix keys. A total of 6 valid scoring-matrix keys were given. \nThe following keys are supported for 6 scoring-matrix keys: '[green]{' | '.join(required_6)}[/green]'. \nThe following keys were given: '[red]{' | '.join(matrix_dict.keys())}[/red]'."
+                f"Invalid combination of scoring matrix keys. A total of 6 valid scoring-matrix keys were given. \nThe following keys are supported for 6 scoring-matrix keys: '[green]{' | '.join(required_6)}[/green]'. \nThe following keys were given: '[red]{' | '.join(matrix_keys)}[/red]'."
             )
             sys.exit(1)
-        ordered_vals: List[int] = [
-            matrix_dict[key] for key in required_6 if key in matrix_dict
-        ]
-    elif len(matrix_dict.keys()) == 7:
-        if set(required_7) != set(matrix_dict.keys()):
+        ordered_vals = [matrix_dict[key] for key in required_6]
+    elif len(matrix_keys) == 7:
+        if not set(matrix_keys).issubset(required_7):
             log.error(
-                f"Invalid combination of scoring matrix keys. A total of 7 valid scoring-matrix keys were given. \nThe following keys are supported for 7 scoring-matrix keys: '[green]{' | '.join(required_7)}[/green]'. \nThe following keys were given: '[red]{' | '.join(matrix_dict.keys())}[/red]'."
+                f"Invalid combination of scoring matrix keys. A total of 7 valid scoring-matrix keys were given. \nThe following keys are supported for 7 scoring-matrix keys: '[green]{' | '.join(required_7)}[/green]'. \nThe following keys were given: '[red]{' | '.join(matrix_keys)}[/red]'."
             )
             sys.exit(1)
-        ordered_vals: List[int] = [
-            matrix_dict[key] for key in required_7 if key in matrix_dict
-        ]
+        ordered_vals = [matrix_dict[key] for key in required_7]
     return ordered_vals
