@@ -35,8 +35,8 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "ampligone = AmpliGone.AmpliGone:main",
-            "AmpliGone = AmpliGone.AmpliGone:main",
+            "ampligone = AmpliGone.__main__:main",
+            "AmpliGone = AmpliGone.__main__:main",
         ]
     },
     keywords=[],
