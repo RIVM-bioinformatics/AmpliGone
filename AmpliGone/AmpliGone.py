@@ -4,7 +4,6 @@ Copyright © 2021 RIVM
 https://github.com/RIVM-bioinformatics/AmpliGone
 """
 
-
 import argparse
 import concurrent.futures as cf
 import multiprocessing
