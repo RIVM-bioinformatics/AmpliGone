@@ -4,7 +4,6 @@ Copyright © 2021 RIVM
 https://github.com/RIVM-bioinformatics/AmpliGone
 """
 
-
 import argparse
 import concurrent.futures as cf
 import multiprocessing
@@ -75,7 +74,7 @@ def get_args(givenargs):
         Returns
         -------
             The name of the file to be read.
-            
+
         """
         if os.path.isfile(fname):
             return fname

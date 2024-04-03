@@ -152,6 +152,7 @@ def read_bed(filename):
             score=str,
             strand=str,
         ),
+        keep_default_na=False,
     )
     primer_df = primer_df[
         ~(
