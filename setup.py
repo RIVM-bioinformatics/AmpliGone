@@ -25,13 +25,13 @@ setup(
     license="AGPLv3",
     packages=find_packages(),
     install_requires=[
-        "pysam==0.19.*",
-        "pandas>=1.3.0",
-        "mappy==2.24",
-        "biopython>=1.79",
-        "parmap==1.5.*",
+        "pysam==0.22.*",
+        "pandas==2.2.*",
+        "mappy==2.27",
+        "biopython==1.83",
+        "parmap==1.7.*",
         "regex>=2021.11.10",
-        "rich==12.5.*",
+        "rich==13.7.*",
     ],
     entry_points={
         "console_scripts": [
