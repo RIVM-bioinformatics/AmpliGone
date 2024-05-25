@@ -73,16 +73,37 @@ def get_coords(seq: str, ref_seq: str, err_rate: float = 0.1) -> Set[Tuple[int, 
     return matches
 
 
-def MakeCoordinateLists(*args, **kwargs) -> pd.DataFrame:
-    """Takes a list of sequences, and returns a list of coordinates for each sequence
+def find_or_read_primers(
+    primerfile: str, referencefile: str, err_rate: float
+) -> pd.DataFrame:
+    """
+    Find or read primers from a given file.
+
+    This function checks if the primer file is in BED format. If it is, it reads the file directly.
+    Otherwise, it generates a DataFrame from the primer file and reference file with a specified error rate.
+
+    Parameters
+    ----------
+    primerfile : str
+        The path to the primer file. This can be in BED format or any other format.
+    referencefile : str
+        The path to the reference file. This is used when the primer file is not in BED format.
+    err_rate : float
+        The error rate to use when generating the DataFrame from the primer and reference files.
 
     Returns
     -------
-        A dataframe with the columns ref, start, end, name, score, strand, seq, revcomp
+    pd.DataFrame
+        A DataFrame containing the primer information. The columns are ["ref", "start", "end", "name", "score", "strand", "seq", "revcomp"].
 
     """
+    if primerfile.endswith(".bed"):
+        log.info("Primer coordinates are given in BED format, skipping primer search")
+        return read_bed(primerfile)
     return pd.DataFrame(
-        CoordListGen(*args, **kwargs),
+        CoordListGen(
+            primerfile=primerfile, referencefile=referencefile, err_rate=err_rate
+        ),
         columns=["ref", "start", "end", "name", "score", "strand", "seq", "revcomp"],
     )
 
@@ -255,6 +276,10 @@ if __name__ == "__main__":
 
     flags = args.parse_args()
 
-    df = MakeCoordinateLists(flags.primers, flags.reference, flags.primer_mismatch_rate)
+    df = find_or_read_primers(
+        primerfile=flags.primers,
+        referencefile=flags.reference,
+        err_rate=flags.primer_mismatch_rate,
+    )
 
     CoordinateListsToBed(df, flags.output)
