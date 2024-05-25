@@ -12,7 +12,7 @@ from AmpliGone.io_ops import read_bed
 from AmpliGone.log import log
 
 
-def FindAmbigousOptions(seq: str) -> List[str]:
+def find_ambiguous_options(seq: str) -> List[str]:
     """
     Find all possible unambiguous sequences from a sequence containing ambiguous nucleotides.
 
@@ -28,10 +28,10 @@ def FindAmbigousOptions(seq: str) -> List[str]:
 
     Examples
     --------
-    >>> FindAmbigousOptions('ATGCR')
-    ['ATGCA', 'ATGCT']
+    >>> find_ambiguous_options('ATGCR')
+    ['ATGCA', 'ATGCG']
     """
-    ambigs = Seq.IUPACData.ambiguous_dna_values
+    ambigs = IUPACData.ambiguous_dna_values
     return list(map("".join, product(*[ambigs.get(nuc, nuc) for nuc in seq])))
 
 
