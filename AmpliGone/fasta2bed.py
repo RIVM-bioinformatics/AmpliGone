@@ -1,12 +1,15 @@
 import argparse
+import os
 from itertools import product
 from typing import Any, Dict, Generator, Hashable, List, Set, Tuple
 
 import pandas as pd
 import regex as re
 from Bio import Seq, SeqIO
+from Bio.Data import IUPACData
 
-from .func import log
+from AmpliGone.io_ops import read_bed
+from AmpliGone.log import log
 
 
 def FindAmbigousOptions(seq: str) -> List[str]:
