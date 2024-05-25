@@ -303,13 +303,9 @@ class SequenceReads:
 
         """
         if self._is_zipped(inputfile) is True:
-            log.debug(
-                "INDEXREADS :: Reading a gzipped file"
-            )
+            log.debug("INDEXREADS :: Reading a gzipped file")
             return self._open_gzip_fastq_file(inputfile)
-        log.debug(
-            "INDEXREADS :: Reading a non-gzipped file."
-        )
+        log.debug("INDEXREADS :: Reading a non-gzipped file.")
         return self._open_fastq_file(inputfile)
 
     def _flip_strand(self, seq: str, qual: str) -> Tuple[str, str]:

@@ -317,7 +317,9 @@ def _validate_matrix_combinations(matrix_dict: Dict[str, int]) -> List[int]:
     required_6 = required_4 + ["gap_o2", "gap_e2"]
     required_7 = required_6 + ["mma"]
 
-    log.debug("MATRIXPARSER :: Sorting matrix dictionary to fit required alignment matrix.")
+    log.debug(
+        "MATRIXPARSER :: Sorting matrix dictionary to fit required alignment matrix."
+    )
     matrix_dict = _sort_matrix_dict(matrix_dict, required_4, required_6, required_7)
     log.debug(f"MATRIXPARSER :: {matrix_dict}")
     log.debug("MATRIXPARSER :: Fetching ordered values from sorted matrix dictionary")
