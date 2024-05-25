@@ -61,7 +61,10 @@ def get_coords(seq: str, ref_seq: str, err_rate: float = 0.1) -> Set[Tuple[int, 
     """
     max_errors = int(len(seq) * err_rate)
 
-    options = FindAmbigousOptions(seq.upper())
+    options = find_ambiguous_options(seq.upper())
+
+    if len(options) > 1:
+        log.debug(f"PRIMERSEARCH :: Searching for primer options {options} resolved from ambiguous nucleotides in {seq}")
 
     matches = set()
     for e in range(max_errors + 1):
@@ -145,6 +148,7 @@ def CoordListGen(
     ...     print(coord)
 
     """
+    log.debug(f"Starting PRIMERSEARCH process\t@ ProcessID {os.getpid()}")
     keyl = ("LEFT", "PLUS", "POSITIVE", "FORWARD")
     keyr = ("RIGHT", "MINUS", "NEGATIVE", "REVERSE")
 
@@ -193,6 +197,7 @@ def CoordListGen(
                         f"Primer name {primer.id} does not contain orientation (e.g. {primer.id}_RIGHT). Consider suffixing with {keyl + keyr}"
                     )
                     continue
+                log.debug(f"PRIMERSEARCH :: Found primer {primer.id} at coordinates {start}-{end} on {ref_id}")
                 yield dict(
                     ref=ref_id,
                     start=start,

@@ -1,8 +1,11 @@
+import os
 from collections import defaultdict
-from typing import Callable, List, Set, Tuple
+from typing import Callable, List, Tuple
 
 import mappy as mp
 import pandas as pd
+
+from AmpliGone.log import log
 
 from .cutlery import PositionInOrAfterPrimer, PositionInOrBeforePrimer
 
@@ -98,7 +101,7 @@ def cut_read(
 
 def CutReads(
     data: Tuple[pd.DataFrame, int],
-    primer_df: pd.DataFrame,
+    primer_sets: Tuple[defaultdict, defaultdict],
     reference: str,
     preset: str,
     scoring: List[int],
@@ -114,9 +117,8 @@ def CutReads(
     data : Tuple[pd.DataFrame, int]
         A tuple containing a pandas DataFrame with columns "Readname", "Sequence", and "Qualities",
         and an integer representing the thread number.
-    primer_df : pd.DataFrame
-        A pandas DataFrame with columns "ref", "start", "end", and "strand" representing the primer
-        locations on the reference genome.
+    primer_sets : Tuple[defaultdict, defaultdict]
+        A tuple containing two defaultdicts, one for forward primers and one for reverse primers. These defaultdicts contain the primer coordinates to remove.
     reference : str
         The reference genome sequence.
     preset : str
@@ -137,27 +139,11 @@ def CutReads(
         representing the processed reads and the coordinates that were removed.
     """
     Frame, _threadnumber = data
+    log.debug(
+        f"Initiated thread {_threadnumber} @ process ID {os.getpid()} :: Processing {len(Frame)} reads."
+    )
 
-    RVDict = defaultdict(set)
-    FWDict = defaultdict(set)
-
-    reference_ids: Set[str] = set(primer_df["ref"].unique())
-    for refid in reference_ids:
-        RVDict[refid] = set()
-        FWDict[refid] = set()
-
-    for _, refid, start, end, strand in primer_df[
-        ["ref", "start", "end", "strand"]
-    ].itertuples():
-        refid: str
-        start: int
-        end: int
-        strand: str
-        for coord in range(start + 1, end):  # +1 because reference is 1-based
-            if strand == "+":
-                FWDict[refid].add(coord)
-            elif strand == "-":
-                RVDict[refid].add(coord)
+    FWDict, RVDict = primer_sets
 
     Aln = mp.Aligner(
         reference,
@@ -175,12 +161,32 @@ def CutReads(
     max_iter = (
         10  # If more iterations are needed, the sequence is discarded (not recorded)
     )
-    for _index, name, seq, qual in Frame[
-        ["Readname", "Sequence", "Qualities"]
-    ].itertuples():
+    total_reads = len(Frame)
+    for index, (_, name, seq, qual) in enumerate(
+        Frame[["Readname", "Sequence", "Qualities"]].itertuples(), 1
+    ):
         name: str
         seq: str
         qual: str
+        if index % (total_reads // 10) == 0 and log.level == 10:
+            completion_percentage = round(index / total_reads * 100)
+            maxsize = PositionInOrBeforePrimer.cache_info().maxsize
+            currsize = PositionInOrBeforePrimer.cache_info().currsize
+            cache_usage_before = (
+                currsize / maxsize * 100
+                if maxsize is not None and currsize is not None
+                else 0
+            )
+            maxsize = PositionInOrAfterPrimer.cache_info().maxsize
+            currsize = PositionInOrAfterPrimer.cache_info().currsize
+            cache_usage_after = (
+                currsize / maxsize * 100
+                if maxsize is not None and currsize is not None
+                else 0
+            )
+            log.debug(
+                f"Thread {_threadnumber} @ processID {os.getpid()}\t::\tReads processing {completion_percentage}% complete.\n\tMODULE {PositionInOrBeforePrimer.__module__}.{PositionInOrBeforePrimer.__qualname__} CACHE INFORMATION\n\t\tCache size usage = {cache_usage_before:.2f}%\n\t\tCache hit ratio = {PositionInOrBeforePrimer.cache_info().hits / PositionInOrBeforePrimer.cache_info().misses:.2f}%\n\tMODULE {PositionInOrAfterPrimer.__module__}.{PositionInOrAfterPrimer.__qualname__} CACHE INFORMATION\n\t\tCache size usage = {cache_usage_after:.2f}%\n\t\tCache hit ratio = {PositionInOrAfterPrimer.cache_info().hits / PositionInOrAfterPrimer.cache_info().misses:.2f}%"
+            )
 
         removed_coords_fw = []
         removed_coords_rv = []
@@ -217,7 +223,10 @@ def CutReads(
                 RVTuple: Tuple[int, ...] = tuple(RVDict[hit.ctg])
 
                 if not FWTuple or not RVTuple:
-                    print(FWTuple, RVTuple, hit.ctg)
+                    log.debug(
+                        f"Thread {_threadnumber} @ processID {os.getpid()}\t::\tRead with name '{name}' aligns to '{hit.ctg}', but there are no primers affiliated with '{hit.ctg}'."
+                    )
+                    continue
 
                 qstart: int = hit.q_st
                 qend: int = hit.q_en

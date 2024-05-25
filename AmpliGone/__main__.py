@@ -4,244 +4,343 @@ Copyright © 2021 RIVM
 https://github.com/RIVM-bioinformatics/AmpliGone
 """
 
-
 import argparse
-import concurrent.futures as cf
-import multiprocessing
-import os
-import pathlib
 import sys
+from collections import defaultdict
+from concurrent.futures import ProcessPoolExecutor
 from itertools import chain
-from typing import Callable, Iterable, List
+from typing import Callable, List, Set, Tuple
 
-import numpy as np
 import pandas as pd
 import parmap
 from rich import print
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn
 
-from .cut_reads import CutReads
-from .fasta2bed import CoordinateListsToBed, MakeCoordinateLists
-from .func import FlexibleArgFormatter, RichParser, log
-from .io_ops import IndexReads, WriteOutput, read_bed
-from .mappreset import FindPreset, parse_scoring_matrix
-from .version import __version__
+import AmpliGone.alignmentmatrix as AlignmentMatrix
+import AmpliGone.alignmentpreset as AlignmentPreset
+from AmpliGone import __prog__, __version__
+from AmpliGone.args import get_args
+from AmpliGone.cut_reads import CutReads
+from AmpliGone.fasta2bed import CoordinateListsToBed, find_or_read_primers
+from AmpliGone.io_ops import SequenceReads, write_output
+from AmpliGone.log import log
 
 
-def get_args(givenargs: List[str]) -> argparse.Namespace:
-    """It takes the arguments given to the script and parses them into the argparse namespace
+def check_loaded_index(
+    indexed_reads: SequenceReads, args: argparse.Namespace
+) -> SequenceReads:
+    """
+    Check the input file for indexed reads and handle empty input file scenarios.
 
     Parameters
     ----------
-    givenargs
-        the arguments given to the script
+    indexed_reads : SequenceReads
+        The indexed reads.
+
+    args : argparse.Namespace
+        The command-line arguments.
 
     Returns
     -------
-        The arguments that are given to the program.
+    SequenceReads
+        The indexed reads.
+
+    Raises
+    ------
+    SystemExit
+        If the input file is empty and the '-to' flag is not provided.
+
+    Notes
+    -----
+    This function checks if the input file for indexed reads is empty. If it is empty and the '-to' flag is not provided, it raises a SystemExit exception. If the '-to' flag is provided, it writes an empty output file and logs a warning message. If the input file is not empty, it logs an info message and returns the indexed reads.
 
     """
+    if len(indexed_reads.tuples) < 1:
+        if args.to is True:
+            read_records = indexed_reads.frame.to_dict(orient="records")
+            write_output(args.output, read_records, threads=args.threads)
+            if args.export_primers is not None:
+                with open(args.export_primers, "w") as f:
+                    f.write("")
+            log.warning(
+                f"{__prog__} was given an empty input file but the [green]'-to'[/green] flag was given.\nOne or multiple empty output file(s) have therefore been generated.\n[bold yellow]Please check the input file to make sure this is correct[/bold yellow]"
+            )
+            sys.exit(0)
+        else:
+            log.error(
+                f"{__prog__} was given an empty input file. Exiting..\nPlease check the input file to make sure this is correct\n\n[bold yellow]Use the -to flag to force {__prog__} to create an output file even if there is nothing to output.[/bold yellow]"
+            )
+            sys.exit(1)
+    log.info(
+        f"Succesfully loaded [bold green]{len(indexed_reads.tuples)}[/bold green] reads."
+    )
+    return indexed_reads
 
-    def check_file_extensions(allowed_extensions: Iterable[str], fname: str) -> str:
+
+def primer_df_to_primer_index(
+    primer_df: pd.DataFrame, bind_virtual_primer: bool = True
+) -> Tuple[defaultdict, defaultdict]:
+    """
+    Convert primer DataFrame to primer index dictionaries.
+
+    Parameters
+    ----------
+    primer_df : pd.DataFrame
+        DataFrame containing primer information.
+    bind_virtual_primer : bool, optional
+        Whether to match closely positioned primers in the same orientation into a virtual primer. Defaults to False.
+
+    Returns
+    -------
+    Tuple[defaultdict, defaultdict]
+        A tuple of two defaultdicts representing the forward and reverse primer indices.
+
+    Raises
+    ------
+    SystemExit
+        If the primer DataFrame is empty.
+
+    Notes
+    -----
+    This function converts the primer DataFrame into two defaultdicts representing the forward and reverse primer indices. The primer DataFrame should contain information about the primers, including the reference ID, start coordinate, end coordinate, and strand. If the primer DataFrame is empty, a SystemExit exception is raised.
+
+    The bind_virtual_primer parameter determines whether virtual primers should be bound. If bind_virtual_primer is set to True, closely positioned primers in the same orientation will be matched to generate a virtual primer for proper removal. By default, bind_virtual_primer is set to False.
+
+    Examples
+    --------
+    >>> primer_df = pd.DataFrame(...)
+    >>> forward_dict, reverse_dict = primer_df_to_primer_index(primer_df)
+    >>> print(forward_dict)
+    defaultdict(<class 'set'>, {'ref1': {1, 2, 3}, 'ref2': {4, 5, 6}})
+    >>> print(reverse_dict)
+    defaultdict(<class 'set'>, {'ref1': {7, 8, 9}, 'ref2': {10, 11, 12}})
+    """
+    if len(primer_df) < 1:
+        log.error(
+            f"{__prog__} was unable to match any primers to the reference. {__prog__} is therefore unable to remove primers from the reads.\nPlease check the primers and reference to make sure this is correct\nExiting..."
+        )
+        sys.exit(1)
+
+    forward_dict = defaultdict(set)
+    reverse_dict = defaultdict(set)
+
+    reference_set: Set[str] = set(primer_df["ref"].unique())
+    for refid in reference_set:
+        forward_dict[refid] = set()
+        reverse_dict[refid] = set()
+
+    # split the primer_df into forward and reverse primers based on strand
+    forward_primers_df, reverse_primer_df = (
+        primer_df[primer_df["strand"] == "+"],
+        primer_df[primer_df["strand"] == "-"],
+    )
+
+    def coordinates_to_index(
+        oriented_primer_df: pd.DataFrame, refid: str, start: int, end: int
+    ) -> range:
         """
-        Check if the file extension of the file name passed to it is one of the extensions in the list passed to it.
+        Converts coordinates to an index range based on the given parameters.
 
         Parameters
         ----------
-        allowed_extensions : iterable of str
-            A tuple of strings that are valid extensions.
-        fname : str
-            The name of the file to be read.
+        oriented_primer_df : pd.DataFrame
+            The DataFrame containing the oriented primer information.
+        refid : str
+            The reference ID.
+        start : int
+            The start coordinate.
+        end : int
+            The end coordinate.
 
         Returns
         -------
-        str
-            The absolute path of the file passed.
+        range
+            The index range based on the given coordinates.
 
-        Raises
-        ------
-        ArgumentParser.error
-            If the file extension of the file name passed to it is not one of the extensions in the list passed to it.
+        Notes
+        -----
+        If bind_virtual_primer is True, the function will also match closely positioned primers in the same orientation to generate a virtual primer for proper removal.
+        bind_virtual_primer is set in the wrapping function and inherited here.
         """
-        ext = "".join(pathlib.Path(fname).suffixes)
-        if not any(ext.endswith(c) for c in allowed_extensions):
-            parser.error(f"File {fname} doesn't end with one of {allowed_extensions}")
-        return os.path.abspath(fname)
+        if bind_virtual_primer:
+            length = end - start
+            for _, refid2, start2, end2 in oriented_primer_df[
+                ["ref", "start", "end"]
+            ].itertuples():
+                if (
+                    refid == refid2
+                    and start2 <= end + length
+                    and end2 >= start - length
+                ):
+                    start = min(start, start2)
+                    end = max(end, end2)
+        return range(start + 1, end)
 
-    def check_file_exists(fname: str) -> str:
-        """Errors if the given file `fname` does not exist
+    # iterate over forward_primers_df and add the coordinates between "start" and "end" to the forward_dict
+    for _, refid, start, end in forward_primers_df[
+        ["ref", "start", "end"]
+    ].itertuples():
+        refid: str
+        start: int
+        end: int
+        forward_dict[refid].update(
+            coordinates_to_index(forward_primers_df, refid, start, end)
+        )
 
-        Parameters
-        ----------
-        fname : str
-            The name of the file to be read.
+    # iterate over reverse_primers_df and add the coordinates between "start" and "end" to the reverse_dict
+    for _, refid, start, end in reverse_primer_df[["ref", "start", "end"]].itertuples():
+        refid: str
+        start: int
+        end: int
+        reverse_dict[refid].update(
+            coordinates_to_index(reverse_primer_df, refid, start, end)
+        )
 
-        Returns
-        -------
-        str
-            The name of the file to be read.
+    return forward_dict, reverse_dict
 
-        """
-        if os.path.isfile(fname):
-            return fname
-        parser.error(f'"{fname}" is not a file. Exiting...')
 
-    parser = RichParser(
-        prog="[bold]AmpliGone[/bold]",
-        usage="%(prog)s \[required options] \[optional arguments]",
-        description="[bold underline]AmpliGone[/bold underline]: An accurate and efficient tool to remove primers from NGS reads in reference-based experiments",
-        formatter_class=FlexibleArgFormatter,
-        add_help=False,
-    )
+def check_thread_count(
+    indexed_reads: SequenceReads, args: argparse.Namespace
+) -> argparse.Namespace:
+    """
+    Check the thread count and adjust it if necessary based on the number of reads.
 
-    standard_threads = min(multiprocessing.cpu_count(), 128)
+    Parameters
+    ----------
+    indexed_reads : SequenceReads
+        The indexed reads.
+    args : argparse.Namespace
+        The command-line arguments.
 
-    required_args = parser.add_argument_group("Required Arguments")
+    Returns
+    -------
+    argparse.Namespace
+        The updated command-line arguments.
 
-    required_args.add_argument(
-        "--input",
-        "-i",
-        type=lambda s: check_file_exists(
-            check_file_extensions((".fastq", ".fq", ".bam", ".fastq.gz", ".fq.gz"), s)
+    Notes
+    -----
+    This function checks if the number of threads specified in the command-line arguments
+    is greater than the number of reads present in the indexed reads. If it is, the number
+    of threads is downscaled to match the number of reads.
+
+    If the number of reads is less than the specified number of threads, the number of threads
+    is set to the minimum value between the number of reads and 2.
+
+    Examples
+    --------
+    >>> indexed_reads = SequenceReads(...)
+    >>> args = argparse.Namespace(threads=4)
+    >>> updated_args = check_thread_count(indexed_reads, args)
+    >>> updated_args.threads
+    2
+    """
+    if len(indexed_reads.tuples) < args.threads:
+        log.info(
+            f"[yellow]{__prog__} is set to use more threads than reads present. Downscaling threads to match.[/yellow]"
+        )
+        args.threads = min(len(indexed_reads.tuples), 2)
+    return args
+
+
+def correct_fragment_lookaround_size(args: argparse.Namespace) -> argparse.Namespace:
+    """
+    Corrects the fragment lookaround size based on the amplicon type.
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        The command-line arguments.
+
+    Returns
+    -------
+    argparse.Namespace
+        The updated command-line arguments.
+
+    Notes
+    -----
+    This function adjusts the `fragment_lookaround_size` based on the `amplicon_type` value in the `args` namespace.
+    If the `amplicon_type` is not "fragmented", the `fragment_lookaround_size` is set to 10000.
+    If the `amplicon_type` is "fragmented" and `fragment_lookaround_size` is not provided, it is set to 10.
+    A warning message is logged if the `fragment_lookaround_size` is set to the default value.
+
+    Examples
+    --------
+    >>> args = argparse.Namespace(amplicon_type="fragmented", fragment_lookaround_size=None)
+    >>> corrected_args = correct_fragment_lookaround_size(args)
+    >>> print(corrected_args.fragment_lookaround_size)
+    10
+    """
+    if args.amplicon_type != "fragmented":
+        args.fragment_lookaround_size = 10000
+    elif args.fragment_lookaround_size is None:
+        args.fragment_lookaround_size = 10
+        log.warning(
+            "[yellow]No fragment lookaround size was given, [underline]using default of 10[/underline][/yellow]"
+        )
+    return args
+
+
+def parallel_dispatcher(
+    indexed_reads: SequenceReads,
+    args: argparse.Namespace,
+    primer_sets: Tuple[defaultdict, defaultdict],
+    preset: str,
+    matrix: List[int],
+) -> pd.DataFrame:
+    """
+    Wrapping function that actually calls the parallelization function to process the primer removal process of the reads.
+
+    Parameters
+    ----------
+    indexed_reads : SequenceReads
+        The indexed reads to be processed.
+    args : argparse.Namespace
+        The command-line arguments.
+    primer_sets : Tuple[defaultdict, defaultdict]
+        The primer sequences to be removed.
+    preset : str
+        The preset configuration for processing.
+    matrix : List[int]
+        The matrix for processing.
+
+    Returns
+    -------
+    pd.DataFrame
+        The processed reads with primer sequences removed.
+    """
+    with Progress(
+        SpinnerColumn(),
+        *Progress.get_default_columns(),
+        console=Console(
+            record=False,
         ),
-        metavar="File",
-        help="Input file with reads in either FastQ or BAM format.",
-        required=True,
-    )
+        transient=True,
+        disable=True if args.verbose is True else False,
+    ) as progress:
+        progress.add_task("[yellow]Removing primer sequences...", total=None)
+        processed_reads = parallel(
+            indexed_reads.frame,
+            CutReads,
+            args.threads,
+            primer_sets,
+            args.reference,
+            preset,
+            matrix,
+            fragment_lookaround_size=args.fragment_lookaround_size,
+            amplicon_type=args.amplicon_type,
+        )
 
-    required_args.add_argument(
-        "--output",
-        "-o",
-        type=lambda s: check_file_extensions((".fastq", ".fq"), s),
-        metavar="File",
-        help="Output (FastQ) file with cleaned reads.",
-        required=True,
-    )
-
-    required_args.add_argument(
-        "--reference",
-        "-ref",
-        type=lambda s: check_file_exists(check_file_extensions((".fasta", ".fa"), s)),
-        metavar="File",
-        help="Input Reference genome in FASTA format",
-        required=True,
-    )
-    required_args.add_argument(
-        "--primers",
-        "-pr",
-        type=lambda s: check_file_exists(
-            check_file_extensions((".fasta", ".fa", ".bed"), s)
-        ),
-        metavar="File",
-        help="""Used primer sequences in FASTA format or primer coordinates in BED format.\n Note that using bed-files overrides error-rate and ambiguity functionality""",
-        required=True,
-    )
-
-    optional_args = parser.add_argument_group("Optional Arguments")
-
-    optional_args.add_argument(
-        "--amplicon-type",
-        "-at",
-        default="end-to-end",
-        choices=("end-to-end", "end-to-mid", "fragmented"),
-        help="Define the amplicon-type, either being [green]'end-to-end'[/green], [green]'end-to-mid'[/green], or [green]'fragmented'[/green]. See the docs for more info :book:",
-        required=False,
-        metavar="'end-to-end'/'end-to-mid'/'fragmented'",
-    )
-
-    optional_args.add_argument(
-        "--fragment-lookaround-size",
-        "-fls",
-        required=False,
-        type=int,
-        metavar="N",
-        help="The number of bases to look around a primer-site to consider it part of a fragment. Only used if amplicon-type is 'fragmented'. Default is 10",
-    )
-
-    optional_args.add_argument(
-        "--export-primers",
-        "-ep",
-        type=lambda s: check_file_extensions((".bed",), s),
-        metavar="File",
-        help="Output BED file with found primer coordinates if they are actually cut from the reads",
-        required=False,
-    )
-
-    optional_args.add_argument(
-        "--threads",
-        "-t",
-        type=int,
-        default=standard_threads,
-        metavar="N",
-        help=f"""Number of threads you wish to use.\n Default is the number of available threads in your system ({standard_threads})""",
-    )
-
-    optional_args.add_argument(
-        "-to",
-        action="store_true",
-        help="If set, AmpliGone will always create the output files even if there is nothing to output. (for example when an empty input-file is given)\n This is useful in (automated) pipelines where you want to make sure that the output files are always created.",
-        required=False,
-    )
-
-    optional_args.add_argument(
-        "--error-rate",
-        "-er",
-        type=float,
-        default=0.1,
-        metavar="N",
-        help="The maximum allowed error rate for the primer search. Use 0 for exact primer matches.",
-        required=False,
-    )
-
-    optional_args.add_argument(
-        "--alignment-preset",
-        "-ap",
-        type=str,
-        default=None,
-        choices=("sr", "map-ont", "map-pb", "splice"),
-        help="The preset to use for alignment of reads against the reference. This can be either 'sr', 'map-ont', 'map-pb', or 'splice'. The alignment-preset can be combined with a custom alignment-scoring matrix. See the docs for more info :book:",
-        required=False,
-        metavar="'sr'/'map-ont'/'map-pb'/'splice'",
-    )
-
-    optional_args.add_argument(
-        "--alignment-scoring",
-        "-as",
-        type=str,
-        default=None,
-        metavar="KEY=VALUE",
-        nargs="+",
-        help="The scoring matrix to use for alignment of reads. This should be list of key-value pairs, where the key is the scoring-parameter and the value is a positive integer indicating the scoring-value for that parameter. Possible parameters are \n * (1) match\n * (2) mismatch\n * (3) gap_o1\n * (4) gap_e1\n * (5) gap_o2 (Optional: requires 1,2,3,4)\n * (6) gap_e2 (Optional, requires 1,2,3,4,5)\n * (7) mma (Optional, requires 1,2,3,4,5,6)\nFor example:\n --alignment-scoring match=4 mismatch=3 gap_o1=2 gap_e1=1\nSee the docs for more info :book:",
-        required=False,
-    )
-
-    optional_args.add_argument(
-        "--version",
-        "-v",
-        action="version",
-        version=__version__,
-        help="Show the AmpliGone version and exit",
-    )
-
-    optional_args.add_argument(
-        "--help",
-        "-h",
-        action="help",
-        default=argparse.SUPPRESS,
-        help="Show this help message and exit",
-    )
-
-    flags = parser.parse_args(givenargs)
-
-    return flags
+        processed_reads.reset_index(drop=True)
+    log.info("Done removing primer sequences")
+    return processed_reads
 
 
 def parallel(
     frame: pd.DataFrame,
     function: Callable[..., pd.DataFrame],
     workers: int,
-    primer_df: pd.DataFrame,
+    primer_sets: Tuple[defaultdict, defaultdict],
     reference: str,
     preset: str,
     scoring: List[int],
@@ -259,16 +358,16 @@ def parallel(
         The function to apply to the DataFrame.
     workers : int
         The number of workers to use for parallel processing.
-    primer_df : pandas.DataFrame
-        The DataFrame containing primer information.
+    primer_df : Tuple[defaultdict, defaultdict]
+        A tuple containing the indexes of the primer coordinates to remove.
     reference : str
         The reference sequence to use for alignment.
     preset : str
         The preset to use for alignment.
     scoring : List[int]
         The scoring matrix to use for alignment.
-    fragment_lookaround_size : int
         The size of the fragment lookaround.
+    fragment_lookaround_size : int
     amplicon_type : str
         The type of amplicon.
 
@@ -277,13 +376,13 @@ def parallel(
     pandas.DataFrame
         The resulting DataFrame after applying the function to the input DataFrame in parallel.
     """
-    frame_split = np.array_split(frame, workers)
+    frame_split = [frame.iloc[i::workers] for i in range(workers)]
     tr = [*range(workers)]
     return pd.concat(
         parmap.map(
             function,
             zip(frame_split, tr),
-            primer_df,
+            primer_sets,
             reference,
             preset,
             scoring,
@@ -298,118 +397,62 @@ def parallel(
 def main():
     if len(sys.argv[1:]) < 1:
         print(
-            "AmpliGone was called but no arguments were given, please try again.\nUse 'AmpliGone -h' to see the help document"
+            f"{__prog__} was called but no arguments were given, please try again.\nUse '{__prog__} -h' to see the help document"
         )
         sys.exit(1)
+    log.info(f"{__prog__} version: [blue]{__version__}[/blue]")
     args = get_args(sys.argv[1:])
-    log.info(
-        f"Starting AmpliGone with inputfile [green]'{os.path.abspath(args.input)}'[/green]"
-    )
+    if args.verbose is True:
+        log.setLevel("DEBUG")
+        log.debug(f"Arguments: {args}")
 
-    with cf.ThreadPoolExecutor(max_workers=args.threads) as ex:
-        TP_indexreads = ex.submit(IndexReads, args.input)
-
-        if not args.primers.endswith(".bed"):
-            TP_PrimerLists = ex.submit(
-                MakeCoordinateLists, args.primers, args.reference, args.error_rate
-            )
-            primer_df = TP_PrimerLists.result()
-        else:
-            log.info(
-                "Primer coordinates are given in BED format, skipping primer search"
-            )
-            primer_df = read_bed(args.primers)
-        IndexedReads = TP_indexreads.result()
-
-    if len(IndexedReads.index) < 1 and args.to is True:
-        ReadDict = IndexedReads.to_dict(orient="records")
-        WriteOutput(args.output, ReadDict)
-        if args.export_primers is not None:
-            with open(args.export_primers, "w") as f:
-                f.write("")
-        log.warning(
-            "AmpliGone was given an empty input file but the [green]'-to'[/green] flag was given.\nOne or multiple empty output file(s) have therefore been generated.\n[bold yellow]Please check the input file to make sure this is correct[/bold yellow]"
-        )
-        sys.exit(0)
-    elif len(IndexedReads.index) < 1:
+    # TODO: improve this log message
+    if args.threads < 2:
         log.error(
-            "AmpliGone was given an empty input file. Exiting..\nPlease check the input file to make sure this is correct\n\n[bold yellow]Use the -to flag to force AmpliGone to create an output file even if there is nothing to output.[/bold yellow]"
-        )
-        sys.exit(1)
-    else:
-        log.info(
-            f"Succesfully loaded [bold green]{len(IndexedReads.index)}[/bold green] reads."
-        )
-
-    if len(primer_df) < 1:
-        log.error(
-            "AmpliGone was unable to match any primers to the reference. AmpliGone is therefore unable to remove primers from the reads.\nPlease check the primers and reference to make sure this is correct\nExiting..."
+            f"{__prog__} needs at least 2 threads for execution but was only given {args.threads}. Shutting down"
         )
         sys.exit(1)
 
-    if len(IndexedReads.index) < args.threads:
-        log.info(
-            "[yellow]AmpliGone is set to use more threads than reads present. Downscaling threads to match.[/yellow]"
+    with ProcessPoolExecutor(max_workers=args.threads) as pool:
+        future_indexreads = pool.submit(SequenceReads, args.input)
+        future_primersearch = pool.submit(
+            find_or_read_primers,
+            primerfile=args.primers,
+            referencefile=args.reference,
+            err_rate=args.error_rate,
         )
-        args.threads = len(IndexedReads.index)
-
-    preset: str = args.alignment_preset
-    if preset is None:
-        log.info("Finding optimal alignment-preset for the given reads")
-        # Todo: split this over two threads if possible
-        if len(IndexedReads.index) > 20000:
-            preset = FindPreset(
-                args.threads, IndexedReads.sample(frac=0.3)
-            )  # Todo: Make this more efficient
-        else:
-            preset = FindPreset(args.threads, IndexedReads)
-
-    if args.alignment_scoring is not None:
-        log.info("Alignment scoring values given, parsing to scoring-matrix")
-        scoring = parse_scoring_matrix(sorted(args.alignment_scoring))
-    else:
-        scoring = []
-
-    print(preset, scoring)
-    ## correct the lookaround size if the amplicon type is not fragmented
-    if args.amplicon_type != "fragmented":
-        args.fragment_lookaround_size = 10000
-    elif args.fragment_lookaround_size is None:
-        args.fragment_lookaround_size = 10
-        log.warning(
-            "[yellow]No fragment lookaround size was given, [underline]using default of 10[/underline][/yellow]"
+        future_scoring = pool.submit(
+            AlignmentMatrix.get_scoring_matrix, args.alignment_scoring
         )
+
+        matrix = future_scoring.result()
+        primer_df = future_primersearch.result()
+        indexed_reads = future_indexreads.result()
+
+    indexed_reads = check_loaded_index(indexed_reads, args)
+    primer_indexes = primer_df_to_primer_index(
+        primer_df=primer_df, bind_virtual_primer=args.virtual_primers
+    )
+    args = check_thread_count(indexed_reads, args)
+
+    preset: str = AlignmentPreset.get_alignment_preset(args, indexed_reads)
+
+    args = correct_fragment_lookaround_size(args)
 
     log.info(
-        f"Distributing {len(IndexedReads.index)} reads across {args.threads} threads for processing. Processing around [bold green]{round(len(IndexedReads.index)/args.threads)}[/bold green] reads per thread"
+        f"Distributing {len(indexed_reads.tuples)} reads across {args.threads} threads for processing. Processing around [bold green]{round(len(indexed_reads.tuples)/args.threads)}[/bold green] reads per thread"
     )
 
-    IndexedReads = IndexedReads.sample(frac=1).reset_index(drop=True)
+    indexed_reads.frame = indexed_reads.frame.sample(frac=1).reset_index(drop=True)
 
-    with Progress(
-        SpinnerColumn(),
-        *Progress.get_default_columns(),
-        console=Console(record=True),
-        transient=True,
-    ) as progress:
-        progress.add_task("[yellow]Removing primer sequences...", total=None)
-        ProcessedReads = parallel(
-            IndexedReads,
-            CutReads,
-            args.threads,
-            primer_df,
-            args.reference,
-            preset,
-            scoring,
-            fragment_lookaround_size=args.fragment_lookaround_size,
-            amplicon_type=args.amplicon_type,
-        )
+    processed_reads = parallel_dispatcher(
+        indexed_reads, args, primer_indexes, preset, matrix
+    )
 
-        ProcessedReads.reset_index(drop=True)
-    log.info("Done removing primer sequences")
-
-    total_nuc_preprocessing = sum(tuple(chain(IndexedReads["Sequence"].str.len())))
-    removed_coordinates = tuple(chain(*ProcessedReads["Removed_coordinates"]))
+    total_nuc_preprocessing = sum(
+        tuple(chain(indexed_reads.frame["Sequence"].str.len()))
+    )
+    removed_coordinates = tuple(chain(*processed_reads["Removed_coordinates"]))
 
     log.info(
         f"\tRemoved a total of [bold cyan]{len(removed_coordinates)}[/bold cyan] nucleotides."
@@ -435,8 +478,8 @@ def main():
         ]
         CoordinateListsToBed(filtered_primer_df, args.export_primers)
 
-    ProcessedReads = ProcessedReads.drop(columns=["Removed_coordinates"])
+    processed_reads = processed_reads.drop(columns=["Removed_coordinates"])
 
-    ReadDict = ProcessedReads.to_dict(orient="records")
+    read_records = processed_reads.to_dict(orient="records")
 
-    WriteOutput(args.output, ReadDict)
+    write_output(args.output, read_records, args.threads)
