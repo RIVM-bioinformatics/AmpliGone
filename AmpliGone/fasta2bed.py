@@ -65,7 +65,7 @@ def get_coords(seq: str, ref_seq: str, err_rate: float = 0.1) -> Set[Tuple[int, 
 
     if len(options) > 1:
         log.debug(
-            f"PRIMERSEARCH :: Searching for primer options {options} resolved from ambiguous nucleotides in {seq}"
+            f"PRIMERSEARCH :: Searching for [cyan]{len(options)}[/cyan] primer options resolved from ambiguous nucleotides in [green]{seq}[/green]"
         )
 
     matches = set()
@@ -283,7 +283,16 @@ if __name__ == "__main__":
         default=0.1,
     )
 
+    args.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Print debug information",
+    )
+
     flags = args.parse_args()
+
+    if flags.verbose:
+        log.setLevel("DEBUG")
 
     df = find_or_read_primers(
         primerfile=flags.primers,
