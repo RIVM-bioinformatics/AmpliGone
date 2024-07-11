@@ -27,11 +27,12 @@ setup(
     install_requires=[
         "pysam==0.22.*",
         "pandas==2.2.*",
-        "mappy==2.27",
-        "biopython==1.83",
+        "mappy==2.28",
+        "biopython==1.84",
         "parmap==1.7.*",
-        "regex>=2021.11.10",
+        "parasail==1.3.4",
         "rich==13.7.*",
+        "pgzip==0.3.4",
     ],
     entry_points={
         "console_scripts": [
