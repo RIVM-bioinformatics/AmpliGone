@@ -6,7 +6,7 @@ import shutil
 import textwrap
 from typing import IO, Iterable, List, Optional
 
-import regex as _re
+import re
 import rich
 
 from AmpliGone import __prog__, __version__
@@ -306,8 +306,8 @@ class FlexibleArgFormatter(argparse.HelpFormatter):
     def _indents(self, line):
         """Return line indent level and "sub_indent" for bullet list text."""
 
-        indent = len(_re.match(r"( *)", line).group(1))
-        if list_match := _re.match(r"( *)(([*\-+>]+|\w+\)|\w+\.) +)", line):
+        indent = len(re.match(r"( *)", line).group(1))
+        if list_match := re.match(r"( *)(([*\-+>]+|\w+\)|\w+\.) +)", line):
             sub_indent = indent + len(list_match.group(2))
         else:
             sub_indent = indent
@@ -318,13 +318,13 @@ class FlexibleArgFormatter(argparse.HelpFormatter):
         """Split text in to paragraphs of like-indented lines."""
 
         text = textwrap.dedent(text).strip()
-        text = _re.sub("\n\n[\n]+", "\n\n", text)
+        text = re.sub("\n\n[\n]+", "\n\n", text)
 
         last_sub_indent = None
         paragraphs = []
         for line in text.splitlines():
             (indent, sub_indent) = self._indents(line)
-            is_text = _re.search(r"[^\s]", line) is not None
+            is_text = re.search(r"[^\s]", line) is not None
 
             if is_text and indent == sub_indent == last_sub_indent:
                 paragraphs[-1] += f" {line}"
