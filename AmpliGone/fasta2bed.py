@@ -1,12 +1,14 @@
 import argparse
 import os
+import re
 from itertools import product
-from typing import Any, Dict, Generator, Hashable, List, Set, Tuple
+from typing import Dict, Generator, List, Tuple, Union
 
 import pandas as pd
-import regex as re
+import parasail as ps
 from Bio import Seq, SeqIO
 from Bio.Data import IUPACData
+from parasail import Cigar
 
 from AmpliGone.io_ops import read_bed
 from AmpliGone.log import log
@@ -35,29 +37,126 @@ def find_ambiguous_options(seq: str) -> List[str]:
     return list(map("".join, product(*[ambigs.get(nuc, nuc) for nuc in seq])))
 
 
-def get_coords(seq: str, ref_seq: str, err_rate: float = 0.1) -> Set[Tuple[int, int]]:
+def parse_cigar_obj(cig_obj: Cigar) -> Tuple[str, str]:
     """
-    Find all the positions in the reference sequence where the query sequence could be found, allowing
-    for up to `err_rate` errors.
+    Parse a Cigar object and return the original cigar string and a cleaned cigar string.
+
+    Parameters
+    ----------
+    cig_obj : Cigar
+        The parasail Cigar object to parse.
+
+    Returns
+    -------
+    Tuple[str, str]
+        A tuple containing the original cigar string and the cleaned cigar string.
+
+    Examples
+    --------
+    >>> cig_obj = Cigar("10M2D5M")
+    >>> parse_cigar_obj(cig_obj)
+    ('10M2D5M', '10M2D5M')
+
+    >>> cig_obj = Cigar("2D10M2D")
+    >>> parse_cigar_obj(cig_obj)
+    ('2D10M2D', '10M')
+
+    Notes
+    -----
+    The `parse_cigar_obj` function takes a Cigar object and extracts the original cigar string and a cleaned cigar string.
+    The original cigar string represents the full cigar string as returned by the `decode` method of the Cigar object.
+    The cleaned cigar string is obtained by removing any leading or trailing deletions from the original cigar string.
+    This is necessary because the function uses a semi-global alignment within the parasail library.
+
+    The function first checks if the `cigar_representation` returned by `cig_obj.decode` is a bytes object.
+    If it is, the bytes object is converted to a string using the 'utf-8' encoding.
+    Then, the function uses regular expressions to remove any leading or trailing deletions from the cigar string.
+    The resulting original cigar string and cleaned cigar string are returned as a tuple.
+
+    """
+    cigar_representation = cig_obj.decode
+    cigar_str = (
+        str(cigar_representation, "utf-8")
+        if isinstance(cigar_representation, bytes)
+        else str(cigar_representation)
+    )
+    cleaned_cigar_str = re.sub(r"^(\d+)D|(\d+)D$", "", cigar_str)
+    return cigar_str, cleaned_cigar_str
+
+
+def count_cigar_errors(cigar: str) -> int:
+    """
+    Count the number of errors (insertions, deletions, and mismatches) in a CIGAR string.
+
+    Parameters
+    ----------
+    cigar : str
+        The CIGAR string representing the alignment.
+
+    Returns
+    -------
+    int
+        The total number of errors in the CIGAR string.
+
+    Examples
+    --------
+    >>> count_cigar_errors("10=2I1=5D3=")
+    7
+    >>> count_cigar_errors("6=3X2D2=")
+    5
+
+    Notes
+    -----
+    This function takes a CIGAR string and counts the number of errors, which include insertions, deletions, and mismatches.
+    The CIGAR string represents the alignment between two sequences, where each character in the string represents an operation.
+    The "=" character represents a match, the "X" character represents a mismatch, the "I" character represents an insertion,
+    and the "D" character represents a deletion.
+
+    The function uses regular expressions to find all occurrences of insertions, deletions, and mismatches in the CIGAR string.
+    It then sums the lengths of these occurrences to calculate the total number of errors.
+
+    This function assumes that the CIGAR string is in a valid format and does not perform any error checking or validation.
+    """
+    insertions = sum(map(int, re.findall(r"(\d+)I", cigar)))
+    deletions = sum(map(int, re.findall(r"(\d+)D", cigar)))
+    mismatches = sum(map(int, re.findall(r"(\d+)X", cigar)))
+    return mismatches + deletions + insertions
+
+
+def get_coords(
+    seq: str, ref_seq: str, err_rate: float = 0.1
+) -> Tuple[str, int, int, int]:
+    """
+    Get the coordinates of the best primer option for a given sequence.
 
     Parameters
     ----------
     seq : str
-        The sequence you want to find in the reference sequence.
+        The input sequence.
     ref_seq : str
-        The reference sequence to search in.
+        The reference sequence.
     err_rate : float, optional
-        The maximum error rate you want to allow. Default is 0.1.
+        The error rate, which determines the maximum number of errors allowed in the primer sequence, by default 0.1.
 
     Returns
     -------
-    set of tuple of int
-        A set of tuples, each tuple is a match of the sequence in the reference sequence.
+    Tuple[str, int, int, int]
+        A tuple containing the best primer option, start position, end position, and score.
 
     Examples
     --------
-    >>> get_coords('ATCG', 'CGTATCGTACG')
-    {(3, 7)}
+    >>> seq = "ATCG"
+    >>> ref_seq = "ATCGATCG"
+    >>> get_coords(seq, ref_seq, err_rate=0.1)
+    ('ATCG', 0, 4, 100)
+
+    Notes
+    -----
+    This function calculates the best primer option for a given sequence by allowing a maximum number of errors
+    based on the error rate. It searches for primer options resolved from ambiguous nucleotides in the sequence.
+    The function uses the `ps.sg_trace_scan_sat` function to perform sequence alignment and calculates the score
+    and errors based on the alignment results. The start and end positions are determined from the alignment.
+    The function returns the primer option with the highest score.
     """
     max_errors = int(len(seq) * err_rate)
 
@@ -67,15 +166,32 @@ def get_coords(seq: str, ref_seq: str, err_rate: float = 0.1) -> Set[Tuple[int, 
         log.debug(
             f"PRIMERSEARCH :: Searching for [cyan]{len(options)}[/cyan] primer options resolved from ambiguous nucleotides in [green]{seq}[/green]"
         )
+    not_aligned_section_pattern = r"^(\d+)D"
+    localresults = []
+    for option in options:
+        alignment = ps.sg_trace_scan_sat(
+            option, ref_seq, 8, 30, ps.nuc44
+        )  # TODO: validate if these gap_open and gap_extend values are appropriate for this use case. See below
+        # gap_open = 8, gap_extend = 30
+        # These values are chosen with the following idea: We want to allow for a few (one or two) deletions in the primer sequence vs the reference to deal with the possibility of a primer that is not perfectly matching the reference.
+        # However, we only want to allow deletions of 1 nucleotide length, and we want to heavily penalize longer gaps.
+        # The general idea is that a primer mismatch towards reference is okay if it compensates with one or two small deletions. However the primer should not be too different from the reference as this would indicate a bad primer design.
 
-    matches = set()
-    for e in range(max_errors + 1):
-        for option in options:
-            for match in re.finditer(
-                f"(?:{str(option)}){{s<={e}}}", ref_seq, re.IGNORECASE, concurrent=True
-            ):
-                matches.add(match.span())
-    return matches
+        cigar_str, cleaned_cigar_str = parse_cigar_obj(alignment.cigar)
+        errors = count_cigar_errors(cleaned_cigar_str)
+        score: int = alignment.score
+        if errors > max_errors:
+            score = -1
+
+        new_start = 0
+        if match := re.search(not_aligned_section_pattern, cigar_str):
+            new_start = int(match[1])
+        start = new_start
+        end: int = alignment.end_ref + 1
+
+        localresults.append((option, start, end, score))
+
+    return max(localresults, key=lambda x: x[3])
 
 
 def find_or_read_primers(
@@ -113,42 +229,118 @@ def find_or_read_primers(
     )
 
 
+def choose_best_fitting_coordinates(
+    fw_coords: Tuple[str, int, int, int], rv_coords: Tuple[str, int, int, int]
+) -> Tuple[str, int, int, int] | None:
+    """
+    Compares the forward and reverse coordinates and returns the best fitting coordinates based on their scores.
+
+    Parameters
+    ----------
+    fw_coords : Tuple[str, int, int, int]
+        The forward coordinates as a tuple of primer-sequence, start position, end position, and score.
+    rv_coords : Tuple[str, int, int, int]
+        The reverse coordinates as a tuple of primer-sequence, start position, end position, and score.
+
+    Returns
+    -------
+    Tuple[str, int, int, int] | None
+        The best fitting coordinates as a tuple of primer-sequence, start position, end position, and score, or None if no well-fitting coordinates are found.
+
+    Examples
+    --------
+    >>> fw_coords = ('chr1', 100, 200, 5)
+    >>> rv_coords = ('chr1', 150, 250, 7)
+    >>> choose_best_fitting_coordinates(fw_coords, rv_coords)
+    ('chr1', 150, 250, 7)
+
+    >>> fw_coords = ('chr1', 100, 200, 5)
+    >>> rv_coords = ('chr1', 150, 250, 3)
+    >>> choose_best_fitting_coordinates(fw_coords, rv_coords)
+    ('chr1', 100, 200, 5)
+
+    Notes
+    -----
+    This function compares the scores of the forward and reverse coordinates.
+    If the score of the forward coordinates is higher than the score of the reverse coordinates, the forward coordinates are returned.
+    If the score of the reverse coordinates is higher, the reverse coordinates are returned.
+    If the score of either set of coordinates is -1, that set is ignored.
+    If no coordinates are found, None is returned.
+    """
+
+    # compare 'coords' and 'rev_coords'. Keep the one with the highest score, and empty the other. If both have the same score, keep both.
+    if fw_coords[3] > rv_coords[3]:
+        forward_coords = fw_coords
+        reverse_coords = None
+    elif rv_coords[3] > fw_coords[3]:
+        forward_coords = None
+        reverse_coords = rv_coords
+    else:
+        forward_coords = fw_coords
+        reverse_coords = rv_coords
+
+    # remove the record if the score is -1
+    if forward_coords is not None and forward_coords[3] == -1:
+        forward_coords = None
+    if reverse_coords is not None and reverse_coords[3] == -1:
+        reverse_coords = None
+
+    best_fitting = forward_coords or reverse_coords
+    return best_fitting or None
+
+
 def CoordListGen(
     primerfile: str, referencefile: str, err_rate: float = 0.1
-) -> Generator[Dict[Hashable, Any], None, None]:
+) -> Generator[Dict[str, Union[str, int]], None, None]:
     """
-    Generate a list of dictionaries containing the coordinates of primers in a reference sequence.
+    Generate a list of coordinates for primers found in a reference sequence.
 
     Parameters
     ----------
     primerfile : str
-        The name of the file containing the primers in FASTA format.
+        The path to the primer file in FASTA format.
     referencefile : str
-        The name of the file containing the reference sequence in FASTA format.
+        The path to the reference file in FASTA format.
     err_rate : float, optional
-        The maximum number of mismatches allowed between the primer and the reference. Default is 0.1.
+        The allowed error rate for primer matching. Defaults to 0.1.
 
     Yields
     ------
     dict
-        A dictionary containing the coordinates of a primer in the reference sequence with keys "ref", "start", "end",
-        "name", "score", "strand", "seq", and "revcomp".
-
-    Notes
-    -----
-    This function takes a FASTA file of primers and a FASTA file of a reference sequence, and returns a list of
-    dictionaries containing the coordinates of the primers in the reference sequence. The coordinates are returned as a
-    dictionary with keys "ref", "start", "end", "name", "score", "strand", "seq", and "revcomp". The "ref" key contains
-    the reference sequence ID, the "start" and "end" keys contain the start and end positions of the primer in the
-    reference sequence, the "name" key contains the name of the primer, the "score" key contains a score ("."
-    by default), the "strand" key contains the strand of the primer ("+" or "-"), the "seq" key contains the sequence
-    of the primer, and the "revcomp" key contains the reverse complement of the primer sequence.
+        A dictionary containing the following information for each primer:
+        - ref : str
+            The reference ID.
+        - start : int
+            The start coordinate of the primer in the reference sequence.
+        - end : int
+            The end coordinate of the primer in the reference sequence.
+        - name : str
+            The name of the primer.
+        - score : int
+            The alignment score of the primer.
+        - strand : str
+            The orientation of the primer strand ('+' or '-').
+        - seq : str
+            The sequence of the primer.
+        - revcomp : str
+            The reverse complement sequence of the primer.
 
     Examples
     --------
-    >>> for coord in CoordListGen('primers.fasta', 'reference.fasta', 0.1):
-    ...     print(coord)
+    >>> primerfile = "primers.fasta"
+    >>> referencefile = "reference.fasta"
+    >>> err_rate = 0.1
+    >>> for primer_info in CoordListGen(primerfile, referencefile, err_rate):
+    ...     print(primer_info)
+    {'ref': 'reference1', 'start': 10, 'end': 20, 'name': 'primer1', 'score': 100, 'strand': '+', 'seq': 'ATCG', 'revcomp': 'CGAT'}
+    {'ref': 'reference1', 'start': 30, 'end': 40, 'name': 'primer2', 'score': 90, 'strand': '-', 'seq': 'GCTA', 'revcomp': 'TAGC'}
 
+    Notes
+    -----
+    This function generates a list of coordinates for primers found in a reference sequence. It takes a primer file in FASTA format and a reference file in FASTA format as input. The allowed error rate for primer matching can be specified using the `err_rate` parameter, which defaults to 0.1.
+    The function uses the `get_coords` function to calculate the coordinates of the best primer option for each primer sequence. The `get_coords` function allows a maximum number of errors based on the error rate and searches for primer options resolved from ambiguous nucleotides in the sequence.
+    The function yields a dictionary for each primer, containing the reference ID, start and end coordinates, name, alignment score, strand orientation, primer sequence, and reverse complement sequence.
+    The examples demonstrate how to use the `CoordListGen` function to generate a list of primer coordinates for a given primer file and reference file. The yielded dictionary for each primer contains the relevant information for further analysis or processing.
     """
     log.debug(f"Starting PRIMERSEARCH process\t@ ProcessID {os.getpid()}")
     keyl = ("LEFT", "PLUS", "POSITIVE", "FORWARD")
@@ -172,46 +364,39 @@ def CoordListGen(
 
             coords = get_coords(seq, ref_seq, err_rate)
             rev_coords = get_coords(revcomp, ref_seq, err_rate)
-            if coords and rev_coords:
-                log.warning(
-                    f"\tPrimer [yellow underline]{primer.id}[/yellow underline] found on both [underline]forward[/underline] and [underline]reverse strand[/underline] of [yellow underline]{ref_id}[/yellow underline].\n\t[yellow bold]Check to see if this is intended.[/yellow bold]"
-                )
-            if not coords and not rev_coords:
+
+            best_fitting = choose_best_fitting_coordinates(coords, rev_coords)
+
+            if not best_fitting:
                 log.warning(
                     f"\tSkipping [yellow underline]{primer.id}[/yellow underline] as it is found on neither [underline]forward[/underline] or [underline]reverse strand[/underline] of [yellow underline]{ref_id}[/yellow underline].\n\t[yellow bold]Check to see if this is intended.[/yellow bold]"
                 )
                 continue
-            if coords and len(coords) > 1:
-                log.warning(
-                    f"\tPrimer [yellow underline]{primer.id}[/yellow underline] found on multiple locations on [underline]forward strand[/underline] of [yellow underline]{ref_id}[/yellow underline]: \n\t[yellow]{coords}\n\t[bold]Check to see if this is intended.[/yellow][/bold]"
+
+            _, start, end, score = best_fitting
+
+            if any(o in primer.id for o in keyl):
+                strand = "+"
+            elif any(o in primer.id for o in keyr):
+                strand = "-"
+            else:
+                log.error(
+                    f"Primer name {primer.id} does not contain orientation (e.g. {primer.id}_RIGHT). Consider suffixing with {keyl + keyr}"
                 )
-            if rev_coords and len(rev_coords) > 1:
-                log.warning(
-                    f"\tPrimer [yellow underline]{primer.id}[/yellow underline] found on multiple locations on [underline]reverse strand[/underline] of [yellow underline]{ref_id}[/yellow underline]: \n\t[yellow]{rev_coords}\n\t[bold]Check to see if this is intended.[/yellow][/bold]"
-                )
-            for start, end in coords.union(rev_coords):
-                if any(o in primer.id for o in keyl):
-                    strand = "+"
-                elif any(o in primer.id for o in keyr):
-                    strand = "-"
-                else:
-                    log.error(
-                        f"Primer name {primer.id} does not contain orientation (e.g. {primer.id}_RIGHT). Consider suffixing with {keyl + keyr}"
-                    )
-                    continue
-                log.debug(
-                    f"PRIMERSEARCH :: Found primer {primer.id} at coordinates {start}-{end} on {ref_id}"
-                )
-                yield dict(
-                    ref=ref_id,
-                    start=start,
-                    end=end,
-                    name=primer.id,
-                    score=".",
-                    strand=strand,
-                    seq=seq,
-                    revcomp=revcomp,
-                )
+                continue
+            log.debug(
+                f"PRIMERSEARCH :: Found primer [yellow]{primer.id}[/yellow] at coordinates [cyan]{start}-{end}[/cyan] with alignment-score [cyan]{score}[/cyan] on [yellow]{ref_id}[/yellow]"
+            )
+            yield dict(
+                ref=ref_id,
+                start=start,
+                end=end,
+                name=primer.id,
+                score=score,
+                strand=strand,
+                seq=seq,
+                revcomp=revcomp,
+            )
 
 
 def CoordinateListsToBed(df: pd.DataFrame, outfile: str) -> None:
