@@ -80,7 +80,7 @@ def parse_cigar_obj(cig_obj: Cigar) -> Tuple[str, str]:
         if isinstance(cigar_representation, bytes)
         else str(cigar_representation)
     )
-    cleaned_cigar_str = re.sub(r"^(\d+)D|(\d+)D$", "", cigar_str)
+    cleaned_cigar_str = re.sub(r"(^\d+D)|(\d+D$)", "", cigar_str)
     return cigar_str, cleaned_cigar_str
 
 
