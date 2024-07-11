@@ -240,6 +240,14 @@ def get_args(givenargs: List[str]) -> argparse.Namespace:
         required=False,
     )
 
+    optional_args.add_argument(
+        "--quiet",
+        "-q",
+        action="store_true",
+        help="Prints less information, like only WARNING and ERROR statements, to the terminal",
+        required=False,
+    )
+
     return parser.parse_args(givenargs)
 
 

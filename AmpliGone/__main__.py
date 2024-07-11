@@ -316,7 +316,7 @@ def parallel_dispatcher(
             record=False,
         ),
         transient=True,
-        disable=True if args.verbose is True else False,
+        disable=True if args.verbose is True or args.quiet is True else False,
     ) as progress:
         progress.add_task("[yellow]Removing primer sequences...", total=None)
         processed_reads = parallel(
@@ -400,11 +400,20 @@ def main():
             f"{__prog__} was called but no arguments were given, please try again.\nUse '{__prog__} -h' to see the help document"
         )
         sys.exit(1)
-    log.info(f"{__prog__} version: [blue]{__version__}[/blue]")
     args = get_args(sys.argv[1:])
+    # check if verbose and quiet aren't both set
+    if args.verbose is True and args.quiet is True:
+        log.error(
+            f"{__prog__} was given both the [green]'--verbose'[/green] and [green]'--quiet'[/green] flags. Please only use one of these flags at a time. Exiting..."
+        )
+        sys.exit(1)
     if args.verbose is True:
         log.setLevel("DEBUG")
         log.debug(f"Arguments: {args}")
+    if args.quiet is True:
+        log.setLevel("WARNING")
+
+    log.info(f"{__prog__} version: [blue]{__version__}[/blue]")
 
     # TODO: improve this log message
     if args.threads < 2:
