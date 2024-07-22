@@ -2,11 +2,11 @@ import argparse
 import multiprocessing
 import os
 import pathlib
+import re
 import shutil
 import textwrap
 from typing import IO, Iterable, List, Optional
 
-import re
 import rich
 
 from AmpliGone import __prog__, __version__
