@@ -418,7 +418,7 @@ def main():
     # TODO: improve this log message
     if args.threads < 2:
         log.error(
-            f"{__prog__} needs at least 2 threads for execution but was only given {args.threads}. Shutting down"
+            f"{__prog__} requires a minimum of 2 threads for execution, but only {args.threads} thread was provided. Exiting..."
         )
         sys.exit(1)
 
