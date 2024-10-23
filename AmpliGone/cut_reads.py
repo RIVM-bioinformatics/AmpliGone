@@ -7,7 +7,7 @@ import pandas as pd
 
 from AmpliGone.log import log
 
-from .cutlery import PositionInOrAfterPrimer, PositionInOrBeforePrimer
+from .cutlery import position_in_or_after_primer, position_in_or_before_primer
 
 
 def cut_read(
@@ -170,35 +170,35 @@ def CutReads(
         qual: str
         if total_reads >= 10 and index % (total_reads // 10) == 0 and log.level == 10:
             completion_percentage = round(index / total_reads * 100)
-            maxsize = PositionInOrBeforePrimer.cache_info().maxsize
-            currsize = PositionInOrBeforePrimer.cache_info().currsize
+            maxsize = position_in_or_before_primer.cache_info().maxsize
+            currsize = position_in_or_before_primer.cache_info().currsize
             cache_usage_before = (
                 currsize / maxsize * 100
                 if maxsize is not None and currsize is not None
                 else 0
             )
-            maxsize = PositionInOrAfterPrimer.cache_info().maxsize
-            currsize = PositionInOrAfterPrimer.cache_info().currsize
+            maxsize = position_in_or_after_primer.cache_info().maxsize
+            currsize = position_in_or_after_primer.cache_info().currsize
             cache_usage_after = (
                 currsize / maxsize * 100
                 if maxsize is not None and currsize is not None
                 else 0
             )
             # todo: clean up this section of safely dividing by zero
-            cache_misses = PositionInOrBeforePrimer.cache_info().misses
+            cache_misses = position_in_or_before_primer.cache_info().misses
             cache_hit_ratio_before = (
-                (PositionInOrBeforePrimer.cache_info().hits / cache_misses)
+                (position_in_or_before_primer.cache_info().hits / cache_misses)
                 if cache_misses != 0
                 else 0
             )
-            cache_misses = PositionInOrAfterPrimer.cache_info().misses
+            cache_misses = position_in_or_after_primer.cache_info().misses
             cache_hit_ratio_after = (
-                (PositionInOrAfterPrimer.cache_info().hits / cache_misses)
+                (position_in_or_after_primer.cache_info().hits / cache_misses)
                 if cache_misses != 0
                 else 0
             )
             log.debug(
-                f"Thread {_threadnumber} @ processID {os.getpid()}\t::\tReads processing {completion_percentage}% complete.\n\tMODULE {PositionInOrBeforePrimer.__module__}.{PositionInOrBeforePrimer.__qualname__} CACHE INFORMATION\n\t\tCache size usage = {cache_usage_before:.2f}%\n\t\tCache hit ratio = {cache_hit_ratio_before:.2f}%\n\tMODULE {PositionInOrAfterPrimer.__module__}.{PositionInOrAfterPrimer.__qualname__} CACHE INFORMATION\n\t\tCache size usage = {cache_usage_after:.2f}%\n\t\tCache hit ratio = {cache_hit_ratio_after:.2f}%"
+                f"Thread {_threadnumber} @ processID {os.getpid()}\t::\tReads processing {completion_percentage}% complete.\n\tMODULE {position_in_or_before_primer.__module__}.{position_in_or_before_primer.__qualname__} CACHE INFORMATION\n\t\tCache size usage = {cache_usage_before:.2f}%\n\t\tCache hit ratio = {cache_hit_ratio_before:.2f}%\n\tMODULE {position_in_or_after_primer.__module__}.{position_in_or_after_primer.__qualname__} CACHE INFORMATION\n\t\tCache size usage = {cache_usage_after:.2f}%\n\t\tCache hit ratio = {cache_hit_ratio_after:.2f}%"
             )
 
         removed_coords_fw = []
@@ -252,7 +252,7 @@ def CutReads(
                     seq, qual, removed_fw, qstart, qend = cut_read(
                         seq,
                         qual,
-                        PositionNeedsCutting=PositionInOrBeforePrimer,
+                        PositionNeedsCutting=position_in_or_before_primer,
                         primer_list=FWTuple,
                         position_on_reference=hit.r_st,
                         cut_direction=1,
@@ -272,7 +272,7 @@ def CutReads(
                     seq, qual, removed_rv, qstart, qend = cut_read(
                         seq,
                         qual,
-                        PositionNeedsCutting=PositionInOrAfterPrimer,
+                        PositionNeedsCutting=position_in_or_after_primer,
                         primer_list=RVTuple,
                         position_on_reference=hit.r_en,
                         cut_direction=-1,

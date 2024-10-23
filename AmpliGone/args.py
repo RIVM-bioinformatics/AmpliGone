@@ -77,7 +77,7 @@ def get_args(givenargs: List[str]) -> argparse.Namespace:
 
     parser = RichParser(
         prog=f"[bold]{__prog__}[/bold]",
-        usage=f"[bold]{__prog__}[/bold] \[required options] \[optional arguments]",
+        usage=f"[bold]{__prog__}[/bold] \\[required options] \\[optional arguments]",
         description=f"[bold underline]{__prog__}[/bold underline]: An accurate and efficient tool to remove primers from NGS reads in reference-based experiments",
         formatter_class=FlexibleArgFormatter,
         add_help=False,

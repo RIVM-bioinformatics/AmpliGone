@@ -332,7 +332,7 @@ def _determine_preset(
             # this is probably 'short read' illumina NextSeq data
             # --> set the 'SR' preset
             return "sr"
-        ##! previous if-statement is not False.
+        # ! previous if-statement is not False.
         # this is probably 'long read' illumina MiSeq data
         # --> the 'SR' preset still applies but we keep it split
         # in case a custom set of parameters is necessary in the future
@@ -341,7 +341,7 @@ def _determine_preset(
         # this is probably oxford nanopore data
         # --> set the preset to 'map-ont'
         return "map-ont"
-    ##! previous if-statement is not True.
+    # ! previous if-statement is not True.
     # this might be very 'unstable' nextseq data,
     # or from a platform we currently dont really support officially.
     # fallback to 'sr' preset

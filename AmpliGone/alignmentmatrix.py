@@ -46,14 +46,14 @@ def get_scoring_matrix(input_matrix: List[str] | None) -> List[int]:
 
     >>> input_matrix = ['match=1', 'mismatch=2', 'gap_o1=3', 'gap_e1=4', 'gap_o2=5', 'gap_e2=6', 'mma=7', 'extra=8']
     >>> get_scoring_matrix(input_matrix)
-    SystemExit: Invalid scoring matrix length. The scoring-matrix must have a length of 4, 6 or 7 parameters. 
-    The following input parameters were given: 'match=1 mismatch=2 gap_o1=3 gap_e1=4 gap_o2=5 gap_e2=6 mma=7 extra=8'. 
-    After parsing, these inputs result in the following: {'match': 1, 'mismatch': 2, 'gap_o1': 3, 'gap_e1': 4, 'gap_o2': 5, 'gap_e2': 6, 'mma': 7, 'extra': 8}. 
+    SystemExit: Invalid scoring matrix length. The scoring-matrix must have a length of 4, 6 or 7 parameters.
+    The following input parameters were given: 'match=1 mismatch=2 gap_o1=3 gap_e1=4 gap_o2=5 gap_e2=6 mma=7 extra=8'.
+    After parsing, these inputs result in the following: {'match': 1, 'mismatch': 2, 'gap_o1': 3, 'gap_e1': 4, 'gap_o2': 5, 'gap_e2': 6, 'mma': 7, 'extra': 8}.
     Please note that adding the same key multiple times will result in the last value being used.
 
     >>> input_matrix = ['match=1', 'mismatch=2', 'gap_o1=3', 'gap_e1=4', 'gap_o2=5', 'gap_e2=6', 'mma=-7']
     >>> get_scoring_matrix(input_matrix)
-    SystemExit: Given scoring matrix contains a negative value. 
+    SystemExit: Given scoring matrix contains a negative value.
     The scoring matrix may only contain non-negative integers. Please check your input and try again.
 
     """
@@ -117,9 +117,12 @@ def _input_to_dict(input_matrix: List[str] | None) -> Dict[str, int] | None:
                 "Invalid scoring matrix input. The scoring matrix input must be in the format 'key=value'.\nPlease check if your input does not contain any spaces and try again."
             )
             sys.exit(1)
-    sort_order = ['match', 'mismatch', 'gap_o1', 'gap_e1', 'gap_o2', 'gap_e2', 'mma']
+    sort_order = ["match", "mismatch", "gap_o1", "gap_e1", "gap_o2", "gap_e2", "mma"]
     return {
-        item.split("=")[0]: int(item.split("=")[1]) for item in sorted(input_matrix, key=lambda x: sort_order.index(x.split("=")[0]))
+        item.split("=")[0]: int(item.split("=")[1])
+        for item in sorted(
+            input_matrix, key=lambda x: sort_order.index(x.split("=")[0])
+        )
     }
 
 

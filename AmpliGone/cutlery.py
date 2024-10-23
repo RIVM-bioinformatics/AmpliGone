@@ -3,7 +3,9 @@ from typing import List
 
 
 @lru_cache(maxsize=2000000)
-def PositionInOrBeforePrimer(pos: int, clist: List[int], max_lookaround: int) -> bool:
+def position_in_or_before_primer(
+    pos: int, clist: List[int], max_lookaround: int
+) -> bool:
     """
     Determine if a position is within the maximum distance of the closest position in the list of primer positions
     and the position is less than or equal to the closest position in the list.
@@ -24,13 +26,18 @@ def PositionInOrBeforePrimer(pos: int, clist: List[int], max_lookaround: int) ->
         less than or equal to the closest position in the list, False otherwise.
 
     """
-    d = lambda x: abs(x - pos)
-    near = min(clist, key=d, default=0)
+
+    def _default(x: int) -> int:
+        return abs(x - pos)
+
+    near = min(clist, key=_default, default=0)
     return abs(pos - near) < max_lookaround and pos <= near
 
 
 @lru_cache(maxsize=2000000)
-def PositionInOrAfterPrimer(pos: int, clist: List[int], max_lookaround: int) -> bool:
+def position_in_or_after_primer(
+    pos: int, clist: List[int], max_lookaround: int
+) -> bool:
     """
     Determine if a position is within the maximum distance of the closest position in the list of primer positions
     and the position is greater than or equal to the closest position in the list.
@@ -51,6 +58,9 @@ def PositionInOrAfterPrimer(pos: int, clist: List[int], max_lookaround: int) -> 
         greater than or equal to the closest position in the list, False otherwise.
 
     """
-    d = lambda x: abs(x - pos)
-    near = min(clist, key=d, default=0)
+
+    def _default(x: int) -> int:
+        return abs(x - pos)
+
+    near = min(clist, key=_default, default=0)
     return abs(pos - near) < max_lookaround and pos >= near

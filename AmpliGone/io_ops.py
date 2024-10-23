@@ -1,3 +1,58 @@
+"""
+This module provides various input/output operations for the AmpliGone package.
+
+Functions
+---------
+read_bed(filename: str) -> pd.DataFrame
+    Reads a BED file and returns a pandas DataFrame.
+
+output_file_opener(output_file: str, threads: int) -> TextIO | PgzipFile
+    Opens an output file for writing, with optional gzip compression.
+
+write_output(output: str, read_records: List[Dict[Hashable, Any]], threads: int) -> None
+    Writes the reads to the output file.
+
+Classes
+-------
+SequenceReads
+    A class for reading and indexing sequence reads from FASTQ or BAM files.
+
+    Methods
+    -------
+    __init__(self, inputfile: str)
+        Initializes the SequenceReads object and reads the input file.
+    _read_fastq(self, inputfile: str) -> None
+        Reads a FASTQ file and stores the reads.
+    _read_bam(self, inputfile: str) -> None
+        Reads a BAM file and stores the reads.
+    _is_fastq(self, filename: str) -> bool
+        Checks if the given file is a FASTQ file.
+    _is_zipped(self, filename: str) -> bool
+        Checks if the given file is a gzipped file.
+    _is_bam(self, filename: str) -> bool
+        Checks if the given file is a BAM file.
+    _load_bam(self, inputfile: str) -> pysam.AlignmentFile
+        Loads a BAM file and returns a pysam.AlignmentFile object.
+    _open_gzip_fastq_file(self, filename: str) -> TextIO
+        Opens a gzip file for reading and returns an opened file object.
+    _open_fastq_file(self, filename: str) -> TextIO
+        Opens a FASTQ file for reading and returns an opened file object.
+    _fastq_opener(self, inputfile: str) -> TextIO
+        Opens a FASTQ file for reading, with optional gzip decompression.
+    _flip_strand(self, seq: str, qual: str) -> Tuple[str, str]
+        Returns the reverse complement of a DNA sequence and its quality score.
+
+Examples
+--------
+>>> bed_df = read_bed('path/to/file.bed')
+>>> print(bed_df.head())
+
+>>> seq_reads = SequenceReads('path/to/file.fastq')
+>>> print(seq_reads.frame.head())
+
+>>> write_output("output.txt", [{"Readname": "read1", "Sequence": "ATCG", "Qualities": "20"}], 4)
+"""
+
 import gzip
 import os
 import pathlib
@@ -47,14 +102,14 @@ def read_bed(filename: str) -> pd.DataFrame:
         usecols=range(6),
         header=None,
         names=["ref", "start", "end", "name", "score", "strand"],
-        dtype=dict(
-            ref=str,
-            start="Int64",
-            end="Int64",
-            name=str,
-            score=str,
-            strand=str,
-        ),
+        dtype={
+            "ref": str,
+            "start": "Int64",
+            "end": "Int64",
+            "name": str,
+            "score": str,
+            "strand": str,
+        },
     )
     primer_df = primer_df[
         ~(
@@ -67,6 +122,53 @@ def read_bed(filename: str) -> pd.DataFrame:
 
 
 class SequenceReads:
+    """
+    A class for reading and indexing sequence reads from FASTQ or BAM files.
+
+    This class provides methods to read sequence data from FASTQ or BAM files,
+    store the reads in a DataFrame, and perform various operations on the reads.
+
+    Parameters
+    ----------
+    inputfile : str
+        The path to the input FASTQ or BAM file.
+
+    Attributes
+    ----------
+    tuples : List[Tuple[str, str, str]]
+        A list of tuples where each tuple contains the read name, sequence, and quality scores.
+    frame : pd.DataFrame
+        A DataFrame containing the indexed reads with columns 'Readname', 'Sequence', and 'Qualities'.
+
+    Methods
+    -------
+    _read_fastq(inputfile: str) -> None
+        Reads a FASTQ file and stores the reads.
+    _read_bam(inputfile: str) -> None
+        Reads a BAM file and stores the reads.
+    _is_fastq(filename: str) -> bool
+        Checks if the given file is a FASTQ file.
+    _is_zipped(filename: str) -> bool
+        Checks if the given file is a gzipped file.
+    _is_bam(filename: str) -> bool
+        Checks if the given file is a BAM file.
+    _load_bam(inputfile: str) -> pysam.AlignmentFile
+        Loads a BAM file and returns a pysam.AlignmentFile object.
+    _open_gzip_fastq_file(filename: str) -> TextIO
+        Opens a gzip file for reading and returns an opened file object.
+    _open_fastq_file(filename: str) -> TextIO
+        Opens a FASTQ file for reading and returns an opened file object.
+    _fastq_opener(inputfile: str) -> TextIO
+        Opens a FASTQ file for reading, with optional gzip decompression.
+    _flip_strand(seq: str, qual: str) -> Tuple[str, str]
+        Returns the reverse complement of a DNA sequence and its quality score.
+
+    Examples
+    --------
+    >>> seq_reads = SequenceReads('path/to/file.fastq')
+    >>> print(seq_reads.frame.head())
+    """
+
     def __init__(self, inputfile: str):
         log.debug(f"Starting INDEXREADS process\t@ ProcessID {os.getpid()}")
         self.tuples = []

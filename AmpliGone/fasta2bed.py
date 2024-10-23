@@ -348,15 +348,15 @@ def CoordListGen(
 
     primers = list(SeqIO.parse(primerfile, "fasta"))
 
-    ref_file = list(SeqIO.parse(referencefile, "fasta"))
-    ref_seq = [str(ref.seq) for ref in ref_file]
-    ref_id = [ref.id for ref in ref_file]
+    ref_files = list(SeqIO.parse(referencefile, "fasta"))
+    ref_seqs = [str(ref.seq) for ref in ref_files]
+    ref_ids = [ref.id for ref in ref_files]
 
     # The loop in a loop here is not a particularly efficient way of doing this.
     # But this is the easiest implementation for now, and it's not like this is a particularly
     # cpu or time intensive process anyway.
     # Might come back to this when there's more time to create a better solution.
-    for ref_seq, ref_id in zip(ref_seq, ref_id):
+    for ref_seq, ref_id in zip(ref_seqs, ref_ids):
         log.info(f"Searching for primers in reference-id: [yellow]{ref_id}[/yellow]")
         for primer in primers:
             seq = str(primer.seq)
@@ -387,16 +387,16 @@ def CoordListGen(
             log.debug(
                 f"PRIMERSEARCH :: Found primer [yellow]{primer.id}[/yellow] at coordinates [cyan]{start}-{end}[/cyan] with alignment-score [cyan]{score}[/cyan] on [yellow]{ref_id}[/yellow]"
             )
-            yield dict(
-                ref=ref_id,
-                start=start,
-                end=end,
-                name=primer.id,
-                score=score,
-                strand=strand,
-                seq=seq,
-                revcomp=revcomp,
-            )
+            yield {
+                "ref": ref_id,
+                "start": start,
+                "end": end,
+                "name": primer.id,
+                "score": score,
+                "strand": strand,
+                "seq": seq,
+                "revcomp": revcomp,
+            }
 
 
 def CoordinateListsToBed(df: pd.DataFrame, outfile: str) -> None:
@@ -432,12 +432,10 @@ def CoordinateListsToBed(df: pd.DataFrame, outfile: str) -> None:
     )
 
 
-if __name__ == "__main__":
-    import argparse
+def parse_args(args: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
 
-    args = argparse.ArgumentParser()
-
-    args.add_argument(
+    parser.add_argument(
         "--primers",
         metavar="File",
         type=str,
@@ -445,7 +443,7 @@ if __name__ == "__main__":
         required=True,
     )
 
-    args.add_argument(
+    parser.add_argument(
         "--reference",
         metavar="File",
         type=str,
@@ -453,14 +451,14 @@ if __name__ == "__main__":
         required=True,
     )
 
-    args.add_argument(
+    parser.add_argument(
         "--output",
         metavar="File",
         type=str,
         help="The output BED file with coordinates of the primers.",
         required=True,
     )
-    args.add_argument(
+    parser.add_argument(
         "--primer-mismatch-rate",
         metavar="File",
         type=float,
@@ -468,14 +466,17 @@ if __name__ == "__main__":
         default=0.1,
     )
 
-    args.add_argument(
+    parser.add_argument(
         "--verbose",
         action="store_true",
         help="Print debug information",
     )
 
-    flags = args.parse_args()
+    return parser.parse_args(args)
 
+
+def main(args: list[str] | None = None) -> None:
+    flags = parse_args(args)
     if flags.verbose:
         log.setLevel("DEBUG")
 
@@ -486,3 +487,7 @@ if __name__ == "__main__":
     )
 
     CoordinateListsToBed(df, flags.output)
+
+
+if __name__ == "__main__":
+    main()
