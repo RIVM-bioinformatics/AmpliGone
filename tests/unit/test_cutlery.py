@@ -12,7 +12,7 @@ import AmpliGone.cutlery as cutlery
         (26, False),
     ],
 )
-def test_position_in_or_before_primer(read, result):
+def test_position_in_or_before_primer(read: int, result: bool) -> None:
     primer_positions = (25, 35)
     max_lookaround = 10
     assert (
@@ -30,7 +30,7 @@ def test_position_in_or_before_primer(read, result):
         (26, True),
     ],
 )
-def test_postition_in_or_after_primer(read, result):
+def test_postition_in_or_after_primer(read: int, result: bool) -> None:
     primer_positions = (25, 35)
     max_lookaround = 10
     assert (

@@ -1,3 +1,68 @@
+"""
+This module provides functions and classes for processing sequencing reads and primers, including finding ambiguous options, parsing CIGAR strings, counting CIGAR errors, and generating coordinates for primers.
+
+Functions
+---------
+find_ambiguous_options(seq: str) -> List[str]
+    Find all possible unambiguous sequences from a sequence containing ambiguous nucleotides.
+
+parse_cigar_obj(cig_obj: Cigar) -> Tuple[str, str]
+    Parse a Cigar object and return the original cigar string and a cleaned cigar string.
+
+count_cigar_errors(cigar: str) -> int
+    Count the number of errors (insertions, deletions, and mismatches) in a CIGAR string.
+
+get_coords(seq: str, ref_seq: str, err_rate: float = 0.1) -> Tuple[str, int, int, int]
+    Get the coordinates of the best primer option for a given sequence.
+
+find_or_read_primers(primerfile: str, referencefile: str, err_rate: float) -> pd.DataFrame
+    Find or read primers from a given file.
+
+choose_best_fitting_coordinates(fw_coords: Tuple[str, int, int, int], rv_coords: Tuple[str, int, int, int]) -> Tuple[str, int, int, int] | None
+    Compares the forward and reverse coordinates and returns the best fitting coordinates based on their scores.
+
+coord_list_gen(primerfile: str, referencefile: str, err_rate: float = 0.1) -> Generator[Dict[str, Union[str, int]], None, None]
+    Generate a list of coordinates for primers found in a reference sequence.
+
+coord_lists_to_bed(df: pd.DataFrame, outfile: str) -> None
+    Write the coordinates in BED format to a file.
+
+parse_args(args: list[str] | None = None) -> argparse.Namespace
+    Parse command-line arguments.
+
+main(args: list[str] | None = None) -> None
+    Main function to process the command-line arguments and generate the BED file with primer coordinates.
+
+Notes
+-----
+This module is designed to handle the processing of sequencing reads and primers, including finding ambiguous options, parsing CIGAR strings, counting CIGAR errors, and generating coordinates for primers. It includes functions to read primers from files, generate coordinates, and write the results to a BED file. The main function orchestrates the entire process based on command-line arguments.
+
+Examples
+--------
+>>> from fasta2bed import find_ambiguous_options, parse_cigar_obj, count_cigar_errors, get_coords, find_or_read_primers, choose_best_fitting_coordinates, coord_list_gen, coord_lists_to_bed
+>>> seq = "ATGCR"
+>>> find_ambiguous_options(seq)
+['ATGCA', 'ATGCG']
+
+>>> cig_obj = Cigar("10M2D5M")
+>>> parse_cigar_obj(cig_obj)
+('10M2D5M', '10M2D5M')
+
+>>> count_cigar_errors("10=2I1=5D3=")
+7
+
+>>> seq = "ATCG"
+>>> ref_seq = "ATCGATCG"
+>>> get_coords(seq, ref_seq, err_rate=0.1)
+('ATCG', 0, 4, 100)
+
+>>> primerfile = "primers.fasta"
+>>> referencefile = "reference.fasta"
+>>> err_rate = 0.1
+>>> df = find_or_read_primers(primerfile, referencefile, err_rate)
+>>> coord_lists_to_bed(df, "output.bed")
+"""
+
 import argparse
 import os
 import re
@@ -222,7 +287,7 @@ def find_or_read_primers(
         log.info("Primer coordinates are given in BED format, skipping primer search")
         return read_bed(primerfile)
     return pd.DataFrame(
-        CoordListGen(
+        coord_list_gen(
             primerfile=primerfile, referencefile=referencefile, err_rate=err_rate
         ),
         columns=["ref", "start", "end", "name", "score", "strand", "seq", "revcomp"],
@@ -289,7 +354,7 @@ def choose_best_fitting_coordinates(
     return best_fitting or None
 
 
-def CoordListGen(
+def coord_list_gen(
     primerfile: str, referencefile: str, err_rate: float = 0.1
 ) -> Generator[Dict[str, Union[str, int]], None, None]:
     """
@@ -399,7 +464,7 @@ def CoordListGen(
             }
 
 
-def CoordinateListsToBed(df: pd.DataFrame, outfile: str) -> None:
+def coord_lists_to_bed(df: pd.DataFrame, outfile: str) -> None:
     """
     Write the coordinates in BED format to a file.
 
@@ -433,6 +498,44 @@ def CoordinateListsToBed(df: pd.DataFrame, outfile: str) -> None:
 
 
 def parse_args(args: list[str] | None = None) -> argparse.Namespace:
+    """
+    Parse command-line arguments.
+
+    Parameters
+    ----------
+    args : list of str, optional
+        A list of command-line arguments to parse. If None, the arguments will be taken from sys.argv.
+
+    Returns
+    -------
+    argparse.Namespace
+        An argparse.Namespace object containing the parsed command-line arguments.
+
+    Notes
+    -----
+    This function defines and parses the command-line arguments for the script. The following arguments are supported:
+    - --primers: The path to the FASTA file containing primers. This argument is required.
+    - --reference: The path to the FASTA file with the reference sequence. This argument is required.
+    - --output: The path to the output BED file with coordinates of the primers. This argument is required.
+    - --primer-mismatch-rate: The fraction of mismatches a primer can have with respect to the reference. Defaults to 0.1.
+    - --verbose: A flag to enable verbose output for debugging purposes.
+
+    Examples
+    --------
+    >>> import sys
+    >>> sys.argv = ['script.py', '--primers', 'primers.fasta', '--reference', 'reference.fasta', '--output', 'output.bed']
+    >>> args = parse_args()
+    >>> args.primers
+    'primers.fasta'
+    >>> args.reference
+    'reference.fasta'
+    >>> args.output
+    'output.bed'
+    >>> args.primer_mismatch_rate
+    0.1
+    >>> args.verbose
+    False
+    """
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -476,6 +579,33 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
 
 
 def main(args: list[str] | None = None) -> None:
+    """
+    Main function to process the command-line arguments and generate the BED file with primer coordinates.
+
+    Parameters
+    ----------
+    args : list of str, optional
+        A list of command-line arguments to parse. If None, the arguments will be taken from sys.argv.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    This function orchestrates the entire process of reading primers, aligning them to the reference sequence,
+    and writing the coordinates to a BED file. It performs the following steps:
+    1. Parses the command-line arguments using the `parse_args` function.
+    2. Sets the logging level to DEBUG if the verbose flag is set.
+    3. Reads or finds the primers using the `find_or_read_primers` function.
+    4. Writes the coordinates of the primers to the output BED file using the `coord_lists_to_bed` function.
+
+    Examples
+    --------
+    >>> import sys
+    >>> sys.argv = ['script.py', '--primers', 'primers.fasta', '--reference', 'reference.fasta', '--output', 'output.bed']
+    >>> main()
+    """
     flags = parse_args(args)
     if flags.verbose:
         log.setLevel("DEBUG")
@@ -486,7 +616,7 @@ def main(args: list[str] | None = None) -> None:
         err_rate=flags.primer_mismatch_rate,
     )
 
-    CoordinateListsToBed(df, flags.output)
+    coord_lists_to_bed(df, flags.output)
 
 
 if __name__ == "__main__":

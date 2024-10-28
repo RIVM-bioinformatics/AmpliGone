@@ -1,4 +1,5 @@
 import os
+from typing import Generator
 
 import pandas as pd
 import pytest
@@ -7,7 +8,7 @@ from AmpliGone.fasta2bed import main
 
 
 @pytest.fixture()
-def setup():
+def setup() -> Generator[tuple[str, str, str, str], None, None]:
     path_to_fasta = "tests/data/sars-cov-2/primers/ARTIC-V5.3.2.fasta"
     path_to_reference = "tests/data/sars-cov-2/references/SARS-CoV-2-reference.fasta"
     path_to_output = "tests/data/sars-cov-2/primers/new.bed"
@@ -21,7 +22,7 @@ def setup():
 
 class TestFasta2Bed:
 
-    def compare_bed_files(self, result, example):
+    def compare_bed_files(self, result: str, example: str) -> None:
         res_df = pd.read_csv(result, sep="\t", header=None)
         example_df = pd.read_csv(example, sep="\t", header=None)
 
@@ -31,7 +32,7 @@ class TestFasta2Bed:
 
         assert res_df.equals(example_df)
 
-    def test_fasta2bed(self, setup):
+    def test_fasta2bed(self, setup: tuple[str, str, str, str]) -> None:
         path_to_fasta, path_to_reference, path_to_output, path_to_example = setup
         args = [
             "--primers",

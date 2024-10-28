@@ -31,8 +31,8 @@ SequenceReads
         Checks if the given file is a gzipped file.
     _is_bam(self, filename: str) -> bool
         Checks if the given file is a BAM file.
-    _load_bam(self, inputfile: str) -> pysam.AlignmentFile
-        Loads a BAM file and returns a pysam.AlignmentFile object.
+    _load_bam(self, inputfile: str) -> AlignmentFile
+        Loads a BAM file and returns a AlignmentFile object.
     _open_gzip_fastq_file(self, filename: str) -> TextIO
         Opens a gzip file for reading and returns an opened file object.
     _open_fastq_file(self, filename: str) -> TextIO
@@ -61,8 +61,8 @@ from typing import Any, Dict, Hashable, List, TextIO, Tuple
 
 import pandas as pd
 import pgzip
-import pysam
 from pgzip import PgzipFile
+from pysam.libcalignmentfile import AlignmentFile
 
 from AmpliGone.log import log
 
@@ -125,53 +125,48 @@ class SequenceReads:
     """
     A class for reading and indexing sequence reads from FASTQ or BAM files.
 
-    This class provides methods to read sequence data from FASTQ or BAM files,
-    store the reads in a DataFrame, and perform various operations on the reads.
-
-    Parameters
-    ----------
-    inputfile : str
-        The path to the input FASTQ or BAM file.
-
     Attributes
     ----------
-    tuples : List[Tuple[str, str, str]]
-        A list of tuples where each tuple contains the read name, sequence, and quality scores.
+    tuples : list[tuple[str, str, str] | None]
+        A list to store the read name, sequence, and quality score tuples.
     frame : pd.DataFrame
-        A DataFrame containing the indexed reads with columns 'Readname', 'Sequence', and 'Qualities'.
+        A DataFrame to store the indexed reads.
 
     Methods
     -------
-    _read_fastq(inputfile: str) -> None
+    __init__(self, inputfile: str)
+        Initializes the SequenceReads object and reads the input file.
+    _read_fastq(self, inputfile: str) -> None
         Reads a FASTQ file and stores the reads.
-    _read_bam(inputfile: str) -> None
+    _read_bam(self, inputfile: str) -> None
         Reads a BAM file and stores the reads.
-    _is_fastq(filename: str) -> bool
+    _is_fastq(self, filename: str) -> bool
         Checks if the given file is a FASTQ file.
-    _is_zipped(filename: str) -> bool
+    _is_zipped(self, filename: str) -> bool
         Checks if the given file is a gzipped file.
-    _is_bam(filename: str) -> bool
+    _is_bam(self, filename: str) -> bool
         Checks if the given file is a BAM file.
-    _load_bam(inputfile: str) -> pysam.AlignmentFile
-        Loads a BAM file and returns a pysam.AlignmentFile object.
-    _open_gzip_fastq_file(filename: str) -> TextIO
+    _load_bam(self, inputfile: str) -> AlignmentFile
+        Loads a BAM file and returns a AlignmentFile object.
+    _open_gzip_fastq_file(self, filename: str) -> TextIO
         Opens a gzip file for reading and returns an opened file object.
-    _open_fastq_file(filename: str) -> TextIO
+    _open_fastq_file(self, filename: str) -> TextIO
         Opens a FASTQ file for reading and returns an opened file object.
-    _fastq_opener(inputfile: str) -> TextIO
+    _fastq_opener(self, inputfile: str) -> TextIO
         Opens a FASTQ file for reading, with optional gzip decompression.
-    _flip_strand(seq: str, qual: str) -> Tuple[str, str]
+    _flip_strand(self, seq: str, qual: str) -> Tuple[str, str]
         Returns the reverse complement of a DNA sequence and its quality score.
 
     Examples
     --------
     >>> seq_reads = SequenceReads('path/to/file.fastq')
     >>> print(seq_reads.frame.head())
+
     """
 
     def __init__(self, inputfile: str):
         log.debug(f"Starting INDEXREADS process\t@ ProcessID {os.getpid()}")
-        self.tuples = []
+        self.tuples: list[tuple[str, str, str] | None] = []
         if self._is_fastq(inputfile):
             log.debug("INDEXREADS :: Parsing reads from FASTQ file")
             self._read_fastq(inputfile)
@@ -304,9 +299,9 @@ class SequenceReads:
         """
         return ".bam" in pathlib.Path(filename).suffixes
 
-    def _load_bam(self, inputfile: str) -> pysam.AlignmentFile:
+    def _load_bam(self, inputfile: str) -> AlignmentFile:
         """
-        Load a BAM file and return a pysam.AlignmentFile object.
+        Load a BAM file and return a AlignmentFile object.
 
         Parameters
         ----------
@@ -315,7 +310,7 @@ class SequenceReads:
 
         Returns
         -------
-        pysam.AlignmentFile
+        AlignmentFile
             A file object for reading the BAM file.
 
         Examples
@@ -325,7 +320,7 @@ class SequenceReads:
         ...     print(read)
 
         """
-        return pysam.AlignmentFile(inputfile, "rb")
+        return AlignmentFile(inputfile, "rb")
 
     def _open_gzip_fastq_file(self, filename: str) -> TextIO:
         """
@@ -376,7 +371,7 @@ class SequenceReads:
         !''*((((***+))%%%++)(%%%%).1***-+*''))**55CCF>>>>>>CCCCCCC65
 
         """
-        return open(filename, "rt")
+        return open(filename, "rt", encoding="utf-8")
 
     def _fastq_opener(self, inputfile: str) -> TextIO:
         """
@@ -450,9 +445,32 @@ class SequenceReads:
 
 
 def output_file_opener(output_file: str, threads: int) -> TextIO | PgzipFile:
+    """
+    Open an output file for writing, with optional gzip compression.
+
+    Parameters
+    ----------
+    output_file : str
+        The path to the output file. If the file extension is '.gz', the file will be opened with gzip compression.
+    threads : int
+        The number of threads to use for writing the output file when using gzip compression.
+
+    Returns
+    -------
+    TextIO | PgzipFile
+        An opened file object for writing. If the file is gzipped, a PgzipFile object is returned; otherwise, a standard TextIO object is returned.
+
+    Examples
+    --------
+    >>> with output_file_opener("output.txt", 4) as f:
+    ...     f.write("This is a test.")
+    ...
+    >>> with output_file_opener("output.txt.gz", 4) as f:
+    ...     f.write("This is a gzipped test.")
+    """
     if ".gz" in output_file:
         return pgzip.open(output_file, "wt", compresslevel=6, thread=threads)
-    return open(output_file, "w")
+    return open(output_file, "w", encoding="utf-8")
 
 
 def write_output(
@@ -484,11 +502,11 @@ def write_output(
     >>> write_output("output.txt", [{"Readname": "read1", "Sequence": "ATCG", "Qualities": "20"}], 4)
     """
     with output_file_opener(output, threads) as fileout:
-        for index, k in enumerate(read_records):
-            for key in read_records[index]:
+        for read_record in read_records:
+            for key in read_record:
                 if key == "Readname":
-                    fileout.write("@" + read_records[index][key] + "\n")
+                    fileout.write("@" + read_record[key] + "\n")
                 elif key == "Sequence":
-                    fileout.write(read_records[index][key] + "\n" + "+" + "\n")
+                    fileout.write(read_record[key] + "\n" + "+" + "\n")
                 elif key == "Qualities":
-                    fileout.write(read_records[index][key] + "\n")
+                    fileout.write(read_record[key] + "\n")

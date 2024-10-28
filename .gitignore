@@ -133,3 +133,5 @@ dmypy.json
 .vscode/
 test/
 notes.txt
+
+*:Zone.Identifier

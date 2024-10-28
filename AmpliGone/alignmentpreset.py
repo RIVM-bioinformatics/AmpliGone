@@ -1,3 +1,50 @@
+"""
+This module provides functions and classes for determining the optimal alignment preset for sequencing reads.
+
+Functions
+---------
+get_alignment_preset(input_args: argparse.Namespace, indexed_reads: SequenceReads) -> str
+    Get the alignment preset for the given reads.
+
+find_preset(threads: int, data: pd.DataFrame) -> str
+    Find the preset based on the statistics calculated from the input data.
+
+_qual_to_ord_dispatcher(qdata: str, threads: int) -> List[int]
+    Convert a string of characters to a list of ASCII values minus 33 using multiple threads.
+
+_process_chunk(chunk: str) -> List[int]
+    Converts each character in the given chunk to its corresponding ASCII value minus 33.
+
+_determine_preset(avg_len: float, avg_qual: float, quality_range: int, length_range: int) -> str
+    Determine the preset based on the calculated statistics.
+
+_calc_avg_read_length(sequence_list: List[str]) -> float
+    Calculate the average length of a list of sequences.
+
+_calc_avg_read_qual(quality_list: List[int]) -> float
+    Calculate the average quality score of a list of quality scores.
+
+_get_unique_quality_scores(quality_list: List[int]) -> int
+    Return the number of unique quality scores in a list.
+
+_get_unique_read_lengths(sequence_list: List[str]) -> int
+    Return the number of unique lengths of strings in a list.
+
+_sequence_statistics_dispatcher(reads_list: List[str], ordinal_qualities_list: List[int], threads: int) -> Tuple[float, float, int, int]
+    Calculate sequence statistics using multiple threads.
+
+Notes
+-----
+This module is designed to handle sequencing reads and determine the optimal alignment preset based on the quality and length of the reads. It uses parallel processing to efficiently handle large datasets and calculate necessary statistics.
+
+Examples
+--------
+>>> import pandas as pd
+>>> data = pd.DataFrame({'Sequence': ['ATCG', 'GCTA'], 'Qualities': ['!@#$%', '&*()']})
+>>> find_preset(4, data)
+'sr'
+"""
+
 import argparse
 from concurrent.futures import ProcessPoolExecutor
 from typing import Generator, List, Tuple
@@ -42,6 +89,8 @@ def get_alignment_preset(
 
     """
     if input_args.alignment_preset is not None:
+        # this assert is mostly for mypy to understand that alignment_preset is not Any
+        assert isinstance(input_args.alignment_preset, str)
         return input_args.alignment_preset
     log.info("Finding optimal alignment-preset for the given reads")
     sample_size = min(len(indexed_reads.tuples), 15000)
@@ -120,14 +169,14 @@ def find_preset(threads: int, data: pd.DataFrame) -> str:
         return list_of_reads, qualities_str
 
     reads_list, quality_data = _extract_read_data(data)
-    ord_quality_list: List[int] = _qual_to_ord_dispatcher(quality_data, threads)
+    ord_quality_list: list[int] = _qual_to_ord_dispatcher(quality_data, threads)
     avg_len, avg_qual, quality_range, length_range = _sequence_statistics_dispatcher(
         reads_list, ord_quality_list, threads
     )
     return _determine_preset(avg_len, avg_qual, quality_range, length_range)
 
 
-def _qual_to_ord_dispatcher(qdata: str, threads) -> List[int]:
+def _qual_to_ord_dispatcher(qdata: str, threads: int) -> list[int]:
     """
     Convert a string of characters to a list of ASCII values minus 33 using multiple threads.
 
@@ -183,8 +232,8 @@ def _qual_to_ord_dispatcher(qdata: str, threads) -> List[int]:
             yield lst[start:end]
             start = end
 
-    qdata_chunks: List[str] = list(_create_chunks(qdata, threads))
-    ordinal_quality_list: List[int] = []
+    qdata_chunks: list[str] = list(_create_chunks(qdata, threads))
+    ordinal_quality_list: list[int] = []
     with ProcessPoolExecutor(max_workers=threads) as pool:
         results = pool.map(_process_chunk, qdata_chunks)
         for result in results:
@@ -192,7 +241,7 @@ def _qual_to_ord_dispatcher(qdata: str, threads) -> List[int]:
     return ordinal_quality_list
 
 
-def _process_chunk(chunk: str):
+def _process_chunk(chunk: str) -> list[int]:
     """
     Converts each character in the given chunk to its corresponding ASCII value minus 33.
 
