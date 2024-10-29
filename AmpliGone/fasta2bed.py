@@ -84,7 +84,9 @@ def parse_cigar_obj(cig_obj: Cigar) -> Tuple[str, str]:
     return cigar_str, cleaned_cigar_str
 
 
-def count_cigar_errors(cigar: str) -> int:
+def count_cigar_information(
+    cigar: str,
+) -> Tuple[int, int, int, int, Tuple[int, int], Tuple[int, int]]:
     """
     Count the number of errors (insertions, deletions, and mismatches) in a CIGAR string.
 
@@ -117,15 +119,86 @@ def count_cigar_errors(cigar: str) -> int:
 
     This function assumes that the CIGAR string is in a valid format and does not perform any error checking or validation.
     """
+    # print(cigar)
+    matches = sum(map(int, re.findall(r"(\d+)=", cigar)))
     insertions = sum(map(int, re.findall(r"(\d+)I", cigar)))
     deletions = sum(map(int, re.findall(r"(\d+)D", cigar)))
     mismatches = sum(map(int, re.findall(r"(\d+)X", cigar)))
-    return mismatches + deletions + insertions
+
+    # grouped deletions and insertions are another metric. It's necessary to know how many deletions and insertions are grouped together or if they are spread out.
+    # should be 0 by default and be recorded every time a "D" is found in the cigar string with a number higher than 1 in front of it.
+    grouped_deletions = 0
+    grouped_insertions = 0
+    del_groups = 0
+    ins_groups = 0
+    for i in re.findall(r"(\d+)D", cigar):
+        if int(i) > 1:
+            grouped_deletions += int(i)
+            del_groups += 1
+    for i in re.findall(r"(\d+)I", cigar):
+        if int(i) > 1:
+            grouped_insertions += int(i)
+            ins_groups += 1
+
+    # print("grouped:", grouped_deletions, grouped_insertions)
+    # print("groups:", del_groups, ins_groups)
+    # print(f"Matches: {matches}, Mismatches: {mismatches}, Deletions: {deletions}, Insertions: {insertions}")
+    return (
+        matches,
+        mismatches,
+        deletions,
+        insertions,
+        (grouped_deletions, del_groups),
+        (grouped_insertions, ins_groups),
+    )
+
+
+# def assign_score(cigar_data: Tuple[int, int, int, int, Tuple[int, int], Tuple[int, int]], option_length: int, max_errors: int) -> int:
+
+
+#     # from cigar_data we get the number of mismatches, deletions and insertions in that order.
+#     # right now we only care about the errors so we're omitting matches
+#     base_errors = cigar_data[1] + cigar_data[2] + cigar_data[3]
+#     # deletions_grouped = cigar_data[4][0]
+#     # insertions_grouped = cigar_data[5][0]
+#     # del_groups = cigar_data[4][1]
+#     # ins_groups = cigar_data[5][1]
+
+#     if base_errors > max_errors:
+#         return -1
+
+#     score_modifier = 100
+#     # we start with a base score of 100.
+
+#     # TODO: determine if the penalize logic is *actually* desired.
+#     # # if there are deletion or insertion groups then we want to *severely* penalize the score.
+#     # # deletions or insertions itself are okay, and they are penalized as a 'base' error.
+#     # # however, grouped deletions or insertions (i.e. 4D, or 2I in the cigar string) should be penalized even more as this is should not happen with primers.
+#     # for _ in range(del_groups):
+#     #     # print(fraction_d)
+#     #     score_modifier /= (deletions_grouped / del_groups if del_groups > 0 else 1)
+#     # for _ in range(ins_groups):
+#     #     # print(fraction_i)
+#     #     score_modifier /= (insertions_grouped / ins_groups if ins_groups > 0 else 1)
+
+#     # calculate the score based on the number of matches and the length of the option
+#     matches = cigar_data[0]
+#     score = int(((option_length - base_errors) / option_length) * score_modifier)
+
+#     # discard if the score is below 50% (50.0). Including scores this low into the final considerations would be a waste of time.
+#     # else, return the score
+#     return -1 if score < 50 else score
+
+
+def percentage_representation(option_length: int, score: int) -> int:
+    # the max score in the nuc44 matrix is 5. So the highest achievable score of a primer-option is the length of the primer times 5.
+    max_score_of_option = option_length * 5
+    return int((score / max_score_of_option) * 100)
 
 
 def get_coords(
     seq: str, ref_seq: str, err_rate: float = 0.1
-) -> Tuple[str, int, int, int]:
+) -> Tuple[str, int, int, int, int]:
     """
     Get the coordinates of the best primer option for a given sequence.
 
@@ -178,8 +251,12 @@ def get_coords(
         # The general idea is that a primer mismatch towards reference is okay if it compensates with one or two small deletions. However the primer should not be too different from the reference as this would indicate a bad primer design.
 
         cigar_str, cleaned_cigar_str = parse_cigar_obj(alignment.cigar)
-        errors = count_cigar_errors(cleaned_cigar_str)
+        parsed_cigar_info = count_cigar_information(cleaned_cigar_str)
         score: int = alignment.score
+        errors = parsed_cigar_info[1] + parsed_cigar_info[2] + parsed_cigar_info[3]
+        percentage = percentage_representation(len(option), score)
+        # print("length of option:", len(option))
+        # print(max_errors)
         if errors > max_errors:
             score = -1
 
@@ -188,14 +265,17 @@ def get_coords(
             new_start = int(match[1])
         start = new_start
         end: int = alignment.end_ref + 1
-
-        localresults.append((option, start, end, score))
+        # print(score)
+        localresults.append((option, start, end, score, percentage))
 
     return max(localresults, key=lambda x: x[3])
 
 
 def find_or_read_primers(
-    primerfile: str, referencefile: str, err_rate: float
+    primerfile: str,
+    referencefile: str,
+    err_rate: float,
+    represent_as_score: bool = False,
 ) -> pd.DataFrame:
     """
     Find or read primers from a given file.
@@ -223,15 +303,18 @@ def find_or_read_primers(
         return read_bed(primerfile)
     return pd.DataFrame(
         CoordListGen(
-            primerfile=primerfile, referencefile=referencefile, err_rate=err_rate
+            primerfile=primerfile,
+            referencefile=referencefile,
+            err_rate=err_rate,
+            represent_as_score=represent_as_score,
         ),
         columns=["ref", "start", "end", "name", "score", "strand", "seq", "revcomp"],
     )
 
 
 def choose_best_fitting_coordinates(
-    fw_coords: Tuple[str, int, int, int], rv_coords: Tuple[str, int, int, int]
-) -> Tuple[str, int, int, int] | None:
+    fw_coords: Tuple[str, int, int, int, int], rv_coords: Tuple[str, int, int, int, int]
+) -> Tuple[str, int, int, int, int] | None:
     """
     Compares the forward and reverse coordinates and returns the best fitting coordinates based on their scores.
 
@@ -290,7 +373,10 @@ def choose_best_fitting_coordinates(
 
 
 def CoordListGen(
-    primerfile: str, referencefile: str, err_rate: float = 0.1
+    primerfile: str,
+    referencefile: str,
+    err_rate: float = 0.1,
+    represent_as_score: bool = False,
 ) -> Generator[Dict[str, Union[str, int]], None, None]:
     """
     Generate a list of coordinates for primers found in a reference sequence.
@@ -373,7 +459,7 @@ def CoordListGen(
                 )
                 continue
 
-            _, start, end, score = best_fitting
+            _, start, end, score, percentage = best_fitting
 
             if any(o in primer.id for o in keyl):
                 strand = "+"
@@ -385,8 +471,12 @@ def CoordListGen(
                 )
                 continue
             log.debug(
-                f"PRIMERSEARCH :: Found primer [yellow]{primer.id}[/yellow] at coordinates [cyan]{start}-{end}[/cyan] with alignment-score [cyan]{score}[/cyan] on [yellow]{ref_id}[/yellow]"
+                f"PRIMERSEARCH :: Found primer [yellow]{primer.id}[/yellow] at coordinates [cyan]{start}-{end}[/cyan] with alignment-score [cyan]{score}[/cyan] ({percentage}% match) on [yellow]{ref_id}[/yellow]"
             )
+
+            if not represent_as_score:
+                score = percentage
+
             yield dict(
                 ref=ref_id,
                 start=start,
@@ -469,6 +559,12 @@ if __name__ == "__main__":
     )
 
     args.add_argument(
+        "--score-representation",
+        action="store_true",
+        help="Present the alignment score in the bed file instead of the match-percentage for each primer option (default).",
+    )
+
+    args.add_argument(
         "--verbose",
         action="store_true",
         help="Print debug information",
@@ -483,6 +579,7 @@ if __name__ == "__main__":
         primerfile=flags.primers,
         referencefile=flags.reference,
         err_rate=flags.primer_mismatch_rate,
+        represent_as_score=flags.score_representation,
     )
 
     CoordinateListsToBed(df, flags.output)
