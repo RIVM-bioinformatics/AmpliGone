@@ -9,11 +9,11 @@ import sys
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor
 from itertools import chain
-from typing import Callable, List, Set, Tuple
+from typing import Callable
 
 import pandas as pd
 import parmap
-from rich import print
+from rich import print as pprint
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn
 
@@ -21,8 +21,8 @@ import AmpliGone.alignmentmatrix as AlignmentMatrix
 import AmpliGone.alignmentpreset as AlignmentPreset
 from AmpliGone import __prog__, __version__
 from AmpliGone.args import get_args
-from AmpliGone.cut_reads import CutReads
-from AmpliGone.fasta2bed import CoordinateListsToBed, find_or_read_primers
+from AmpliGone.cut_reads import cut_reads
+from AmpliGone.fasta2bed import coord_lists_to_bed, find_or_read_primers
 from AmpliGone.io_ops import SequenceReads, write_output
 from AmpliGone.log import log
 
@@ -80,7 +80,7 @@ def check_loaded_index(
 
 def primer_df_to_primer_index(
     primer_df: pd.DataFrame, bind_virtual_primer: bool = True
-) -> Tuple[defaultdict, defaultdict]:
+) -> tuple[defaultdict, defaultdict]:
     """
     Convert primer DataFrame to primer index dictionaries.
 
@@ -93,7 +93,7 @@ def primer_df_to_primer_index(
 
     Returns
     -------
-    Tuple[defaultdict, defaultdict]
+    tuple[defaultdict, defaultdict]
         A tuple of two defaultdicts representing the forward and reverse primer indices.
 
     Raises
@@ -122,10 +122,10 @@ def primer_df_to_primer_index(
         )
         sys.exit(1)
 
-    forward_dict = defaultdict(set)
-    reverse_dict = defaultdict(set)
+    forward_dict: defaultdict[str, set[None | int]] = defaultdict(set)
+    reverse_dict: defaultdict[str, set[None | int]] = defaultdict(set)
 
-    reference_set: Set[str] = set(primer_df["ref"].unique())
+    reference_set: set[str] = set(primer_df["ref"].unique())
     for refid in reference_set:
         forward_dict[refid] = set()
         reverse_dict[refid] = set()
@@ -181,18 +181,12 @@ def primer_df_to_primer_index(
     for _, refid, start, end in forward_primers_df[
         ["ref", "start", "end"]
     ].itertuples():
-        refid: str
-        start: int
-        end: int
         forward_dict[refid].update(
             coordinates_to_index(forward_primers_df, refid, start, end)
         )
 
     # iterate over reverse_primers_df and add the coordinates between "start" and "end" to the reverse_dict
     for _, refid, start, end in reverse_primer_df[["ref", "start", "end"]].itertuples():
-        refid: str
-        start: int
-        end: int
         reverse_dict[refid].update(
             coordinates_to_index(reverse_primer_df, refid, start, end)
         )
@@ -284,9 +278,9 @@ def correct_fragment_lookaround_size(args: argparse.Namespace) -> argparse.Names
 def parallel_dispatcher(
     indexed_reads: SequenceReads,
     args: argparse.Namespace,
-    primer_sets: Tuple[defaultdict, defaultdict],
+    primer_sets: tuple[defaultdict, defaultdict],
     preset: str,
-    matrix: List[int],
+    matrix: list[int],
 ) -> pd.DataFrame:
     """
     Wrapping function that actually calls the parallelization function to process the primer removal process of the reads.
@@ -297,11 +291,11 @@ def parallel_dispatcher(
         The indexed reads to be processed.
     args : argparse.Namespace
         The command-line arguments.
-    primer_sets : Tuple[defaultdict, defaultdict]
+    primer_sets : tuple[defaultdict, defaultdict]
         The primer sequences to be removed.
     preset : str
         The preset configuration for processing.
-    matrix : List[int]
+    matrix : list[int]
         The matrix for processing.
 
     Returns
@@ -316,12 +310,12 @@ def parallel_dispatcher(
             record=False,
         ),
         transient=True,
-        disable=True if args.verbose is True or args.quiet is True else False,
+        disable=args.quiet or args.verbose,
     ) as progress:
         progress.add_task("[yellow]Removing primer sequences...", total=None)
         processed_reads = parallel(
             indexed_reads.frame,
-            CutReads,
+            cut_reads,
             args.threads,
             primer_sets,
             args.reference,
@@ -340,10 +334,10 @@ def parallel(
     frame: pd.DataFrame,
     function: Callable[..., pd.DataFrame],
     workers: int,
-    primer_sets: Tuple[defaultdict, defaultdict],
+    primer_sets: tuple[defaultdict, defaultdict],
     reference: str,
     preset: str,
-    scoring: List[int],
+    scoring: list[int],
     fragment_lookaround_size: int,
     amplicon_type: str,
 ) -> pd.DataFrame:
@@ -358,13 +352,13 @@ def parallel(
         The function to apply to the DataFrame.
     workers : int
         The number of workers to use for parallel processing.
-    primer_df : Tuple[defaultdict, defaultdict]
+    primer_df : tuple[defaultdict, defaultdict]
         A tuple containing the indexes of the primer coordinates to remove.
     reference : str
         The reference sequence to use for alignment.
     preset : str
         The preset to use for alignment.
-    scoring : List[int]
+    scoring : list[int]
         The scoring matrix to use for alignment.
         The size of the fragment lookaround.
     fragment_lookaround_size : int
@@ -378,7 +372,7 @@ def parallel(
     """
     frame_split = [frame.iloc[i::workers] for i in range(workers)]
     tr = [*range(workers)]
-    return pd.concat(
+    df = pd.concat(
         parmap.map(
             function,
             zip(frame_split, tr),
@@ -388,19 +382,55 @@ def parallel(
             scoring,
             fragment_lookaround_size,
             amplicon_type,
-            workers,
             pm_processes=workers,
         )
     )
+    # parmap.map sometimes returns Any, but we know it's a DataFrame
+    assert isinstance(df, pd.DataFrame)
+    return df
 
 
-def main():
+def main(provided_args: list[str] | None = None) -> None:
+    """
+    Main function to process command-line arguments and execute the AmpliGone tool.
+
+    Parameters
+    ----------
+    provided_args : list of str, optional
+        A list of command-line arguments to parse. If None, the arguments will be taken from sys.argv.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    This function orchestrates the entire process of reading input files, processing reads, and writing output files.
+    It performs the following steps:
+    1. Parses the command-line arguments using the `get_args` function.
+    2. Validates the provided arguments and sets the logging level.
+    3. Loads the input reads and primers using concurrent futures for parallel execution.
+    4. Checks the loaded reads and primers, and adjusts thread count if necessary.
+    5. Processes the reads to remove primer sequences using parallel processing.
+    6. Logs the results and writes the output files.
+
+    Examples
+    --------
+    >>> import sys
+    >>> sys.argv = ['script.py', '--input', 'input.fasta', '--primers', 'primers.fasta', '--reference', 'reference.fasta', '--output', 'output.bed']
+    >>> main()
+    """
+    if provided_args:
+        args = get_args(provided_args)
+    else:
+        args = get_args(sys.argv[1:])
+
     if len(sys.argv[1:]) < 1:
-        print(
+        pprint(
             f"{__prog__} was called but no arguments were given, please try again.\nUse '{__prog__} -h' to see the help document"
         )
         sys.exit(1)
-    args = get_args(sys.argv[1:])
+
     # check if verbose and quiet aren't both set
     if args.verbose is True and args.quiet is True:
         log.error(
@@ -485,7 +515,7 @@ def main():
                 axis=1,
             )
         ]
-        CoordinateListsToBed(filtered_primer_df, args.export_primers)
+        coord_lists_to_bed(filtered_primer_df, args.export_primers)
 
     processed_reads = processed_reads.drop(columns=["Removed_coordinates"])
 

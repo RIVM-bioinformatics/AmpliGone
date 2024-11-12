@@ -1,3 +1,23 @@
+"""
+This module provides functionality for parsing command-line arguments for the AmpliGone tool using the argparse library. 
+It includes custom argument validation functions, a flexible argument formatter, and a rich argument parser for enhanced 
+command-line interface (CLI) experience.
+
+Functions
+---------
+get_args(givenargs: List[str]) -> argparse.Namespace
+    Parses the given command-line arguments and returns them as an argparse namespace.
+
+Classes
+-------
+FlexibleArgFormatter(argparse.HelpFormatter)
+    A subclass of argparse.HelpFormatter that improves the formatting of help text.
+
+RichParser(argparse.ArgumentParser)
+    A subclass of argparse.ArgumentParser that uses rich.print for displaying messages.
+
+"""
+
 import argparse
 import multiprocessing
 import os
@@ -52,7 +72,7 @@ def get_args(givenargs: List[str]) -> argparse.Namespace:
             parser.error(f"File {fname} doesn't end with one of {allowed_extensions}")
         return os.path.abspath(fname)
 
-    def check_file_exists(fname: str) -> str | None:
+    def check_file_exists(fname: str) -> str:
         """Check if the given file `fname` exists and return the absolute path.
 
         Parameters
@@ -74,10 +94,11 @@ def get_args(givenargs: List[str]) -> argparse.Namespace:
         if os.path.isfile(fname):
             return fname
         parser.error(f'Error: File "{fname}" does not exist.')
+        raise argparse.ArgumentTypeError(f'Error: File "{fname}" does not exist.')
 
     parser = RichParser(
         prog=f"[bold]{__prog__}[/bold]",
-        usage=f"[bold]{__prog__}[/bold] \[required options] \[optional arguments]",
+        usage=f"[bold]{__prog__}[/bold] \\[required options] \\[optional arguments]",
         description=f"[bold underline]{__prog__}[/bold underline]: An accurate and efficient tool to remove primers from NGS reads in reference-based experiments",
         formatter_class=FlexibleArgFormatter,
         add_help=False,
@@ -271,12 +292,15 @@ class FlexibleArgFormatter(argparse.HelpFormatter):
     * Changes the behaviour of the metavar to be only printed once per long AND shorthand argument, instead of printing the metavar multiple times for every possible flag.
     """
 
-    def __init__(self, prog):
+    def __init__(self, prog: str) -> None:
         term_width = shutil.get_terminal_size().columns
         max_help_position = min(max(24, term_width // 2), 80)
         super().__init__(prog, max_help_position=max_help_position)
 
-    def _get_help_string(self, action):
+    # action is actually an argparse._StoreAction object, which is a subclass of argparse.Action
+    # _StoreAction violates the Liskov Substitution Principle
+    # see: https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
+    def _get_help_string(self, action: argparse.Action) -> str:
         """ """
         help_text = action.help
         if (
@@ -286,9 +310,11 @@ class FlexibleArgFormatter(argparse.HelpFormatter):
             and action.default is not None
         ):
             help_text += f"\n  ([underline]default: {str(action.default)}[/underline])"
+        assert help_text, "Help text should always be present"
         return help_text
 
-    def _format_action_invocation(self, action):
+    # see comment above
+    def _format_action_invocation(self, action: argparse.Action) -> str:
         """ """
         if not action.option_strings or action.nargs == 0:
             return super()._format_action_invocation(action)
@@ -296,17 +322,18 @@ class FlexibleArgFormatter(argparse.HelpFormatter):
         args_string = self._format_args(action, default)
         return ", ".join(action.option_strings) + " " + args_string
 
-    def _split_lines(self, text, width):
+    def _split_lines(self, text: str, width: int) -> list[str]:
         return self._para_reformat(text, width)
 
-    def _fill_text(self, text, width, indent):
+    def _fill_text(self, text: str, width: int, _: str) -> str:
         lines = self._para_reformat(text, width)
         return "\n".join(lines)
 
-    def _indents(self, line):
+    def _indents(self, line: str) -> tuple[int, int]:
         """Return line indent level and "sub_indent" for bullet list text."""
-
-        indent = len(re.match(r"( *)", line).group(1))
+        matched_line = re.match(r"( *)", line)
+        assert matched_line, "Line should always match this regex pattern: ( *)"
+        indent = len(matched_line.group(1))
         if list_match := re.match(r"( *)(([*\-+>]+|\w+\)|\w+\.) +)", line):
             sub_indent = indent + len(list_match.group(2))
         else:
@@ -314,14 +341,14 @@ class FlexibleArgFormatter(argparse.HelpFormatter):
 
         return (indent, sub_indent)
 
-    def _split_paragraphs(self, text):
+    def _split_paragraphs(self, text: str) -> list[str]:
         """Split text in to paragraphs of like-indented lines."""
 
         text = textwrap.dedent(text).strip()
         text = re.sub("\n\n[\n]+", "\n\n", text)
 
         last_sub_indent = None
-        paragraphs = []
+        paragraphs: list[str] = []
         for line in text.splitlines():
             (indent, sub_indent) = self._indents(line)
             is_text = re.search(r"[^\s]", line) is not None
@@ -334,10 +361,11 @@ class FlexibleArgFormatter(argparse.HelpFormatter):
             last_sub_indent = sub_indent if is_text else None
         return paragraphs
 
-    def _para_reformat(self, text, width):
+    def _para_reformat(self, text: str, width: int) -> list[str]:
         """Reformat text, by paragraph."""
 
-        paragraphs = []
+        paragraphs: list[str] = []
+
         for paragraph in self._split_paragraphs(text):
             (indent, sub_indent) = self._indents(paragraph)
 

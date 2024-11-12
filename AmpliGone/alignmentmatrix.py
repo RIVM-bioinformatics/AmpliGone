@@ -1,11 +1,63 @@
+"""
+This module provides functions to calculate and validate scoring matrices for sequence alignment.
+
+Functions
+---------
+get_scoring_matrix(input_matrix: Optional[List[str]]) -> List[int]
+    Calculate the scoring matrix based on the input matrix.
+
+_input_to_dict(input_matrix: Optional[List[str]]) -> Optional[Dict[str, int]]
+    Convert the input matrix to a dictionary.
+
+_valid_scoring_list_length(input_list: List[str]) -> bool
+    Check if the length of the input list is either 4, 6, or 7.
+
+_scoring_has_negative_values(input_list: List[int]) -> bool
+    Check if the input list contains any negative values.
+
+_sort_matrix_dict(matrix_dict: Dict[str, int], required_4: List[str], required_6: List[str], required_7: List[str]) -> Dict[str, int]
+    Sort the given matrix dictionary based on the provided order of keys.
+
+_get_ordered_values(matrix_dict: Dict[str, int], required_4: List[str], required_6: List[str], required_7: List[str]) -> List[int]
+    Get the ordered values from the matrix dictionary based on the number of keys present.
+
+_log_invalid_combination_error(matrix_keys: List[str], required_keys: List[str]) -> None
+    Log an error message and exit the program when an invalid combination of scoring matrix keys is encountered.
+
+_validate_matrix_combinations(matrix_dict: Dict[str, int]) -> List[int]
+    Validate the combinations of matrix values in the given matrix dictionary.
+
+Notes
+-----
+This module is designed to handle the calculation and validation of scoring matrices used in sequence alignment. It ensures that the input matrices are in the correct format, contain valid values, and have the appropriate length. The module also provides functions to sort and order the matrix values based on predefined requirements.
+
+Examples
+--------
+>>> input_matrix = ['match=1', 'mismatch=2', 'gap_o1=3', 'gap_e1=4']
+>>> get_scoring_matrix(input_matrix)
+[1, 2, 3, 4]
+
+>>> input_matrix = ['match=1', 'mismatch=2', 'gap_o1=3', 'gap_e1=4', 'gap_o2=5', 'gap_e2=6']
+>>> get_scoring_matrix(input_matrix)
+[1, 2, 3, 4, 5, 6]
+
+>>> input_matrix = ['match=1', 'mismatch=2', 'gap_o1=3', 'gap_e1=4', 'gap_o2=5', 'gap_e2=6', 'mma=7']
+>>> get_scoring_matrix(input_matrix)
+[1, 2, 3, 4, 5, 6, 7]
+
+>>> input_matrix = ['match=1', 'mismatch=2', 'gap_o1=3', 'gap_e1=4', 'gap_o2=5', 'gap_e2=6', 'mma=-7']
+>>> get_scoring_matrix(input_matrix)
+SystemExit: Given scoring matrix contains a negative value. The scoring matrix may only contain non-negative integers. Please check your input and try again.
+"""
+
 import os
 import sys
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from AmpliGone.log import log
 
 
-def get_scoring_matrix(input_matrix: List[str] | None) -> List[int]:
+def get_scoring_matrix(input_matrix: Optional[List[str]]) -> List[int]:
     """
     Calculate the scoring matrix based on the input matrix.
 
@@ -46,14 +98,14 @@ def get_scoring_matrix(input_matrix: List[str] | None) -> List[int]:
 
     >>> input_matrix = ['match=1', 'mismatch=2', 'gap_o1=3', 'gap_e1=4', 'gap_o2=5', 'gap_e2=6', 'mma=7', 'extra=8']
     >>> get_scoring_matrix(input_matrix)
-    SystemExit: Invalid scoring matrix length. The scoring-matrix must have a length of 4, 6 or 7 parameters. 
-    The following input parameters were given: 'match=1 mismatch=2 gap_o1=3 gap_e1=4 gap_o2=5 gap_e2=6 mma=7 extra=8'. 
-    After parsing, these inputs result in the following: {'match': 1, 'mismatch': 2, 'gap_o1': 3, 'gap_e1': 4, 'gap_o2': 5, 'gap_e2': 6, 'mma': 7, 'extra': 8}. 
+    SystemExit: Invalid scoring matrix length. The scoring-matrix must have a length of 4, 6 or 7 parameters.
+    The following input parameters were given: 'match=1 mismatch=2 gap_o1=3 gap_e1=4 gap_o2=5 gap_e2=6 mma=7 extra=8'.
+    After parsing, these inputs result in the following: {'match': 1, 'mismatch': 2, 'gap_o1': 3, 'gap_e1': 4, 'gap_o2': 5, 'gap_e2': 6, 'mma': 7, 'extra': 8}.
     Please note that adding the same key multiple times will result in the last value being used.
 
     >>> input_matrix = ['match=1', 'mismatch=2', 'gap_o1=3', 'gap_e1=4', 'gap_o2=5', 'gap_e2=6', 'mma=-7']
     >>> get_scoring_matrix(input_matrix)
-    SystemExit: Given scoring matrix contains a negative value. 
+    SystemExit: Given scoring matrix contains a negative value.
     The scoring matrix may only contain non-negative integers. Please check your input and try again.
 
     """
@@ -74,7 +126,7 @@ def get_scoring_matrix(input_matrix: List[str] | None) -> List[int]:
     return _validate_matrix_combinations(matrix_dict)
 
 
-def _input_to_dict(input_matrix: List[str] | None) -> Dict[str, int] | None:
+def _input_to_dict(input_matrix: Optional[List[str]]) -> Optional[Dict[str, int]]:
     """
     Convert the input matrix to a dictionary.
 
@@ -117,9 +169,12 @@ def _input_to_dict(input_matrix: List[str] | None) -> Dict[str, int] | None:
                 "Invalid scoring matrix input. The scoring matrix input must be in the format 'key=value'.\nPlease check if your input does not contain any spaces and try again."
             )
             sys.exit(1)
-    sort_order = ['match', 'mismatch', 'gap_o1', 'gap_e1', 'gap_o2', 'gap_e2', 'mma']
+    sort_order = ["match", "mismatch", "gap_o1", "gap_e1", "gap_o2", "gap_e2", "mma"]
     return {
-        item.split("=")[0]: int(item.split("=")[1]) for item in sorted(input_matrix, key=lambda x: sort_order.index(x.split("=")[0]))
+        item.split("=")[0]: int(item.split("=")[1])
+        for item in sorted(
+            input_matrix, key=lambda x: sort_order.index(x.split("=")[0])
+        )
     }
 
 
