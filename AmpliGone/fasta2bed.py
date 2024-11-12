@@ -492,7 +492,7 @@ def coord_lists_to_bed(df: pd.DataFrame, outfile: str) -> None:
     >>> CoordinateListsToBed(df, 'regions.bed')
 
     """
-    return df[["ref", "start", "end", "name", "score", "strand"]].to_csv(
+    df[["ref", "start", "end", "name", "score", "strand"]].to_csv(
         outfile, sep="\t", na_rep=".", header=False, index=False
     )
 

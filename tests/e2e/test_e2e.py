@@ -51,7 +51,8 @@ def compare_outputs(output_file: str, expected_output_file: str) -> None:
         output_lines = order_fastq_by_name(output_lines)
         expected_output_lines = order_fastq_by_name(expected_output_lines)
         for line1, line2 in zip(output_lines, expected_output_lines):
-            assert line1 == line2, f"Output: {line1}, Expected Output: {line2}"
+            if line1 != line2:
+                raise AssertionError(f"Output: {line1}, Expected Output: {line2}")
 
 
 class TestAmpliGoneE2e:

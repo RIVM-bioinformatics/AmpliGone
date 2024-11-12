@@ -1,0 +1,176 @@
+name: Static analysis and tests
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+
+env:
+  VENV_PATH: ~/.venv
+  REPORT_PATH: tests/data/reports/
+
+
+jobs:
+  setup-env:
+    name: Setup and cache environment
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.10
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.venv
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/test-requirements.txt') }}
+      
+      - name: Install dependencies
+        run: |
+          python -m venv ~/.venv
+          source ~/.venv/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install .
+          python -m pip install -r test-requirements.txt
+
+  formatting:
+    name: Formatting
+    permissions:
+      contents: read
+    needs: setup-env
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Restore pip dependencies
+      uses: actions/cache@v2
+      with:
+        path: ~/.venv
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/test-requirements.txt') }}
+
+    - name: Check imports and formatting
+      run: |
+        source ~/.venv/bin/activate
+        isort --check-only --diff --profile black .
+        black --check --diff .
+
+  Linting:
+    name: Linting
+    permissions:
+      contents: read
+    needs: setup-env
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Restore pip dependencies
+      uses: actions/cache@v2
+      with:
+        path: ~/.venv
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/test-requirements.txt') }}
+
+    # C0301: Line too long
+    - name: Run pylint
+      run: |
+        source ~/.venv/bin/activate
+        pylint --fail-under=9 --disable=C0301 AmpliGone/ tests/ > ${{ env.REPORT_PATH }}pylint-report.txt
+
+    # E501: Line too long, W503: Line break before binary operator, E203: Whitespace before ':'
+    # The last two make it non-PEP8 compliant, but are automatically done by black.
+    - name: Run flake8
+      run: |
+        source ~/.venv/bin/activate
+        flake8 --ignore=E501,W503,E203 AmpliGone/ tests/ --output-file=${{ env.REPORT_PATH }}flake8-report.txt
+
+  static-checking:
+    name: Static checking
+    permissions:
+      contents: read
+    needs: setup-env
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Restore pip dependencies
+      uses: actions/cache@v2
+      with:
+        path: ~/.venv
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/test-requirements.txt') }}
+
+    - name: Run mypy
+      run: |
+        source ~/.venv/bin/activate
+        mypy --disallow-untyped-defs --disallow-incomplete-defs --ignore-missing-imports --disallow-untyped-decorators --strict-equality \
+        --warn-redundant-casts --warn-unused-ignores --warn-return-any --warn-unreachable AmpliGone/ tests/ > ${{ env.REPORT_PATH }}mypy-report.txt
+
+    - name: Run bandit
+      run: |
+        source ~/.venv/bin/activate
+        bandit -r AmpliGone/ -f json -o ${{ env.REPORT_PATH }}bandit-report.json
+
+  run-tests:
+    name: Run Tests
+    permissions:
+      contents: read
+    needs: setup-env
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Restore pip dependencies
+      uses: actions/cache@v2
+      with:
+        path: ~/.venv
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/test-requirements.txt') }}
+
+    - name: Run tests
+      run: |
+        source ~/.venv/bin/activate
+        pytest -sv --cov=AmpliGone/ --cov-report=xml:tests/data/reports/coverage.xml tests/
+
+    - name: Upload coverage report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: tests/data/reports/coverage.xml
+
+  sonarcloud:
+    name: SonarCloud Scan
+    needs: run-tests
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Shallow clones should be disabled for SonarCloud analysis
+
+    - name: Download coverage report
+      uses: actions/download-artifact@v3
+      with:
+        name: coverage-report
+        path: tests/data/coverage_reports/coverage.xml
+
+    - name: SonarCloud Scan
+      if: always()
+      uses: sonarsource/sonarcloud-github-action@master
+      env:
+        SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # needed to get PR info

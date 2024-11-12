@@ -30,7 +30,8 @@ class TestFasta2Bed:
         res_df = res_df.drop(columns=[3])
         example_df = example_df.drop(columns=[3])
 
-        assert res_df.equals(example_df)
+        if not res_df.equals(example_df):
+            raise AssertionError(f"{result} and {example} are not equal")
 
     def test_fasta2bed(self, setup: tuple[str, str, str, str]) -> None:
         path_to_fasta, path_to_reference, path_to_output, path_to_example = setup
@@ -43,6 +44,8 @@ class TestFasta2Bed:
             path_to_output,
         ]
         main(args)
-        assert os.path.exists(path_to_output)
-        assert os.path.getsize(path_to_output) > 0
+        if not os.path.exists(path_to_output):
+            raise AssertionError(f"{path_to_output} was not created")
+        if os.path.getsize(path_to_output) == 0:
+            raise AssertionError(f"{path_to_output} is empty")
         self.compare_bed_files(path_to_output, path_to_example)

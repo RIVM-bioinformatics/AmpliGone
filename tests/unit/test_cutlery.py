@@ -15,10 +15,13 @@ import AmpliGone.cutlery as cutlery
 def test_position_in_or_before_primer(read: int, result: bool) -> None:
     primer_positions = (25, 35)
     max_lookaround = 10
-    assert (
-        cutlery.position_in_or_before_primer(read, primer_positions, max_lookaround)
-        == result
+    outcome = cutlery.position_in_or_before_primer(
+        read, primer_positions, max_lookaround
     )
+    if outcome != result:
+        raise AssertionError(
+            f"Expected {result} but got {outcome} while running cutlery.position_in_or_before_primer({read}, {primer_positions}, {max_lookaround})"
+        )
 
 
 @pytest.mark.parametrize(
@@ -33,7 +36,10 @@ def test_position_in_or_before_primer(read: int, result: bool) -> None:
 def test_postition_in_or_after_primer(read: int, result: bool) -> None:
     primer_positions = (25, 35)
     max_lookaround = 10
-    assert (
-        cutlery.position_in_or_after_primer(read, primer_positions, max_lookaround)
-        == result
+    outcome = cutlery.position_in_or_after_primer(
+        read, primer_positions, max_lookaround
     )
+    if outcome != result:
+        raise AssertionError(
+            f"Expected {result} but got {outcome} while running cutlery.position_in_or_before_primer({read}, {primer_positions}, {max_lookaround})"
+        )
