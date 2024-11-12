@@ -254,11 +254,11 @@ def log_cache_info(index: int, total_reads: int, _threadnumber: int) -> None:
         else 0
     )
     log.debug(
-        # mypy doesnt understand thatthe position_in_or_before_primer has a __qualname__ attribute,
+        # mypy doesnt understand that the position_in_or_before_primer has a __qualname__ attribute,
         # because it thinks its the wrapper (lru_cache) function, which does not have a __qualname__ attribute
-        f"Thread {_threadnumber} @ processID {os.getpid()}\t::\t"  # type: ignore[attr-defined]
+        f"Thread {_threadnumber} @ processID {os.getpid()}\t::\t"
         f"Reads processing {completion_percentage}% complete.\n\t"
-        f"MODULE {position_in_or_before_primer.__module__}.{position_in_or_before_primer.__qualname__} "
+        f"MODULE {position_in_or_before_primer.__module__}.{position_in_or_before_primer.__qualname__} "  # type: ignore[attr-defined]
         f"CACHE INFORMATION\n\t\tCache size usage = {cache_usage_before:.2f}%\n\t\t"
         f"Cache hit ratio = {cache_hit_ratio_before:.2f}%\n\t"
         f"MODULE {position_in_or_after_primer.__module__}.{position_in_or_after_primer.__qualname__} "

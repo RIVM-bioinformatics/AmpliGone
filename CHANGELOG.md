@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/RIVM-bioinformatics/AmpliGone/compare/v1.3.0...v1.3.1) (2024-04-03)
+
+
+### Bug Fixes
+
+* don't replace NA name values when reading BED file ([6d0c192](https://github.com/RIVM-bioinformatics/AmpliGone/commit/6d0c192a0b997d98778c2a2f0281e19208aedcac))
+
 ## [1.3.0](https://github.com/RIVM-bioinformatics/AmpliGone/compare/v1.2.1...v1.3.0) (2023-08-08)
 
 

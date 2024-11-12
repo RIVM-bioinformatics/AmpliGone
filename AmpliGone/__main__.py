@@ -386,7 +386,8 @@ def parallel(
         )
     )
     # parmap.map sometimes returns Any, but we know it's a DataFrame
-    assert isinstance(df, pd.DataFrame)
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError(f"{df} should be a DataFrame")
     return df
 
 

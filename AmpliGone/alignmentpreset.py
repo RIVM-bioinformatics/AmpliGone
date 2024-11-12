@@ -89,8 +89,9 @@ def get_alignment_preset(
 
     """
     if input_args.alignment_preset is not None:
-        # this assert is mostly for mypy to understand that alignment_preset is not Any
-        assert isinstance(input_args.alignment_preset, str)
+        # this check is mostly for mypy to understand that alignment_preset is not Any
+        if not isinstance(input_args.alignment_preset, str):
+            raise TypeError("alignment_preset should be a string")
         return input_args.alignment_preset
     log.info("Finding optimal alignment-preset for the given reads")
     sample_size = min(len(indexed_reads.tuples), 15000)

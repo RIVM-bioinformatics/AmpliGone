@@ -1,6 +1,6 @@
 """
-This module provides functionality for parsing command-line arguments for the AmpliGone tool using the argparse library. 
-It includes custom argument validation functions, a flexible argument formatter, and a rich argument parser for enhanced 
+This module provides functionality for parsing command-line arguments for the AmpliGone tool using the argparse library.
+It includes custom argument validation functions, a flexible argument formatter, and a rich argument parser for enhanced
 command-line interface (CLI) experience.
 
 Functions
@@ -310,7 +310,8 @@ class FlexibleArgFormatter(argparse.HelpFormatter):
             and action.default is not None
         ):
             help_text += f"\n  ([underline]default: {str(action.default)}[/underline])"
-        assert help_text, "Help text should always be present"
+        if not help_text:
+            raise AssertionError("Help text should always be present")
         return help_text
 
     # see comment above
@@ -332,7 +333,8 @@ class FlexibleArgFormatter(argparse.HelpFormatter):
     def _indents(self, line: str) -> tuple[int, int]:
         """Return line indent level and "sub_indent" for bullet list text."""
         matched_line = re.match(r"( *)", line)
-        assert matched_line, "Line should always match this regex pattern: ( *)"
+        if not matched_line:
+            raise AssertionError("Line should always match this regex pattern: ( *)")
         indent = len(matched_line.group(1))
         if list_match := re.match(r"( *)(([*\-+>]+|\w+\)|\w+\.) +)", line):
             sub_indent = indent + len(list_match.group(2))
