@@ -659,7 +659,7 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         default=0.1,
     )
 
-    args.add_argument(
+    parser.add_argument(
         "--score-representation",
         action="store_true",
         help="Present the alignment score in the bed file instead of the match-percentage for each primer option (default).",
