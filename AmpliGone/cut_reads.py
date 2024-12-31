@@ -343,6 +343,12 @@ def cut_reads(
         ):  # TODO: explain this
             log_cache_info(index, total_reads, _threadnumber)
 
+        if len(seq) < 42:
+            # Length of the read has to be at least ~42bp because the default k-mer size for the short reads preset (sr) is 21.
+
+            log.debug(f"Read with name '{name}' is too short to be processed.")
+            continue
+
         read = Read(name, seq, qual)
         removed_coords_fw: list[int | None] = []
         removed_coords_rv: list[int | None] = []

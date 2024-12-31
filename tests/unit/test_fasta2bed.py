@@ -9,10 +9,10 @@ from AmpliGone.fasta2bed import main
 
 @pytest.fixture()
 def setup() -> Generator[tuple[str, str, str, str], None, None]:
-    path_to_fasta = "tests/data/sars-cov-2/primers/ARTIC-V5.3.2.fasta"
-    path_to_reference = "tests/data/sars-cov-2/references/SARS-CoV-2-reference.fasta"
-    path_to_output = "tests/data/sars-cov-2/primers/new.bed"
-    path_to_example = "tests/data/sars-cov-2/primers/SARS-CoV-2-ARTIC-V5.3.2.scheme.bed"
+    path_to_fasta = "tests/data/primers/ARTIC-V5.3.2.fasta"
+    path_to_reference = "tests/data/references/SARS-CoV-2-reference.fasta"
+    path_to_output = "tests/data/primers/new.bed"
+    path_to_example = "tests/data/primers/SARS-CoV-2-ARTIC-V5.3.2.scheme.bed"
 
     yield path_to_fasta, path_to_reference, path_to_output, path_to_example
 
@@ -21,14 +21,16 @@ def setup() -> Generator[tuple[str, str, str, str], None, None]:
 
 
 class TestFasta2Bed:
-
     def compare_bed_files(self, result: str, example: str) -> None:
         res_df = pd.read_csv(result, sep="\t", header=None)
         example_df = pd.read_csv(example, sep="\t", header=None)
 
-        # drop the names, they are not important
-        res_df = res_df.drop(columns=[3])
-        example_df = example_df.drop(columns=[3])
+        # drop the names [3], they are not important
+        # and
+        # drop the score column [4], as AmpliGone uses it to store the alignment score
+        # while ARTIC (files used for testing) uses it to store the primer pool
+        res_df = res_df.drop(columns=[3, 4])
+        example_df = example_df.drop(columns=[3, 4])
 
         if not res_df.equals(example_df):
             raise AssertionError(f"{result} and {example} are not equal")
