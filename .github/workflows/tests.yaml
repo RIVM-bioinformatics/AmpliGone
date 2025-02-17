@@ -55,6 +55,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
     - name: Restore pip dependencies
       uses: actions/cache@v4
       with:
@@ -77,6 +82,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
     - name: Restore pip dependencies
       uses: actions/cache@v4
       with:
@@ -87,6 +97,7 @@ jobs:
     - name: Run pylint
       run: |
         source ~/.venv/bin/activate
+        mkdir -p ${{ env.REPORT_PATH }}
         pylint --fail-under=9 --disable=C0301 AmpliGone/ tests/ > ${{ env.REPORT_PATH }}pylint-report.txt
 
     # E501: Line too long, W503: Line break before binary operator, E203: Whitespace before ':'
@@ -94,6 +105,7 @@ jobs:
     - name: Run flake8
       run: |
         source ~/.venv/bin/activate
+        mkdir -p ${{ env.REPORT_PATH }}
         flake8 --ignore=E501,W503,E203 AmpliGone/ tests/ --output-file=${{ env.REPORT_PATH }}flake8-report.txt
 
   static-checking:
@@ -106,6 +118,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
     - name: Restore pip dependencies
       uses: actions/cache@v4
       with:
@@ -115,12 +132,14 @@ jobs:
     - name: Run mypy
       run: |
         source ~/.venv/bin/activate
+        mkdir -p ${{ env.REPORT_PATH }}
         mypy --disallow-untyped-defs --disallow-incomplete-defs --ignore-missing-imports --disallow-untyped-decorators --strict-equality \
         --warn-redundant-casts --warn-unused-ignores --warn-return-any --warn-unreachable AmpliGone/ tests/ > ${{ env.REPORT_PATH }}mypy-report.txt
 
     - name: Run bandit
       run: |
         source ~/.venv/bin/activate
+        mkdir -p ${{ env.REPORT_PATH }}
         bandit -r AmpliGone/ -f json -o ${{ env.REPORT_PATH }}bandit-report.json
 
   run-tests:
@@ -133,6 +152,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
     - name: Restore pip dependencies
       uses: actions/cache@v4
       with:
@@ -142,7 +166,8 @@ jobs:
     - name: Run tests
       run: |
         source ~/.venv/bin/activate
-        pytest -sv --cov=AmpliGone/ --cov-report=xml:tests/data/reports/coverage.xml tests/
+        mkdir -p ${{ env.REPORT_PATH }}
+        pytest -sv --cov=AmpliGone/ --cov-report=xml:${{ env.REPORT_PATH }}coverage.xml tests/
 
     - name: Upload coverage report
       if: always()
