@@ -93,8 +93,7 @@ def get_args(givenargs: List[str]) -> argparse.Namespace:
         """
         if os.path.isfile(fname):
             return fname
-        parser.error(f'Error: File "{fname}" does not exist.')
-        raise argparse.ArgumentTypeError(f'Error: File "{fname}" does not exist.')
+        raise argparse.ArgumentTypeError(f'File "{fname}" does not exist.')
 
     parser = RichParser(
         prog=f"[bold]{__prog__}[/bold]",
