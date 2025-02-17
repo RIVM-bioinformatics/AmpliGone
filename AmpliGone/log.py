@@ -39,7 +39,7 @@ from rich.logging import RichHandler
 # Central logging object using Rich's logging library
 FORMAT = "%(message)s"
 logging.basicConfig(
-    level="DEBUG",
+    level="INFO",
     format=FORMAT,
     datefmt="[%d/%m/%y %H:%M:%S]",
     handlers=[
