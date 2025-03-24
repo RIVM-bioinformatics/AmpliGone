@@ -25,11 +25,11 @@ True
 True
 """
 
-from functools import lru_cache
+from functools import cache
 from typing import List
 
 
-@lru_cache(maxsize=2000000)
+@cache
 def position_in_or_before_primer(
     pos: int, clist: List[int], max_lookaround: int
 ) -> bool:
@@ -61,7 +61,7 @@ def position_in_or_before_primer(
     return abs(pos - near) < max_lookaround and pos <= near
 
 
-@lru_cache(maxsize=2000000)
+@cache
 def position_in_or_after_primer(
     pos: int, clist: List[int], max_lookaround: int
 ) -> bool:

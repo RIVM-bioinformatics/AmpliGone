@@ -229,41 +229,69 @@ def log_cache_info(index: int, total_reads: int, _threadnumber: int) -> None:
     for the `position_in_or_before_primer` and `position_in_or_after_primer` functions. It also handles
     potential division by zero errors when calculating cache hit ratios.
     """
+
+    def _get_cache_stats(func: Callable[..., bool]) -> Tuple[int, int, int]:
+        """
+        Get cache statistics for a given function.
+
+        Parameters
+        ----------
+        func : Callable[..., bool]
+            The function to get cache statistics for.
+
+        Returns
+        -------
+        Tuple[int, int, int]
+            A tuple containing the current size of the cache, the number of cache misses, and the number of cache hits.
+        """
+        cache_info = func.cache_info()
+        currsize = cache_info.currsize
+        misses = cache_info.misses
+        hits = cache_info.hits
+        return currsize, misses, hits
+
+    def _get_hit_ratio(hits: int, misses: int) -> float:
+        """
+        Calculates the hit ratio.
+
+        Parameters
+        ----------
+        hits : int
+            The number of hits.
+        misses : int
+            The number of misses.
+
+        Returns
+        -------
+        float
+            The hit ratio, as a percentage.
+            Returns 0 if either misses or hits are 0 to avoid division by zero.
+        """
+        return (hits / (misses + hits)) * 100 if misses != 0 and hits != 0 else 0
+
     completion_percentage = round(index / total_reads * 100)
-    maxsize = position_in_or_before_primer.cache_info().maxsize
-    currsize = position_in_or_before_primer.cache_info().currsize
-    cache_usage_before = (
-        currsize / maxsize * 100 if maxsize is not None and currsize is not None else 0
+
+    before_usedsize, before_misses, before_hits = _get_cache_stats(
+        position_in_or_before_primer
     )
-    maxsize = position_in_or_after_primer.cache_info().maxsize
-    currsize = position_in_or_after_primer.cache_info().currsize
-    cache_usage_after = (
-        currsize / maxsize * 100 if maxsize is not None and currsize is not None else 0
+    after_usedsize, after_misses, after_hits = _get_cache_stats(
+        position_in_or_after_primer
     )
-    # TODO: clean up this section of safely dividing by zero
-    cache_misses = position_in_or_before_primer.cache_info().misses
-    cache_hit_ratio_before = (
-        (position_in_or_before_primer.cache_info().hits / cache_misses)
-        if cache_misses != 0
-        else 0
-    )
-    cache_misses = position_in_or_after_primer.cache_info().misses
-    cache_hit_ratio_after = (
-        (position_in_or_after_primer.cache_info().hits / cache_misses)
-        if cache_misses != 0
-        else 0
-    )
+
+    hit_ratio_before = _get_hit_ratio(before_hits, before_misses)
+    hit_ratio_after = _get_hit_ratio(after_hits, after_misses)
+
     log.debug(
         # mypy doesnt understand that the position_in_or_before_primer has a __qualname__ attribute,
         # because it thinks its the wrapper (lru_cache) function, which does not have a __qualname__ attribute
         f"Thread {_threadnumber} @ processID {os.getpid()}\t::\t"
         f"Reads processing {completion_percentage}% complete.\n\t"
         f"MODULE {position_in_or_before_primer.__module__}.{position_in_or_before_primer.__qualname__} "  # type: ignore[attr-defined]
-        f"CACHE INFORMATION\n\t\tCache size usage = {cache_usage_before:.2f}%\n\t\t"
-        f"Cache hit ratio = {cache_hit_ratio_before:.2f}%\n\t"
-        f"MODULE {position_in_or_after_primer.__module__}.{position_in_or_after_primer.__qualname__} "
-        f"CACHE INFORMATION\n\t\tCache size usage = {cache_usage_after:.2f}%\n\t\t"
-        f"Cache hit ratio = {cache_hit_ratio_after:.2f}%"
+        f"CACHE INFORMATION\n\t\t{before_usedsize} unique records stored in cache\n\t\t"
+        f"{hit_ratio_before:.2f}% cache hit ratio\n\t"
+        f"MODULE {position_in_or_after_primer.__module__}.{position_in_or_after_primer.__qualname__} "  # type: ignore[attr-defined]
+        f"CACHE INFORMATION\n\t\t{after_usedsize} unique records stored in cache\n\t\t"
+        f"{hit_ratio_after:.2f}% cache hit ratio"
     )
 
 
