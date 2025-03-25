@@ -440,7 +440,7 @@ def main(provided_args: list[str] | None = None) -> None:
         sys.exit(1)
     if args.verbose is True:
         log.setLevel("DEBUG")
-        log.debug(f"Arguments: {args}")
+        log.debug(f"Arguments: {args.__dict__}")
     if args.quiet is True:
         log.setLevel("WARNING")
 

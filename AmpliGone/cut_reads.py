@@ -368,7 +368,8 @@ def cut_reads(
     ):
         if (
             total_reads >= 10 and index % (total_reads // 10) == 0 and log.level == 10
-        ):  # TODO: explain this
+        ):  # if the log level is set to DEBUG, print the cache info every 10% of the reads.
+            # This may be a bit overwhelming, but the cache info could be very informative to find potential performance issues.
             log_cache_info(index, total_reads, _threadnumber)
 
         if len(seq) < 42:
