@@ -105,7 +105,7 @@ def get_args(givenargs: List[str]) -> argparse.Namespace:
 
     # set the number of threads to 2 if the system, has 2 or more threads.
     standard_threads = 2 if multiprocessing.cpu_count() >= 2 else None
-    
+
     required_args = parser.add_argument_group("Required Arguments")
 
     required_args.add_argument(
@@ -178,7 +178,6 @@ def get_args(givenargs: List[str]) -> argparse.Namespace:
         metavar="N",
         help="The number of bases to look around a primer-site to consider it part of a fragment. Only used if amplicon-type is 'fragmented'. Default is 10",
     )
-
 
     optional_args.add_argument(
         "--error-rate",

@@ -205,7 +205,6 @@ def count_cigar_information(
             grouped_insertions += int(i)
             ins_groups += 1
 
-
     return (
         matches,
         mismatches,
@@ -214,6 +213,7 @@ def count_cigar_information(
         (grouped_deletions, del_groups),
         (grouped_insertions, ins_groups),
     )
+
 
 def percentage_representation(option_length: int, score: int) -> int:
     # the max score in the nuc44 matrix is 5. So the highest achievable score of a primer-option is the length of the primer times 5.
@@ -267,9 +267,7 @@ def get_coords(
     not_aligned_section_pattern = r"^(\d+)D"
     localresults = []
     for option in options:
-        alignment = ps.sg_trace_scan_sat(
-            option, ref_seq, 8, 30, ps.nuc44
-        ) 
+        alignment = ps.sg_trace_scan_sat(option, ref_seq, 8, 30, ps.nuc44)
         # gap_open = 8, gap_extend = 30
         # These values are chosen with the following idea: We want to allow for a few (one or two) deletions in the primer sequence vs the reference to deal with the possibility of a primer that is not perfectly matching the reference.
         # However, we only want to allow deletions of 1 nucleotide length, and we want to heavily penalize longer gaps.
