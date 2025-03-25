@@ -55,6 +55,14 @@ AmpliGone determines whether a given sequence is considered to be a 'forward pri
 
 The primer sequences may contain IUPAC ambiguity nucleotides, though be aware that this may result in differently found coordinates as expected depending on your experiments.
 
+### Virtual Primer Mode
+
+Virtual primer mode is a feature in AmpliGone that enhances the the removal of closely positioned primers that share the same orientation. When enabled with the `--virtual-primers` or `-vp` flag, AmpliGone will combine these nearby primers into a single "virtual" primer. This ensures comprehensive removal of all primer-related data in regions where multiple primers may overlap or exist in close proximity.
+
+![](img/virtual_primer.png)
+
+You should enable virtual primer mode when working with amplicons that utilize multiple alternative primers targeting the same region for increased specificity. This commonly occurs in primer designs where several primer variations are employed to improve target capture across diverse samples or to account for potential sequence variations. By treating these closely positioned primers as a unified entity, AmpliGone provides more thorough cleaning of primer-related artifacts in your sequencing data.
+
 ### Reference
 
 Unlike the primer sequences, AmpliGone currently only supports a reference sequence that *<u>does not</u>* contain IUPAC ambiguity nucleotides. This may change in a future version.
@@ -77,10 +85,9 @@ Please see the [usage examples](#basic-usage-examples) to see this flag in combi
 ## Using multiple threads
 
 AmpliGone is multi-threaded by design, as it splits your input data to process over the amount of threads which are available for use.
-Therefore, AmpliGone scales (almost) linearly when given more threads. A computer with a lot of computing power is therefore advised.
+Therefore, AmpliGone scales pretty efficiently when given more threads. A computer with a lot of computing power is therefore advised.
 
-AmpliGone defaults to the amount of threads which are available in your system. (if the CPU of your computer has 24 threads, AmpliGone will use all 24 threads by default)
-You can use the `--threads` or `-t` flag to set a different number of threads to use.
+You can use the `--threads` or `-t` flag to set the number of threads for AmpliGone to use. When this flag is not given, AmpliGone will default to using 2 threads.
 
 ## Adjusting alignment-preset and scoring matrix
 
