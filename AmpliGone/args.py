@@ -179,39 +179,14 @@ def get_args(givenargs: List[str]) -> argparse.Namespace:
         help="The number of bases to look around a primer-site to consider it part of a fragment. Only used if amplicon-type is 'fragmented'. Default is 10",
     )
 
-    optional_args.add_argument(
-        "--export-primers",
-        "-ep",
-        type=lambda s: check_file_extensions((".bed",), s),
-        metavar="File",
-        help="Output BED file with found primer coordinates if they are actually cut from the reads",
-        required=False,
-    )
 
-    optional_args.add_argument(
-        "--threads",
-        "-t",
-        type=int,
-        default=standard_threads,
-        metavar="N",
-        help=f"""Number of threads you wish to use.\n Default is the number of available threads in your system ({standard_threads})""",
-    )
-
-    optional_args.add_argument(
-        "-to",
-        action="store_true",
-        help=f"If set, {__prog__} will always create the output files even if there is nothing to output. (for example when an empty input-file is given)\n This is useful in (automated) pipelines where you want to make sure that the output files are always created.",
-        required=False,
-    )
-
-    # TODO: explainer that this is a percentage (0.1 == 10%)
     optional_args.add_argument(
         "--error-rate",
         "-er",
         type=float,
         default=0.1,
         metavar="N",
-        help="The maximum allowed error rate for the primer search. Use 0 for exact primer matches.",
+        help="The maximum allowed error rate (as a percentage) for the primer search. Use 0 for exact primer matches. (0.1 = 10%% error rate)\n Note that this is only used if the primer-file is in FASTA format. If the primer-file is in BED format, this option is ignored.",
         required=False,
     )
 
@@ -238,19 +213,28 @@ def get_args(givenargs: List[str]) -> argparse.Namespace:
     )
 
     optional_args.add_argument(
-        "--version",
-        "-v",
-        action="version",
-        version=__version__,
-        help=f"Show the {__prog__} version and exit",
+        "--export-primers",
+        "-ep",
+        type=lambda s: check_file_extensions((".bed",), s),
+        metavar="File",
+        help="Output BED file with found primer coordinates if they are actually cut from the reads",
+        required=False,
     )
 
     optional_args.add_argument(
-        "--help",
-        "-h",
-        action="help",
-        default=argparse.SUPPRESS,
-        help="Show this help message and exit",
+        "--threads",
+        "-t",
+        type=int,
+        default=standard_threads,
+        metavar="N",
+        help=f"""Number of threads you wish to use.\n Default is the number of available threads in your system ({standard_threads})""",
+    )
+
+    optional_args.add_argument(
+        "-to",
+        action="store_true",
+        help=f"If set, {__prog__} will always create the output files even if there is nothing to output. (for example when an empty input-file is given)\n This is useful in (automated) pipelines where you want to make sure that the output files are always created.",
+        required=False,
     )
 
     optional_args.add_argument(
@@ -267,6 +251,22 @@ def get_args(givenargs: List[str]) -> argparse.Namespace:
         action="store_true",
         help="Prints less information, like only WARNING and ERROR statements, to the terminal",
         required=False,
+    )
+
+    optional_args.add_argument(
+        "--version",
+        "-v",
+        action="version",
+        version=__version__,
+        help=f"You are using [bold]{__prog__}[/bold] version {__version__}",
+    )
+
+    optional_args.add_argument(
+        "--help",
+        "-h",
+        action="help",
+        default=argparse.SUPPRESS,
+        help="Show this help message and exit",
     )
 
     return parser.parse_args(givenargs)
