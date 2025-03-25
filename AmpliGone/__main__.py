@@ -446,7 +446,14 @@ def main(provided_args: list[str] | None = None) -> None:
 
     log.info(f"{__prog__} version: [blue]{__version__}[/blue]")
 
-    # TODO: improve this log message
+    # Exit if the amount of threads is None, this indicates that the system doesn't have multiple cpus available or multithreading is not enabled.
+    # At least 2 threads are required for multiprocessing
+    if args.threads is None:
+        log.error(
+            f"{__prog__} requires multithreading to run, but the system doesn't seem to have multiple cpus available (or multithreading is not enabled). Exiting..."
+        )
+        sys.exit(1)
+    # Exit if amount of threads is less than 2, required for multiprocessing
     if args.threads < 2:
         log.error(
             f"{__prog__} requires a minimum of 2 threads for execution, but only {args.threads} thread was provided. Exiting..."

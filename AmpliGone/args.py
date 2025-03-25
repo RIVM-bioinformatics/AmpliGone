@@ -103,8 +103,9 @@ def get_args(givenargs: List[str]) -> argparse.Namespace:
         add_help=False,
     )
 
-    standard_threads = min(multiprocessing.cpu_count(), 128)
-
+    # set the number of threads to 2 if the system, has 2 or more threads.
+    standard_threads = 2 if multiprocessing.cpu_count() >= 2 else None
+    
     required_args = parser.add_argument_group("Required Arguments")
 
     required_args.add_argument(
