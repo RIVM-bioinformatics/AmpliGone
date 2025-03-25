@@ -184,7 +184,7 @@ def count_cigar_information(
 
     This function assumes that the CIGAR string is in a valid format and does not perform any error checking or validation.
     """
-    # print(cigar)
+
     matches = sum(map(int, re.findall(r"(\d+)=", cigar)))
     insertions = sum(map(int, re.findall(r"(\d+)I", cigar)))
     deletions = sum(map(int, re.findall(r"(\d+)D", cigar)))
@@ -205,9 +205,7 @@ def count_cigar_information(
             grouped_insertions += int(i)
             ins_groups += 1
 
-    # print("grouped:", grouped_deletions, grouped_insertions)
-    # print("groups:", del_groups, ins_groups)
-    # print(f"Matches: {matches}, Mismatches: {mismatches}, Deletions: {deletions}, Insertions: {insertions}")
+
     return (
         matches,
         mismatches,
@@ -216,44 +214,6 @@ def count_cigar_information(
         (grouped_deletions, del_groups),
         (grouped_insertions, ins_groups),
     )
-
-
-# def assign_score(cigar_data: Tuple[int, int, int, int, Tuple[int, int], Tuple[int, int]], option_length: int, max_errors: int) -> int:
-
-
-#     # from cigar_data we get the number of mismatches, deletions and insertions in that order.
-#     # right now we only care about the errors so we're omitting matches
-#     base_errors = cigar_data[1] + cigar_data[2] + cigar_data[3]
-#     # deletions_grouped = cigar_data[4][0]
-#     # insertions_grouped = cigar_data[5][0]
-#     # del_groups = cigar_data[4][1]
-#     # ins_groups = cigar_data[5][1]
-
-#     if base_errors > max_errors:
-#         return -1
-
-#     score_modifier = 100
-#     # we start with a base score of 100.
-
-#     # TODO: determine if the penalize logic is *actually* desired.
-#     # # if there are deletion or insertion groups then we want to *severely* penalize the score.
-#     # # deletions or insertions itself are okay, and they are penalized as a 'base' error.
-#     # # however, grouped deletions or insertions (i.e. 4D, or 2I in the cigar string) should be penalized even more as this is should not happen with primers.
-#     # for _ in range(del_groups):
-#     #     # print(fraction_d)
-#     #     score_modifier /= (deletions_grouped / del_groups if del_groups > 0 else 1)
-#     # for _ in range(ins_groups):
-#     #     # print(fraction_i)
-#     #     score_modifier /= (insertions_grouped / ins_groups if ins_groups > 0 else 1)
-
-#     # calculate the score based on the number of matches and the length of the option
-#     matches = cigar_data[0]
-#     score = int(((option_length - base_errors) / option_length) * score_modifier)
-
-#     # discard if the score is below 50% (50.0). Including scores this low into the final considerations would be a waste of time.
-#     # else, return the score
-#     return -1 if score < 50 else score
-
 
 def percentage_representation(option_length: int, score: int) -> int:
     # the max score in the nuc44 matrix is 5. So the highest achievable score of a primer-option is the length of the primer times 5.
@@ -309,7 +269,7 @@ def get_coords(
     for option in options:
         alignment = ps.sg_trace_scan_sat(
             option, ref_seq, 8, 30, ps.nuc44
-        )  # TODO: validate if these gap_open and gap_extend values are appropriate for this use case. See below
+        ) 
         # gap_open = 8, gap_extend = 30
         # These values are chosen with the following idea: We want to allow for a few (one or two) deletions in the primer sequence vs the reference to deal with the possibility of a primer that is not perfectly matching the reference.
         # However, we only want to allow deletions of 1 nucleotide length, and we want to heavily penalize longer gaps.
@@ -320,8 +280,7 @@ def get_coords(
         score: int = alignment.score
         errors = parsed_cigar_info[1] + parsed_cigar_info[2] + parsed_cigar_info[3]
         percentage = percentage_representation(len(option), score)
-        # print("length of option:", len(option))
-        # print(max_errors)
+
         if errors > max_errors:
             score = -1
 
@@ -330,7 +289,7 @@ def get_coords(
             new_start = int(match[1])
         start = new_start
         end: int = alignment.end_ref + 1
-        # print(score)
+
         localresults.append((option, start, end, score, percentage))
 
     return max(localresults, key=lambda x: x[3])
