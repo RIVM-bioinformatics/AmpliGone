@@ -111,5 +111,6 @@ too_short_sequences:
     --primers: "tests/data/primers/synthetic.fasta"
     --amplicon-type: "end-to-end"
   test_args:
-    fails: True
+    comparison_file: "tests/data/expected_outputs/too-short-eo.fastq"
+    fails: False
 
