@@ -133,7 +133,7 @@ class TestE2e:  # pylint: disable=too-few-public-methods
         list of str
             The list of arguments.
         """
-        return [item for pain in args.items() for item in pain]
+        return [item for pain in args.items() for item in pain if item]
 
     @pytest.mark.parametrize(
         "test_case", list(config.values()), ids=list(config.keys())
