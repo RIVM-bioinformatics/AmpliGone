@@ -82,7 +82,7 @@ class TestCutReads:
     HAPPY_SEQ = "GGAAATTCATTCTAGGGAGTGACGTGGACCCCGGATTGATACAGGATCACATGTAGAAAAGGTAGTCGGACAAGTTACCGCTACCCTCGACCTCGTGGGG"
     HAPPY_QUAL = "EE10%-1#-@7F&@?7(13;-$)A7.7/3(I(.9)&//,$G9?HA'DG=/;3C)2:@C!2/#;8.#7'98AC;FG>E>;E'>'$100G&44763?0,@7I"
 
-    reference = "/home/raaijmag/IDS/AmpliGone/tests/data/references/synthetic.fasta"
+    reference = "tests/data/references/synthetic.fasta"
     preset = "sr"
     scoring: list[int] = []
     fragment_lookaround_size = 10000
