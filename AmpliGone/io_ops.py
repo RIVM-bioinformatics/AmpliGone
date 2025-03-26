@@ -177,7 +177,7 @@ class SequenceReads:
             log.error(
                 f'"{inputfile}" is an unsupported filetype. Please try again with a supported filetype'
             )
-            sys.exit(-1)
+            sys.exit(1)
 
         log.debug("INDEXREADS :: Storing copy of indexed reads in a DataFrame")
         self.frame = pd.DataFrame.from_records(
@@ -187,12 +187,19 @@ class SequenceReads:
     def _read_fastq(self, inputfile: str) -> None:
         with self._fastq_opener(inputfile) as fq:
             for line in fq:
-                name = line.split()[0][1:]
-                seq = next(fq).strip()
-                next(fq)
-                qual = next(fq).strip()
+                try:
+                    name = line.split()[0][1:]
+                    seq = next(fq).strip()
+                    next(fq)
+                    qual = next(fq).strip()
 
-                self.tuples.append((name, seq, qual))
+                    self.tuples.append((name, seq, qual))
+                except StopIteration:
+                    log.error(
+                        f"Unexpected end of file while reading FASTQ file '{inputfile}'."
+                        " Please check the file for completeness."
+                    )
+                    sys.exit(1)
 
     def _read_bam(self, inputfile: str) -> None:
         for read in self._load_bam(inputfile):
@@ -371,7 +378,14 @@ class SequenceReads:
         !''*((((***+))%%%++)(%%%%).1***-+*''))**55CCF>>>>>>CCCCCCC65
 
         """
-        return open(filename, "rt", encoding="utf-8")
+        try:
+            # Test if file is properly readable
+            with open(filename, "rt", encoding="utf-8") as test_f:
+                test_f.read(1024)  # Read 1024 bytes to check for UTF-8 encoding
+            return open(filename, "rt", encoding="utf-8")
+        except UnicodeDecodeError:
+            log.error(f"File '{filename}' is not a valid plaintext FASTQ file. Please make sure it is not corrupted, is in plaintext, and has the UTF-8 encdoding. Exiting...")
+            sys.exit(1)
 
     def _fastq_opener(self, inputfile: str) -> TextIO:
         """
