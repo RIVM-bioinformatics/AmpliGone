@@ -384,7 +384,9 @@ class SequenceReads:
                 test_f.read(1024)  # Read 1024 bytes to check for UTF-8 encoding
             return open(filename, "rt", encoding="utf-8")
         except UnicodeDecodeError:
-            log.error(f"File '{filename}' is not a valid plaintext FASTQ file. Please make sure it is not corrupted, is in plaintext, and has the UTF-8 encdoding. Exiting...")
+            log.error(
+                f"File '{filename}' is not a valid plaintext FASTQ file. Please make sure it is not corrupted, is in plaintext, and has the UTF-8 encdoding. Exiting..."
+            )
             sys.exit(1)
 
     def _fastq_opener(self, inputfile: str) -> TextIO:
