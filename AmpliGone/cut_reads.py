@@ -289,7 +289,7 @@ def log_cache_info(index: int, total_reads: int, _threadnumber: int) -> None:
         f"MODULE {position_in_or_before_primer.__module__}.{position_in_or_before_primer.__qualname__} "  # type: ignore[attr-defined]
         f"CACHE INFORMATION\n\t\t{before_usedsize} unique records stored in cache\n\t\t"
         f"{hit_ratio_before:.2f}% cache hit ratio\n\t"
-        f"MODULE {position_in_or_after_primer.__module__}.{position_in_or_after_primer.__qualname__} "  # type: ignore[attr-defined]
+        f"MODULE {position_in_or_after_primer.__module__}.{position_in_or_after_primer.__qualname__} "
         f"CACHE INFORMATION\n\t\t{after_usedsize} unique records stored in cache\n\t\t"
         f"{hit_ratio_after:.2f}% cache hit ratio"
     )
