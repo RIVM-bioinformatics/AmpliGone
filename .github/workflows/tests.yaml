@@ -211,6 +211,10 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         path: tests/data/reports
+        merge-multiple: true
+
+    - name: Display structure of downloaded files
+      run: ls -R tests/data/reports
 
     - name: SonarCloud Scan
       if: always()
