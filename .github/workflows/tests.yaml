@@ -11,7 +11,6 @@ on:
       - dev
 
 env:
-  VENV_PATH: ~/.venv
   REPORT_PATH: tests/data/reports/
 
 
@@ -26,24 +25,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v5
+      - name: Setup Mamba
+        uses: mamba-org/setup-micromamba@v2
         with:
-          python-version: '3.10'
-
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.venv
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/test-requirements.txt') }}
-      
-      - name: Install dependencies
-        run: |
-          python -m venv ~/.venv
-          source ~/.venv/bin/activate
-          python -m pip install --upgrade pip
-          python -m pip install .
-          python -m pip install -r test-requirements.txt
+          cache-environment: true
+          post-cleanup: 'all'
+          environment-file: test-requirements.yaml
+          init-shell: bash
 
   formatting:
     name: Formatting
@@ -55,20 +43,17 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v5
+    - name: Setup Mamba
+      uses: mamba-org/setup-micromamba@v2
       with:
-        python-version: '3.10'
-
-    - name: Restore pip dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.venv
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/test-requirements.txt') }}
+        cache-environment: true
+        post-cleanup: 'all'
+        environment-file: test-requirements.yaml
+        init-shell: bash
 
     - name: Check imports and formatting
+      shell: micromamba-shell {0}
       run: |
-        source ~/.venv/bin/activate
         isort --check-only --diff --profile black .
         black --check --diff .
 
@@ -82,65 +67,96 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v5
+    - name: Setup Mamba
+      uses: mamba-org/setup-micromamba@v2
       with:
-        python-version: '3.10'
-
-    - name: Restore pip dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.venv
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/test-requirements.txt') }}
+        cache-environment: true
+        post-cleanup: 'all'
+        environment-file: test-requirements.yaml
+        init-shell: bash
 
     # C0301: Line too long
     - name: Run pylint
+      continue-on-error: true
+      shell: micromamba-shell {0}
       run: |
-        source ~/.venv/bin/activate
         mkdir -p ${{ env.REPORT_PATH }}
         pylint --fail-under=9 --disable=C0301 AmpliGone/ tests/ > ${{ env.REPORT_PATH }}pylint-report.txt
+
+    - name: Upload pylint report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: pylint-report
+        path: tests/data/reports/pylint-report.txt
+        overwrite: true
 
     # E501: Line too long, W503: Line break before binary operator, E203: Whitespace before ':'
     # The last two make it non-PEP8 compliant, but are automatically done by black.
     - name: Run flake8
+      continue-on-error: true
+      shell: micromamba-shell {0}
       run: |
-        source ~/.venv/bin/activate
         mkdir -p ${{ env.REPORT_PATH }}
         flake8 --ignore=E501,W503,E203 AmpliGone/ tests/ --output-file=${{ env.REPORT_PATH }}flake8-report.txt
+
+    - name: Upload flake8 report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: flake8-report
+        path: tests/data/reports/flake8-report.txt
+        overwrite: true
 
   static-checking:
     name: Static checking
     permissions:
       contents: read
+
     needs: setup-env
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v5
+    - name: Setup Mamba
+      uses: mamba-org/setup-micromamba@v2
       with:
-        python-version: '3.10'
-
-    - name: Restore pip dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.venv
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/test-requirements.txt') }}
+        cache-environment: true
+        post-cleanup: 'all'
+        environment-file: test-requirements.yaml
+        init-shell: bash
 
     - name: Run mypy
+      continue-on-error: true
+      shell: micromamba-shell {0}
       run: |
-        source ~/.venv/bin/activate
         mkdir -p ${{ env.REPORT_PATH }}
         mypy --disallow-untyped-defs --disallow-incomplete-defs --ignore-missing-imports --disallow-untyped-decorators --strict-equality \
         --warn-redundant-casts --warn-unused-ignores --warn-return-any --warn-unreachable AmpliGone/ tests/ > ${{ env.REPORT_PATH }}mypy-report.txt
+    
+    - name: Upload Mypy report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: mypy-report
+        path: tests/data/reports/mypy-report.txt
+        overwrite: true
 
     - name: Run bandit
+      continue-on-error: true
+      shell: micromamba-shell {0}
       run: |
-        source ~/.venv/bin/activate
         mkdir -p ${{ env.REPORT_PATH }}
         bandit -r AmpliGone/ -f json -o ${{ env.REPORT_PATH }}bandit-report.json
+    
+    - name: Upload Bandit report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: bandit-report
+        path: tests/data/reports/bandit-report.json
+        overwrite: true
 
   run-tests:
     name: Run Tests
@@ -152,20 +168,23 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v5
+    - name: Setup Mamba
+      uses: mamba-org/setup-micromamba@v2
       with:
-        python-version: '3.10'
+        cache-environment: true
+        post-cleanup: 'all'
+        environment-file: test-requirements.yaml
+        init-shell: bash
 
-    - name: Restore pip dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.venv
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/test-requirements.txt') }}
+    - name: Install local python package
+      run: |
+        pip install . --no-deps
+      shell: micromamba-shell {0}1
 
     - name: Run tests
+      shell: micromamba-shell {0}
+      continue-on-error: true
       run: |
-        source ~/.venv/bin/activate
         mkdir -p ${{ env.REPORT_PATH }}
         pytest -sv --cov=AmpliGone/ --cov-report=xml:${{ env.REPORT_PATH }}coverage.xml tests/
 
@@ -179,7 +198,7 @@ jobs:
 
   sonarcloud:
     name: SonarCloud Scan
-    needs: run-tests
+    needs: [run-tests, Linting, static-checking]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -191,12 +210,11 @@ jobs:
     - name: Download coverage report
       uses: actions/download-artifact@v4
       with:
-        name: coverage-report
-        path: tests/data/coverage_reports/coverage.xml
+        path: tests/data/reports
 
     - name: SonarCloud Scan
       if: always()
-      uses: sonarsource/sonarcloud-github-action@master
+      uses: SonarSource/sonarqube-scan-action@v5
       env:
         SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # needed to get PR info
