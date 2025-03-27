@@ -179,7 +179,7 @@ jobs:
     - name: Install local python package
       run: |
         pip install . --no-deps
-      shell: micromamba-shell {0}1
+      shell: micromamba-shell {0}
 
     - name: Run tests
       shell: micromamba-shell {0}
