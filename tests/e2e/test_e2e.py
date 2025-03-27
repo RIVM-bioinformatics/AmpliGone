@@ -107,9 +107,10 @@ class TestE2e:  # pylint: disable=too-few-public-methods
         AssertionError
             If the output file does not match the expected output file.
         """
-        with open(output_file, "r", encoding="utf-8") as output, open(
-            expected_output_file, "r", encoding="utf-8"
-        ) as expected_output:
+        with (
+            open(output_file, "r", encoding="utf-8") as output,
+            open(expected_output_file, "r", encoding="utf-8") as expected_output,
+        ):
             output_lines = output.readlines()
             expected_output_lines = expected_output.readlines()
             # the fastq file is unordered, so we need to sort it by the read name
