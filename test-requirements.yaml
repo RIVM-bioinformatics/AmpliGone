@@ -11,6 +11,7 @@ dependencies:
   - isort==5.13.2
   - mypy==1.13.0
   - flake8==7.1.1
+  - flake8-pyproject==1.2.3
   - bandit==1.7.10
   - pandas=2.2
   - pysam=0.22

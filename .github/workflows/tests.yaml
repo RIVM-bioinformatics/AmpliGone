@@ -54,7 +54,7 @@ jobs:
     - name: Check imports and formatting
       shell: micromamba-shell {0}
       run: |
-        isort --check-only --diff --profile black .
+        isort --check-only --diff .
         black --check --diff .
 
   Linting:
@@ -81,7 +81,7 @@ jobs:
       shell: micromamba-shell {0}
       run: |
         mkdir -p ${{ env.REPORT_PATH }}
-        pylint --fail-under=9 --disable=C0301 AmpliGone/ tests/ > ${{ env.REPORT_PATH }}pylint-report.txt
+        pylint AmpliGone/ tests/ > ${{ env.REPORT_PATH }}pylint-report.txt
 
     - name: Upload pylint report
       if: always()
@@ -98,7 +98,7 @@ jobs:
       shell: micromamba-shell {0}
       run: |
         mkdir -p ${{ env.REPORT_PATH }}
-        flake8 --ignore=E501,W503,E203 AmpliGone/ tests/ --output-file=${{ env.REPORT_PATH }}flake8-report.txt
+        flake8 AmpliGone/ tests/ --output-file=${{ env.REPORT_PATH }}flake8-report.txt
 
     - name: Upload flake8 report
       if: always()
@@ -132,8 +132,7 @@ jobs:
       shell: micromamba-shell {0}
       run: |
         mkdir -p ${{ env.REPORT_PATH }}
-        mypy --disallow-untyped-defs --disallow-incomplete-defs --ignore-missing-imports --disallow-untyped-decorators --strict-equality \
-        --warn-redundant-casts --warn-unused-ignores --warn-return-any --warn-unreachable AmpliGone/ tests/ > ${{ env.REPORT_PATH }}mypy-report.txt
+        mypy > ${{ env.REPORT_PATH }}mypy-report.txt
     
     - name: Upload Mypy report
       if: always()
@@ -148,7 +147,7 @@ jobs:
       shell: micromamba-shell {0}
       run: |
         mkdir -p ${{ env.REPORT_PATH }}
-        bandit -r AmpliGone/ -f json -o ${{ env.REPORT_PATH }}bandit-report.json
+        bandit -f json -o ${{ env.REPORT_PATH }}bandit-report.json
     
     - name: Upload Bandit report
       if: always()
@@ -186,7 +185,7 @@ jobs:
       continue-on-error: true
       run: |
         mkdir -p ${{ env.REPORT_PATH }}
-        pytest -sv --cov=AmpliGone/ --cov-report=xml:${{ env.REPORT_PATH }}coverage.xml tests/
+        pytest --cov-report=xml:${{ env.REPORT_PATH }}coverage.xml
 
     - name: Upload coverage report
       if: always()
@@ -212,9 +211,6 @@ jobs:
       with:
         path: tests/data/reports
         merge-multiple: true
-
-    - name: Display structure of downloaded files
-      run: ls -R tests/data/reports
 
     - name: SonarCloud Scan
       if: always()
