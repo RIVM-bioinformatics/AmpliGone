@@ -1,5 +1,69 @@
 # Changelog
 
+## [2.0.0](https://github.com/RIVM-bioinformatics/AmpliGone/compare/v1.3.1...v2.0.0) (2025-03-31)
+
+
+### ⚠ BREAKING CHANGES
+
+* change fasta2bed method from fuzzyregex to semi-global alignment based search with parasail
+
+### Features
+
+* .github.workflows.tests - created automatic testing workflow ([41e6222](https://github.com/RIVM-bioinformatics/AmpliGone/commit/41e6222ac1f686839a7d354805702c75f66e7b3c))
+* add quiet mode, only prints WARNING and ERROR log messages ([16967e7](https://github.com/RIVM-bioinformatics/AmpliGone/commit/16967e76294f446d512137ab256944610d8ced52))
+* add support for gzipped fastq output ([5b16301](https://github.com/RIVM-bioinformatics/AmpliGone/commit/5b163013cc2c1632cfab9a26e4d1d3906128c22f))
+* add the --verbose flag and debugging log messages ([5b16301](https://github.com/RIVM-bioinformatics/AmpliGone/commit/5b163013cc2c1632cfab9a26e4d1d3906128c22f))
+* add the 'virtual primer support' to link closely positioned primers to each other in the index for accurate removal ([3620f2f](https://github.com/RIVM-bioinformatics/AmpliGone/commit/3620f2f1b111c2c1e2da763ed657e51407f258de))
+* change fasta2bed method from fuzzyregex to semi-global alignment based search with parasail ([36c4479](https://github.com/RIVM-bioinformatics/AmpliGone/commit/36c44798d5981cf33d4358159271918188f01845))
+* sonar-project.properties - added branch analysis config ([41e6222](https://github.com/RIVM-bioinformatics/AmpliGone/commit/41e6222ac1f686839a7d354805702c75f66e7b3c))
+* test-requirements- added seperate test reqs ([41e6222](https://github.com/RIVM-bioinformatics/AmpliGone/commit/41e6222ac1f686839a7d354805702c75f66e7b3c))
+
+
+### Bug Fixes
+
+* .gitignore - added *:Zone.Identifier ([2f24ebe](https://github.com/RIVM-bioinformatics/AmpliGone/commit/2f24ebe82e98757be251fd5f089a61a2a265d06b))
+* add an explicit import for IUPACData from Bio.Data (instead of the implicit import that didn't always work depending on the interpreter) ([5abae9a](https://github.com/RIVM-bioinformatics/AmpliGone/commit/5abae9a8e0c22849158a5816b9f46bddf2511f2b))
+* Add extra checks to cleanly exit when dealing with corrupted or incomplete inputfiles ([2155999](https://github.com/RIVM-bioinformatics/AmpliGone/commit/2155999c305fd41dedc0bdbf086e85cad5039229))
+* add UTF-8 encoding when opening export primers file when `-to` is given ([c0bfe5f](https://github.com/RIVM-bioinformatics/AmpliGone/commit/c0bfe5fae875222e58ab020a28b4f27c85cd89ea))
+* change the table of IUPAC data to actually reference the IUPACData table in fasta2bed ([daed988](https://github.com/RIVM-bioinformatics/AmpliGone/commit/daed988a5c1bef3e1785612dcdef71af6de95cdc))
+* disable the progress bar when in debug mode (verbose) ([5b16301](https://github.com/RIVM-bioinformatics/AmpliGone/commit/5b163013cc2c1632cfab9a26e4d1d3906128c22f))
+* do not update per-thread progression when processing very low read counts (will throw zerodivisionerror) ([d3bb8b5](https://github.com/RIVM-bioinformatics/AmpliGone/commit/d3bb8b5a7bca2d15dd70d8a1d8669447010b7bc7))
+* fixed a typo in fasta2bed ([7968429](https://github.com/RIVM-bioinformatics/AmpliGone/commit/7968429f2a2dac8320998ee3f4c66e689f91d0cc))
+* improve error message when too little threads are given ([57e74b5](https://github.com/RIVM-bioinformatics/AmpliGone/commit/57e74b55acff38684b3094ffd6aca7efaa20c40f))
+* improved static type checking, linting, and formatting for all files ([2f24ebe](https://github.com/RIVM-bioinformatics/AmpliGone/commit/2f24ebe82e98757be251fd5f089a61a2a265d06b))
+* proper grouping of the regex to clean cigar strings ([abe1f69](https://github.com/RIVM-bioinformatics/AmpliGone/commit/abe1f69323d7fac1129d34d75a9f1ce81a70b91b))
+* **tests:** add conditional to handle boolean arguments in test ([fc786fe](https://github.com/RIVM-bioinformatics/AmpliGone/commit/fc786fe41e9a80002b8a443a6e54465724cdf5a9))
+* **tests:** too short e2e test is expected behaviour. Updated test configuration to include comparison file and correct failure status ([c7ab8a7](https://github.com/RIVM-bioinformatics/AmpliGone/commit/c7ab8a70655285756076bd3a88f220b128f29869))
+* **tests:** use relative path for unittest reference file path ([03a2ddf](https://github.com/RIVM-bioinformatics/AmpliGone/commit/03a2ddf663e8e0f593c60bdf932ce589c5f8107a))
+* **tests:** use the correct referenceID in the synthetic bedfile ([a5c4d8c](https://github.com/RIVM-bioinformatics/AmpliGone/commit/a5c4d8c32f375a9424cf6cecf39256c687919f80))
+* typo in github workflow ([fed3c2e](https://github.com/RIVM-bioinformatics/AmpliGone/commit/fed3c2eeea024107445ffca42a372be87c218ecd))
+
+
+### Performance Improvements
+
+* perform most alignment-preset related calculations in parallel (multiprocessing with concurrent.futures) ([edf23ac](https://github.com/RIVM-bioinformatics/AmpliGone/commit/edf23aca19d21e0cceb169e1d239c42963f0ac39))
+* use pgzip for multithreaded writing of gzip file ([5b16301](https://github.com/RIVM-bioinformatics/AmpliGone/commit/5b163013cc2c1632cfab9a26e4d1d3906128c22f))
+
+
+### Dependencies
+
+* add flake8-pyproject ([06cb0cb](https://github.com/RIVM-bioinformatics/AmpliGone/commit/06cb0cb1c8e2fe9e4a7c295380252ccb4181f111))
+* add pgzip to the dependency list ([cfd25e3](https://github.com/RIVM-bioinformatics/AmpliGone/commit/cfd25e3288b7ee7dfb6816b889b1cb53fa0e7127))
+* remove intel channel from conda recipe file ([ed916b8](https://github.com/RIVM-bioinformatics/AmpliGone/commit/ed916b89041b5bd34e299fac2a2f9912d1efd353))
+* update dependencies in env.yml ([ed916b8](https://github.com/RIVM-bioinformatics/AmpliGone/commit/ed916b89041b5bd34e299fac2a2f9912d1efd353))
+* update dependencies in setup.py ([ed916b8](https://github.com/RIVM-bioinformatics/AmpliGone/commit/ed916b89041b5bd34e299fac2a2f9912d1efd353))
+* update dependencies in setup.py and env.yml ([e09cb10](https://github.com/RIVM-bioinformatics/AmpliGone/commit/e09cb109da8cce9a4722a38893c1fbe6f8a2db85))
+* update minimum required python version in setup.py ([0fe1beb](https://github.com/RIVM-bioinformatics/AmpliGone/commit/0fe1bebe165f258573f2de9ffb11abeb752f46ab))
+
+
+### Documentation
+
+* add docstring for percentage_representation function in fasta2bed ([a625b8b](https://github.com/RIVM-bioinformatics/AmpliGone/commit/a625b8b63283281fd61212a96582df50277baad0))
+* add virtual primer mode section and related image to user guide ([5da3690](https://github.com/RIVM-bioinformatics/AmpliGone/commit/5da3690b5bbbcf7141ff8ea1407e3f526abd2288))
+* expand function docstring to better explain the edge cases ([910f75a](https://github.com/RIVM-bioinformatics/AmpliGone/commit/910f75a7058187e298bf5c43067d04b8c0db042a))
+* improves the docstring for this find_or_read_primers() method ([e670d2b](https://github.com/RIVM-bioinformatics/AmpliGone/commit/e670d2bf7ce6783bde9e91434c5ffd23c715602c))
+* update citation information in CITATION.cff and README.md ([7e8e0c6](https://github.com/RIVM-bioinformatics/AmpliGone/commit/7e8e0c6d35cd1f6033a8b52ccab5a4378cb43f0c))
+
 ## [1.3.1](https://github.com/RIVM-bioinformatics/AmpliGone/compare/v1.3.0...v1.3.1) (2024-04-03)
 
 
