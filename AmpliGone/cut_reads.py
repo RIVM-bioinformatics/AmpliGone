@@ -25,8 +25,8 @@ Notes
 import os
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Callable, List, Tuple
 from functools import _lru_cache_wrapper
+from typing import Callable, List, Tuple
 
 # mappy is a C extension, so it is added to the pylint extension allow list
 import mappy as mp

@@ -61,7 +61,7 @@ def check_loaded_index(
             read_records = indexed_reads.frame.to_dict(orient="records")
             write_output(args.output, read_records, threads=args.threads)
             if args.export_primers is not None:
-                with open(args.export_primers, "w", encoding='utf-8') as f:
+                with open(args.export_primers, "w", encoding="utf-8") as f:
                     f.write("")
             log.warning(
                 f"{__prog__} was given an empty input file but the [green]'-to'[/green] flag was given.\nOne or multiple empty output file(s) have therefore been generated.\n[bold yellow]Please check the input file to make sure this is correct[/bold yellow]"
