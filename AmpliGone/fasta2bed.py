@@ -216,7 +216,36 @@ def count_cigar_information(
 
 
 def percentage_representation(option_length: int, score: int) -> int:
-    # the max score in the nuc44 matrix is 5. So the highest achievable score of a primer-option is the length of the primer times 5.
+    """
+    Calculate the percentage representation of a score relative to the maximum possible score.
+
+    Parameters
+    ----------
+    option_length : int
+        The length of the primer option.
+    score : int
+        The score of the primer option.
+
+    Returns
+    -------
+    int
+        The percentage representation of the score, as an integer.
+
+    Notes
+    -----
+    The maximum possible score is calculated as the option length multiplied by 5,
+    based on the nuc44 matrix where the maximum score is 5. The returned percentage
+    is the ratio of the given score to the maximum possible score, expressed as an integer percentage.
+
+    Examples
+    --------
+    >>> percentage_representation(20, 80)
+    80
+    >>> percentage_representation(15, 45)
+    60
+    >>> percentage_representation(10, 50)
+    100
+    """
     max_score_of_option = option_length * 5
     return int((score / max_score_of_option) * 100)
 
