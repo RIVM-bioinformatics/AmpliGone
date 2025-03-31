@@ -1,14 +1,12 @@
 name: Static analysis and tests
 
 on:
-  push:
-    branches:
-      - main
-      - dev
   pull_request:
+    types: [opened, synchronize, reopened]
     branches:
       - main
       - dev
+  workflow_dispatch:
 
 env:
   REPORT_PATH: tests/data/reports/
@@ -147,7 +145,7 @@ jobs:
       shell: micromamba-shell {0}
       run: |
         mkdir -p ${{ env.REPORT_PATH }}
-        bandit -f json -o ${{ env.REPORT_PATH }}bandit-report.json
+        bandit -c pyproject.toml -r AmpliGone/ -f json -o ${{ env.REPORT_PATH }}bandit-report.json
     
     - name: Upload Bandit report
       if: always()
