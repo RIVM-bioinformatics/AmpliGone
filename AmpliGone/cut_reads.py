@@ -26,6 +26,7 @@ import os
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Callable, List, Tuple
+from functools import _lru_cache_wrapper
 
 # mappy is a C extension, so it is added to the pylint extension allow list
 import mappy as mp
@@ -230,7 +231,7 @@ def log_cache_info(index: int, total_reads: int, _threadnumber: int) -> None:
     potential division by zero errors when calculating cache hit ratios.
     """
 
-    def _get_cache_stats(func: Callable[..., bool]) -> Tuple[int, int, int]:
+    def _get_cache_stats(func: _lru_cache_wrapper) -> Tuple[int, int, int]:
         """
         Get cache statistics for a given function.
 
