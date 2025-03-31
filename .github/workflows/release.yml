@@ -57,4 +57,4 @@ jobs:
 
       - name: Publish docs
         run: |
-          mike deploy --config-file mkdocs.yml --push --force --update-aliases $(git tag --sort=committerdate | tail -1 | sed 's/v//') latest
+          mike deploy --config-file mkdocs.yml --push --update-aliases $(git tag --sort=committerdate | tail -1 | sed 's/v//') latest

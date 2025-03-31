@@ -1,0 +1,218 @@
+name: Static analysis and tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - dev
+  workflow_dispatch:
+
+env:
+  REPORT_PATH: tests/data/reports/
+
+
+jobs:
+  setup-env:
+    name: Setup and cache environment
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Mamba
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          cache-environment: true
+          post-cleanup: 'all'
+          environment-file: test-requirements.yaml
+          init-shell: bash
+
+  formatting:
+    name: Formatting
+    permissions:
+      contents: read
+    needs: setup-env
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Mamba
+      uses: mamba-org/setup-micromamba@v2
+      with:
+        cache-environment: true
+        post-cleanup: 'all'
+        environment-file: test-requirements.yaml
+        init-shell: bash
+
+    - name: Check imports and formatting
+      shell: micromamba-shell {0}
+      run: |
+        isort --check-only --diff .
+        black --check --diff .
+
+  Linting:
+    name: Linting
+    permissions:
+      contents: read
+    needs: setup-env
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Mamba
+      uses: mamba-org/setup-micromamba@v2
+      with:
+        cache-environment: true
+        post-cleanup: 'all'
+        environment-file: test-requirements.yaml
+        init-shell: bash
+
+    # C0301: Line too long
+    - name: Run pylint
+      continue-on-error: true
+      shell: micromamba-shell {0}
+      run: |
+        mkdir -p ${{ env.REPORT_PATH }}
+        pylint AmpliGone/ tests/ > ${{ env.REPORT_PATH }}pylint-report.txt
+
+    - name: Upload pylint report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: pylint-report
+        path: tests/data/reports/pylint-report.txt
+        overwrite: true
+
+    # E501: Line too long, W503: Line break before binary operator, E203: Whitespace before ':'
+    # The last two make it non-PEP8 compliant, but are automatically done by black.
+    - name: Run flake8
+      continue-on-error: true
+      shell: micromamba-shell {0}
+      run: |
+        mkdir -p ${{ env.REPORT_PATH }}
+        flake8 AmpliGone/ tests/ --output-file=${{ env.REPORT_PATH }}flake8-report.txt
+
+    - name: Upload flake8 report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: flake8-report
+        path: tests/data/reports/flake8-report.txt
+        overwrite: true
+
+  static-checking:
+    name: Static checking
+    permissions:
+      contents: read
+
+    needs: setup-env
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Mamba
+      uses: mamba-org/setup-micromamba@v2
+      with:
+        cache-environment: true
+        post-cleanup: 'all'
+        environment-file: test-requirements.yaml
+        init-shell: bash
+
+    - name: Run mypy
+      continue-on-error: true
+      shell: micromamba-shell {0}
+      run: |
+        mkdir -p ${{ env.REPORT_PATH }}
+        mypy > ${{ env.REPORT_PATH }}mypy-report.txt
+    
+    - name: Upload Mypy report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: mypy-report
+        path: tests/data/reports/mypy-report.txt
+        overwrite: true
+
+    - name: Run bandit
+      continue-on-error: true
+      shell: micromamba-shell {0}
+      run: |
+        mkdir -p ${{ env.REPORT_PATH }}
+        bandit -c pyproject.toml -r AmpliGone/ -f json -o ${{ env.REPORT_PATH }}bandit-report.json
+    
+    - name: Upload Bandit report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: bandit-report
+        path: tests/data/reports/bandit-report.json
+        overwrite: true
+
+  run-tests:
+    name: Run Tests
+    permissions:
+      contents: read
+    needs: setup-env
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Mamba
+      uses: mamba-org/setup-micromamba@v2
+      with:
+        cache-environment: true
+        post-cleanup: 'all'
+        environment-file: test-requirements.yaml
+        init-shell: bash
+
+    - name: Install local python package
+      run: |
+        pip install . --no-deps
+      shell: micromamba-shell {0}
+
+    - name: Run tests
+      shell: micromamba-shell {0}
+      continue-on-error: true
+      run: |
+        mkdir -p ${{ env.REPORT_PATH }}
+        pytest --cov-report=xml:${{ env.REPORT_PATH }}coverage.xml
+
+    - name: Upload coverage report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: tests/data/reports/coverage.xml
+        overwrite: true
+
+  sonarcloud:
+    name: SonarCloud Scan
+    needs: [run-tests, Linting, static-checking]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Shallow clones should be disabled for SonarCloud analysis
+
+    - name: Download coverage report
+      uses: actions/download-artifact@v4
+      with:
+        path: tests/data/reports
+        merge-multiple: true
+
+    - name: SonarCloud Scan
+      if: always()
+      uses: SonarSource/sonarqube-scan-action@v5
+      env:
+        SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # needed to get PR info
