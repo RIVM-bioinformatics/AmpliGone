@@ -36,3 +36,8 @@ pip install AmpliGone
 Please see the [documentation](https://rivm-bioinformatics.github.io/AmpliGone/) for more information as well as extended [installation instructions](https://rivm-bioinformatics.github.io/AmpliGone/latest/installation/) and [usage instructions](https://rivm-bioinformatics.github.io/AmpliGone/latest/user-guide/).
 
 AmpliGone is freely available under the [AGPLv3 license](https://www.gnu.org/licenses/agpl-3.0.en.html).
+
+If you use AmpliGone in your work, please cite us as follows:
+```
+Zwagemaker, F., Hajji, K., Raaijmakers, G., Schmitz, D., Kroneman, A. AmpliGone [Computer software]. https://doi.org/10.5281/zenodo.7684307
+```
