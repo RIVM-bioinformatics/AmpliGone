@@ -1,0 +1,116 @@
+# Synthetic data: 
+# reference is 200 nucleotides long
+# The primers are 10 and match the first and last 10 nucleotides of the reads.
+# reads are 2 sequences, raw reads 120 nucleotides, without primers 100.  
+# processed reads have a 20 nucleotide overlap with each other.
+
+
+happy_sars_cov_2:
+  pipeline_args:
+    --input: "tests/data/inputs_outputs/sars-cov-2.fastq"
+    --output: "tests/data/inputs_outputs/sars-cov-2-output.fastq"
+    --reference: "tests/data/references/SARS-CoV-2-reference.fasta"
+    --primers: "tests/data/primers/ARTIC-V5.3.2.fasta"
+    --amplicon-type: "end-to-end"
+  test_args:
+    comparison_file: "tests/data/expected_outputs/sars-cov-2-eo.fastq"
+    fails: False
+    expected_log_message: "writing output files"
+
+happy_synthetic:
+  pipeline_args:
+    --input: "tests/data/inputs_outputs/synthetic.fastq"
+    --output: "tests/data/inputs_outputs/synthetic-output.fastq"
+    --reference: "tests/data/references/synthetic.fasta"
+    --primers: "tests/data/primers/synthetic.fasta"
+    --amplicon-type: "end-to-end"
+  test_args:
+    comparison_file: "tests/data/expected_outputs/synthetic-eo.fastq"
+    fails: False
+    expected_log_message: "removed a total of [bold cyan]40[/bold cyan] nucleotides"
+
+happy_synthetic_bed:
+  pipeline_args:
+    --input: "tests/data/inputs_outputs/synthetic.fastq"
+    --output: "tests/data/inputs_outputs/synthetic-bed-output.fastq"
+    --reference: "tests/data/references/synthetic.fasta"
+    --primers: "tests/data/primers/synthetic.bed"
+    --amplicon-type: "end-to-end"
+  test_args:
+    comparison_file: "tests/data/expected_outputs/synthetic-eo.fastq"
+    fails: False
+    expected_log_message: "removed a total of [bold cyan]40[/bold cyan] nucleotides"
+
+synthetic_mismatched_primers:
+  pipeline_args:
+    --input: "tests/data/inputs_outputs/synthetic.fastq"
+    --output: "tests/data/inputs_outputs/synthetic-mismatched-output.fastq"
+    --reference: "tests/data/references/synthetic.fasta"
+    --primers: "tests/data/primers/synthetic-no-match.fasta"
+    --amplicon-type: "end-to-end"
+  test_args:
+    fails: True
+    expected_log_message: "ampligone was unable to match any primers to the reference"
+
+empty_input:
+  pipeline_args:
+    --input: "tests/data/inputs_outputs/empty.fastq"
+    --output: "tests/data/inputs_outputs/empty-output.fastq"
+    --reference: "tests/data/references/synthetic.fasta"
+    --primers: "tests/data/primers/synthetic.fasta"
+    --amplicon-type: "end-to-end"
+  test_args:
+    fails: True
+    expected_log_message: "Empty input file"
+
+empty_reference:
+  pipeline_args:
+    --input: "tests/data/inputs_outputs/synthetic.fastq"
+    --output: "tests/data/inputs_outputs/synthetic-output.fastq"
+    --reference: "tests/data/references/empty.fasta"
+    --primers: "tests/data/primers/synthetic.fasta"
+    --amplicon-type: "end-to-end"
+  test_args:
+    fails: True
+
+empty_primers:
+  pipeline_args:
+    --input: "tests/data/inputs_outputs/synthetic.fastq"
+    --output: "tests/data/inputs_outputs/synthetic-output.fastq"
+    --reference: "tests/data/references/synthetic.fasta"
+    --primers: "tests/data/primers/empty.fasta"
+    --amplicon-type: "end-to-end"
+  test_args:
+    fails: True
+
+corrupted_input:
+  pipeline_args:
+    --input: "tests/data/inputs_outputs/corrupted.fastq"
+    --output: "tests/data/inputs_outputs/corrupted-output.fastq"
+    --reference: "tests/data/references/synthetic.fasta"
+    --primers: "tests/data/primers/synthetic.fasta"
+    --amplicon-type: "end-to-end"
+  test_args:
+    fails: True
+
+wrong_format_input:
+  pipeline_args:
+    --input: "tests/data/inputs_outputs/wrong-format.fastq"
+    --output: "tests/data/inputs_outputs/wrong-format-output.fastq"
+    --reference: "tests/data/references/synthetic.fasta"
+    --primers: "tests/data/primers/synthetic.fasta"
+    --amplicon-type: "end-to-end"
+  test_args:
+    fails: True
+
+too_short_sequences:
+  pipeline_args:
+    --input: "tests/data/inputs_outputs/too-short.fastq"
+    --output: "tests/data/inputs_outputs/too-short-output.fastq"
+    --reference: "tests/data/references/synthetic.fasta"
+    --primers: "tests/data/primers/synthetic.fasta"
+    --amplicon-type: "end-to-end"
+  test_args:
+    comparison_file: "tests/data/expected_outputs/too-short-eo.fastq"
+    fails: False
+
