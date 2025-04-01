@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "AmpliGone"
@@ -39,12 +39,8 @@ source-code = "https://github.com/RIVM-bioinformatics/AmpliGone"
 ampligone = "AmpliGone.__main__:main"
 AmpliGone = "AmpliGone.__main__:main"
 
-[tool.setuptools]
-include-package-data = true
-packages = ["AmpliGone"]
-
-[tool.setuptools.dynamic]
-version = {attr = "AmpliGone.__version__"}
+[tool.hatch.version]
+path = "AmpliGone/__init__.py"
 
 [tool.isort]
 atomic = true
