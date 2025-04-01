@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.0.1](https://github.com/RIVM-bioinformatics/AmpliGone/compare/v2.0.0...v2.0.1) (2025-04-01)
+
+
+### Bug Fixes
+
+* **ci:** use hatch in pypi publishing workflow instead of setup.py ([e838f0f](https://github.com/RIVM-bioinformatics/AmpliGone/commit/e838f0f3d4b3916136d6b541600405cac1565114))
+
+
+### Miscellaneous Chores
+
+* release 2.0.1 ([b855da7](https://github.com/RIVM-bioinformatics/AmpliGone/commit/b855da7d78d2134cc6998e6b5c8ce27bac914216))
+
 ## [2.0.0](https://github.com/RIVM-bioinformatics/AmpliGone/compare/v1.3.1...v2.0.0) (2025-03-31)
 
 
