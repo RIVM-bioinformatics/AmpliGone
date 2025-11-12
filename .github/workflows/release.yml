@@ -14,25 +14,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: GoogleCloudPlatform/release-please-action@v3
+      - uses: GoogleCloudPlatform/release-please-action@v4
         id: release
         with:
           release-type: python
-          package-name: AmpliGone
           token: ${{ secrets.RELEASE_TOKEN }}
-          extra-files: |
-            CITATION.cff
+          config-file: release-please-config.yaml
+          manifest-file: .release-please-manifest.json
 
   update-docs:
     needs: bump-version
     name: Update docs
     runs-on: ubuntu-latest
-    if: "contains(github.event.head_commit.message, 'chore(main):')"
+    if: contains(github.event.head_commit.message, 'chore(main):')
     steps:
       - name: Checkout main
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
 
       - name: Copy Changelog
         uses: canastro/copy-file-action@master
@@ -44,17 +44,15 @@ jobs:
         run: |
           git config --global user.name "Github Actions"
           git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
-
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.8"
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r docs-requirements.txt
-
       - name: Publish docs
         run: |
           mike deploy --config-file mkdocs.yml --push --update-aliases $(git tag --sort=committerdate | tail -1 | sed 's/v//') latest

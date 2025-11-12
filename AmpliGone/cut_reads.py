@@ -34,7 +34,7 @@ import pandas as pd
 
 from AmpliGone.log import log
 
-from .cutlery import position_in_or_after_primer, position_in_or_before_primer
+from AmpliGone.cutlery import position_in_or_after_primer, position_in_or_before_primer
 
 
 @dataclass

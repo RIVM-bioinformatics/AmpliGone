@@ -12,22 +12,24 @@ jobs:
   sync-branches:
     runs-on: ubuntu-latest
     name: Syncing branches
-    if: "contains(github.event.head_commit.message, 'chore(main):')"
+    # if: contains(github.event.head_commit.message, 'chore(main):')
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 12
+          node-version: 20
 
+# note: this is a fork of the original sync-branches action which seems to be abandoned. We might need a better solution in the future
       - name: Opening pull request
         id: pull
-        uses: tretuna/sync-branches@1.4.0
+        uses: jdtx0/branch-sync@v1.5.1
         with:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
           FROM_BRANCH: "main"
           TO_BRANCH: "dev"
           PULL_REQUEST_TITLE: "chore: sync main to dev"
+          PULL_REQUEST_AUTO_MERGE_METHOD: "squash"
