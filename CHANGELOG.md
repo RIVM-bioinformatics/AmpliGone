@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/RIVM-bioinformatics/AmpliGone/compare/v2.0.1...v2.0.2) (2025-11-12)
+
+
+### Bug Fixes
+
+* re-add keep_default_na=False to the read_bed() function ([a46cc56](https://github.com/RIVM-bioinformatics/AmpliGone/commit/a46cc56752aae017c8b63bd67ca27fd391321c1e))
+
 ## [2.0.1](https://github.com/RIVM-bioinformatics/AmpliGone/compare/v2.0.0...v2.0.1) (2025-04-01)
 
 
