@@ -12,5 +12,5 @@ __prog__ : str
 
 # pylint: disable=C0103
 # AmpliGone package name is not following snake_case naming convention
-__version__ = "2.0.1"
+__version__ = "2.0.2"
 __prog__ = "AmpliGone"
